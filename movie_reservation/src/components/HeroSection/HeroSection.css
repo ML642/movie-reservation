@@ -1,7 +1,7 @@
 /* Hero Section Modernized CSS */
 .hero-section {
   position: relative;
-  height: 80vh;
+  height: 50vh;
   min-height: 400px;
   overflow: hidden;
   width: 100%;
@@ -14,6 +14,8 @@
 }
 
 .hero-slide {
+  border-radius: 1rem;
+  background-size: contain;
   position: absolute;
   width: 100%;
   height: 100%;
@@ -31,9 +33,10 @@
 }
 
 .hero-content {
+  height : 100% ;
   background: rgba(0,0,0,0.5);
   padding: 2rem 2.5rem;
-  margin: 2rem;
+
   border-radius: 1rem;
   color: #fff;
   max-width: 500px;

@@ -6,6 +6,7 @@
 /* Parallax section styles */
 .parallax-section {
   position: relative;
+  height: 100vh;
   min-height: 80vh;
   background-attachment: fixed;
   background-position: center;
@@ -15,6 +16,18 @@
   align-items: center;
   justify-content: center;
   color: white;
+}
+.Icon {
+    font-size: 2rem;
+    color: white;
+    margin-right: 0.5rem;
+          
+    transition-duration: 1200ms;
+}
+.Icon:hover {
+    color: rgb(165, 116, 47);
+    transform: scale(1.2);
+    transition-duration: 800ms;
 }
 
 .now-showing {
@@ -31,6 +44,7 @@
 .content {
   width: 90%;
   max-width: 1200px;
+  
   margin: 0 auto;
   padding: 4rem 0;
   z-index: 1;
@@ -89,6 +103,8 @@
 .movie-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  align-items: center;
+ justify-items: center;
   gap: 2rem;
   margin-top: 2rem;
 }

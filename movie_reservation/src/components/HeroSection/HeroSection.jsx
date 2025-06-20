@@ -21,11 +21,12 @@ const featuredMovies = [
     backdrop: "/assets/barbie-banner.jpg",
     desc: "A fun and colorful adventure in Barbie Land"
   }
+  
 ];
 
-export default function HeroSection() {
+export default function HeroSection({variant}) {
   const [currentSlide, setCurrentSlide] = useState(0);
-
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
