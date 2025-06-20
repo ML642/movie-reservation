@@ -28,7 +28,7 @@ const Header = () => {
     visible: { 
       opacity: 1, 
       y: 0,
-      transition: { duration: 0.5 }
+      transition: { duration: 1.5 }
     },
     scrolled: {
       backgroundColor: "rgba(17, 24, 39, 0.95)",

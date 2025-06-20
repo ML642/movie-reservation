@@ -1,4 +1,4 @@
-import { use, useEffect , useRef} from 'react';
+import { useEffect, useRef } from 'react';
 import Header from '../components/HEADER1/header.jsx';
 
 import { FaGlasses ,Md3dRotation , FaFilm , FaTicketAlt , FaPopcorn, FaVideo} from 'react-icons/fa'
@@ -11,7 +11,7 @@ import {motion ,  useAnimation,  useInView} from 'framer-motion' ;
 
 export default function Home() {
   const ref = useRef(null);
-  const isInView = useInView(ref,{ margin: "-50%"});
+  const isInView = useInView(ref,{ margin: "-20%"});
 
   const slideControls = useAnimation();
   const mainControls = useAnimation();
@@ -134,23 +134,30 @@ export default function Home() {
 
         <section className="features-section">
           <div className="content">
-            <h2>Why Choose Us</h2>
+            <h2 style={{color:"#fff"}}><span className='underline-transition'>Why Choose Us</span></h2>
             <div className="features-grid">
               <div className="feature">
                 <h3>Premium Experience</h3>
-                <p>State-of-the-art screens and sound systems</p>
+                <p><span className='underline-transition'>State-of-the-art screens and sound systems</span></p>
               </div>
               <div className="feature">
                 <h3>Easy Booking</h3>
-                <p>Book tickets in seconds with our intuitive platform</p>
+                <p><span className='underline-transition'>Book tickets in seconds with our intuitive platform</span></p>
               </div>
               <div className="feature">
                 <h3>Great Deals</h3>
-                <p>Regular discounts and special offers</p>
+                <p><span className='underline-transition'> Regular discounts and special offers</span></p>
               </div>
             </div>
           </div>
         </section>
+       <section className="book-section" >
+         <button className="book-now-btn">
+           Book Now
+          </button>
+        
+        </section>
+    
       </main>
       <Footer />
     </div>

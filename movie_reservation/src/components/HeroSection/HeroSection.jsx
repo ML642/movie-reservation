@@ -3,7 +3,7 @@ import { FaPlay, FaInfoCircle } from 'react-icons/fa';
 import './HeroSection.css';
 
 const featuredMovies = [
-  {
+  [{
     id: 1,
     title: "Dune: Part Two",
     backdrop: "/assets/dune-banner.jpg",
@@ -20,13 +20,47 @@ const featuredMovies = [
     title: "Barbie",
     backdrop: "/assets/barbie-banner.jpg",
     desc: "A fun and colorful adventure in Barbie Land"
-  }
-  
+  }],
+  [{
+    id: 4,
+    title: "Spider-Man: Across the Spider-Verse",
+    backdrop: "/assets/spiderman-banner.jpg",
+    desc: "Miles Morales returns for an epic multiverse adventure."
+  },
+  {
+    id: 5,
+    title: "Wonka",
+    backdrop: "/assets/wonka-banner.jpg",
+    desc: "Discover the origin story of Willy Wonka and his chocolate factory."
+  },
+  {
+    id: 6,
+    title: "The Marvels",
+    backdrop: "/assets/marvels-banner.jpg",
+    desc: "Captain Marvel teams up with new heroes to save the universe."
+  }],
+  [{
+    id: 7,
+    title: "Mission: Impossible ",
+    backdrop: "/assets/mi7-banner.jpg",
+    desc: "Ethan Hunt faces his most dangerous mission yet."
+  },
+  {
+    id: 8,
+    title: "Elemental",
+    backdrop: "/assets/elemental-banner.jpg",
+    desc: "A Pixar adventure where fire, water, land, and air live together."
+  },
+  {
+    id: 9,
+    title: "Indiana Jones and the Dial of Destiny",
+    backdrop: "/assets/indiana-jones-banner.jpg",
+    desc: "Indiana Jones returns for one last globe-trotting adventure."
+  }]
 ];
 
 export default function HeroSection({variant}) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
@@ -37,7 +71,7 @@ export default function HeroSection({variant}) {
   return (
     <section className="hero-section">
       <div className="hero-slider">
-        {featuredMovies.map((movie, idx) => (
+        {featuredMovies[variant-1].map((movie, idx) => (
           <div
             key={movie.id}
             className={`hero-slide${idx === currentSlide ? ' active' : ''}`}
