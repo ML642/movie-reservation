@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -165,7 +166,7 @@ const Header = () => {
             cursor: "pointer",
           }}
         >
-          Sign In
+          <Link to="/login" style={{ color: "inherit", textDecoration: "none" }}>Sign In</Link>
         </motion.button>
         
         {/* Mobile Menu Toggle */}
