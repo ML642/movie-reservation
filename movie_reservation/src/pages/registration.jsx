@@ -6,7 +6,9 @@ import WAVES from 'vanta/dist/vanta.waves.min';
 import './Login.css';
 import { useEffect, useRef } from "react";
 import  { Link } from "react-router-dom";
-const Login = () => {
+
+
+const Signin = () => {
 
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
@@ -104,9 +106,9 @@ const Login = () => {
                     Log In
                 </button>
                 <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
-                  Don't have an account yet?{' '}
-                  <Link to ="/register"  >
-                    Register
+                  Already have an account ?{' '}
+                  <Link to ="/login"  >
+                    Login
                   </Link>
                 </div>
             </form>
@@ -120,4 +122,4 @@ const Login = () => {
 
 
 
-export default Login;
+export default Signin;
