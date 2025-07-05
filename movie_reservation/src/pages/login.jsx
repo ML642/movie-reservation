@@ -7,7 +7,6 @@ import './Login.css';
 import { useEffect, useRef } from "react";
 import  { Link } from "react-router-dom";
 const Login = () => {
-
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
 
@@ -34,7 +33,9 @@ const Login = () => {
     return () => {
       if (vantaEffect) vantaEffect.destroy();
     };
-  }, [vantaEffect]);
+    // Only run once on mount/unmount
+    // eslint-disable-next-line
+  }, []);
 
     const [form, setForm] = useState({ email: "", password: "" });
     const [error, setError] = useState("");
@@ -72,7 +73,7 @@ const Login = () => {
     return (
         <div>  
         <Header></Header>
-        <div ref={vantaRef} class = "container" >
+        <div ref={vantaRef} class ="container" >
             <form onSubmit={handleSubmit} class = "form" >
                 <h1 style={{color:"#234", textAlign:"center" , }}> Login</h1>
                 

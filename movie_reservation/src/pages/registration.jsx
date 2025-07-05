@@ -9,10 +9,10 @@ import  { Link } from "react-router-dom";
 
 
 const Signin = () => {
-
+  
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
-
+  if (vantaEffect){vantaEffect.destroy()}
   useEffect(() => {
     if (!vantaEffect && vantaRef.current) {
       setVantaEffect(
@@ -36,9 +36,11 @@ const Signin = () => {
     return () => {
       if (vantaEffect) vantaEffect.destroy();
     };
-  }, [vantaEffect]);
+        // Only run once on mount/unmount
+    // eslint-disable-next-line
+  }, []);
 
-    const [form, setForm] = useState({ email: "", password: "" });
+    const [form, setForm] = useState({ username: "" ,  email: "", password: "" });
     const [error, setError] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
 
@@ -76,8 +78,15 @@ const Signin = () => {
         <Header></Header>
         <div ref={vantaRef} class = "container" >
             <form onSubmit={handleSubmit} class = "form" >
-                <h1 style={{color:"#234", textAlign:"center" , }}> Login</h1>
+                <h1 style={{color:"#234", textAlign:"center" , }}> Registration </h1>
                 
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    value={form.username}
+                    onChange={handleChange}
+                />
                 <input
                     type="email"
                     name="email"
@@ -103,7 +112,7 @@ const Signin = () => {
                   Remember Me
                 </label>
                 <button type="submit"  className="gradient-border">
-                    Log In
+                   Reg IN
                 </button>
                 <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
                   Already have an account ?{' '}
