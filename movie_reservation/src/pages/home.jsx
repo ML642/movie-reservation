@@ -40,7 +40,6 @@ export default function Home() {
 
   return (
     <div className="app">
-      <Header />
       <main className="main-content">
         {/*<Hero />*/}
         
@@ -153,13 +152,12 @@ export default function Home() {
         </section>
        <section className="book-section" >
          <button className="book-now-btn">
-           Book Now
-          </button>
+            Book Now
+         </button>
         
         </section>
     
       </main>
-      <Footer />
     </div>
   );
 }

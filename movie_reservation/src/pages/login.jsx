@@ -72,7 +72,7 @@ const Login = () => {
 
     return (
         <div>  
-        <Header></Header>
+        
         <div ref={vantaRef} class ="container" >
             <form onSubmit={handleSubmit} class = "form" >
                 <h1 style={{color:"#234", textAlign:"center" , }}> Login</h1>
@@ -112,7 +112,6 @@ const Login = () => {
                 </div>
             </form>
         </div>
-        <Footer></Footer>
         
         </div>
     );

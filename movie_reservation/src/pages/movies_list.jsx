@@ -2,7 +2,6 @@ import React from 'react';
 import {useState ,useRef ,  useEffect} from "react"
 import Footer from "../components/Foter/Footer";
 import Header from "../components/HEADER1/header";
-
 import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import FOG from 'vanta/dist/vanta.fog.min';
@@ -27,7 +26,7 @@ const MovieList = () => {
             highlightColor: 0x0,
             midtoneColor: 0x655755,
             lowlightColor: 0x31198b,
-            baseColor: 0x383434, 
+            baseColor: 0x583434, 
             THREE: THREE,
             speed: 1.00,
             })
@@ -79,10 +78,24 @@ return ()=> {
 
    return (
     <div> 
-   <Header/>
-   <div className="carousel-bg" ref={vantaRef}>
-     <div  className="movie-card-title"> Now Showing </div>
-     <div className="carousel-row">
+
+
+
+   <div ref={vantaRef}>   
+      <div style={{height:"500px"}}></div>
+      {/* Movie Grid Section */}
+      <div className="movie-grid">
+        {movies.map((movie, idx) => (
+          <div className="movie-grid-card" key={idx}>
+            <img src={movie.poster} alt={movie.title} className="movie-card-img" />
+            <h3 className="movie-card-h2">{movie.title}</h3>
+            <button className="book-now-btn">Book Now</button>
+          </div>
+        ))}
+      </div>
+      <div className="carousel-bg">
+        <div className="movie-card-title"> Now Showing </div>
+        <div className="carousel-row">
        {/* Previous Movie */}
        <div className="movie-card-side">
          <img src={getMovie(current-1).poster} alt={getMovie(current-1).title} className="movie-card-img-side" />
@@ -99,16 +112,15 @@ return ()=> {
            <button onClick={nextMovie} className="carousel-arrow" style={{ position: 'static' }}>&gt;</button>
          </div>
        </div>
-       {/* Next Movie */}
+
        <div className="movie-card-side">
          <img src={getMovie(current+1).poster} alt={getMovie(current+1).title} className="movie-card-img-side" />
          <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>{getMovie(current+1).title}</div>
        </div>
      </div>
-     {/* Next Button */}
   
-   </div>
-  <Footer/>   
+   </div> </div>
+
 </div>
    )
 }

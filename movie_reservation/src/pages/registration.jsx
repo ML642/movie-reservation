@@ -75,7 +75,7 @@ const Signin = () => {
 
     return (
         <div>  
-        <Header></Header>
+       
         <div ref={vantaRef} class = "container" >
             <form onSubmit={handleSubmit} class = "form" >
                 <h1 style={{color:"#234", textAlign:"center" , }}> Registration </h1>
@@ -122,7 +122,7 @@ const Signin = () => {
                 </div>
             </form>
         </div>
-        <Footer></Footer>
+      
         
         </div>
     );
