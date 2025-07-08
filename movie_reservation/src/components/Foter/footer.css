@@ -3,6 +3,7 @@ footer {
   color: #fff;
   padding: 2rem 0;
   width: 100%;
+  position: absolute;
 }
 
 .footer-container {

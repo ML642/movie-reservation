@@ -12,7 +12,7 @@ import './movie_list.css';
 const MovieList = () => { 
     const vantaRef = useRef(null);
     const [vanta_effect, setVantaEffect] = useState(null);
-    
+
    useEffect(() =>{
     if(!vanta_effect && vantaRef.current){
         setVantaEffect(
@@ -37,9 +37,23 @@ const MovieList = () => {
 return ()=> {
         if(vanta_effect) vanta_effect.destroy();
     }
-
    }, [])
+useEffect(() => {
+  if (!vantaRef.current) return;
 
+  const resizeObserver = new ResizeObserver(() => {
+    if (vanta_effect?.resize) {
+      vanta_effect.resize();
+      console.log("Vanta effect resized");
+    }
+  });
+
+  resizeObserver.observe(vantaRef.current);
+
+  return () => {
+    resizeObserver.disconnect(); // cleanup on unmount
+  };
+}, [vanta_effect]);
    // Movie data array
    const movies = [
      { title: 'Barbie', poster: '/assets/barbie-banner.jpg', rating: 7.2, date: '2025-07-01', genre: 'Comedy' },
@@ -108,11 +122,8 @@ return ()=> {
    const getMovie = (idx) => movies[(idx + movies.length) % movies.length];
 
    return (
-    <div> 
-
-
-
-   <div ref={vantaRef}>   
+<div> 
+   <div ref={vantaRef} style={{ width: '100%', minHeight: '100vh' , overflow:"hidden"}} >  
      <div style={{height:"100px"}}></div>
       <div className="movie-filter-bar">
         <div className="filter-group" style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
@@ -184,6 +195,7 @@ return ()=> {
           ))
         )}
       </div>
+      
       <div className="carousel-bg">
         <div className="movie-card-title"> Now Showing </div>
         <div className="carousel-row">
