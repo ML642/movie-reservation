@@ -72,7 +72,9 @@ const MovieList = () => {
     const [hasMore, setHasMore] = useState(true);
     
     useEffect(() => {
-        let initialMovies = (data ?? movies_1).map(movie => ({
+        let initialMovies = (data ?? movies_1)
+            .filter(movie => !movie.adult) // Explicitly filter out adult movies
+            .map(movie => ({
             ...movie,
             poster: movie.poster_path 
                 ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -89,9 +91,17 @@ const MovieList = () => {
         const nextPage = page + 1;
         try {
             const { data: nextData } = await axios.get(
-                `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${nextPage}&include_adult=false`
-            );
-            const filteredResults = nextData.results.filter(movie => !movie.adult);
+`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${nextPage}&include_adult=false`,
+{ params: {
+  api_key: API_KEY,
+  sort_by: 'popularity.desc',
+  page: nextPage,
+  include_adult: false,
+  certification_country: 'US',
+  certification_lte: 'R', // Only movies rated R or below (no NC-17/adult)
+  with_original_language: 'en'
+} }           );
+            const filteredResults = nextData.results.filter(movie => !movie.adult && movie.title !=="Intimacy");
             const newMovies = filteredResults.map(movie => ({
                 ...movie,
                 poster: movie.poster_path 
