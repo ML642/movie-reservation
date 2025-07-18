@@ -10,7 +10,9 @@ import { BrowserRouter, createBrowserRouter, RouterProvider } from 'react-router
 import MovieList from "./pages/movies_list";
 import Header from './components/HEADER1/header';
 import Footer from './components/Foter/Footer';
+import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
 
+const queryClient = new QueryClient();
 
 const Layout = (Children) => {
   return (
@@ -36,9 +38,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <React.StrictMode>
-    
-    <RouterProvider router={router}/>
-   
+    <QueryClientProvider client={queryClient}>
+      
+       <RouterProvider router={router}/>
+       
+    </QueryClientProvider>
   </React.StrictMode>
 );
 reportWebVitals();

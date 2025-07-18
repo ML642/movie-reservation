@@ -79,8 +79,8 @@ export default function HeroSection({variant}) {
             aria-hidden={idx !== currentSlide}
           >
             <div className="hero-content">
-              <h1>{movie.title}</h1>
-              <p>{movie.desc}</p>
+              <h1>{movie?.title}</h1>
+              <p>{movie?.desc}</p>
               <div className="hero-actions">
                 <button className="hero-btn play">
                   <FaPlay /> Play Trailer
