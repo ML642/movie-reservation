@@ -1,6 +1,7 @@
-import {useEffect ,  useState } from "react" ; 
-import { _vantaEffect } from "vanta/dist/vanta.waves.min";
-import "./movie-selection.css"
+import React, { useState, useMemo } from "react" ;
+import "./movie-selection.css";
+import SkeletonCard from './SkeletonCard';
+
 const genresMap = {
   28: "Action",
   12: "Adventure",
@@ -36,7 +37,7 @@ function GenreFilter (movie,genre){
   return flag 
 }
 const MovieSelection = (props) => {
-     const movies = props.movies 
+     const { movies, loading } = props; 
      const [liked, setLiked] = useState([]); // array of liked movie titles
        const [showLikedOnly, setShowLikedOnly] = useState(false); // toggle for showing only liked
        const toggleLike = (title) => {
@@ -54,18 +55,20 @@ const MovieSelection = (props) => {
        const [genre, setGenre] = useState('all');
     
        // Filtered and sorted movies
-       const filteredMovies = movies
-         .filter(movie => movie?.title?.toLowerCase().includes(search.toLowerCase()))
-         .filter(movie => GenreFilter(movie, genre))
-         .sort((a, b) => {
-           if (sort === 'rating-desc') return b?.rating - a?.rating;
-           if (sort === 'rating-asc') return a?.rating - b?.rating;
-           if (sort === 'date-desc') return new Date(b?.date) - new Date(a?.date);
-           if (sort === 'date-asc') return new Date(a?.date) - new Date(b?.date);
-           if (sort === 'title-az') return a?.title.localeCompare(b?.title);
-           if (sort === 'title-za') return b?.title.localeCompare(a?.title);
-           return 0;
-         });
+       const filteredMovies = useMemo(() => {
+        return movies
+          .filter(movie => movie?.title?.toLowerCase().includes(search.toLowerCase()))
+          .filter(movie => GenreFilter(movie, genre))
+          .sort((a, b) => {
+            if (sort === 'rating-desc') return b?.rating - a?.rating;
+            if (sort === 'rating-asc') return a?.rating - b?.rating;
+            if (sort === 'date-desc') return new Date(b?.date) - new Date(a?.date);
+            if (sort === 'date-asc') return new Date(a?.date) - new Date(b?.date);
+            if (sort === 'title-az') return a?.title.localeCompare(b?.title);
+            if (sort === 'title-za') return b?.title.localeCompare(a?.title);
+            return 0;
+          });
+      }, [movies, search, sort, genre]);
 
     return (  <> 
     <div className="movie-filter-bar">
@@ -114,28 +117,38 @@ const MovieSelection = (props) => {
       </div>
       {/* Movie Grid Section */}
       <div className="movie-grid">
-        {((showLikedOnly ? filteredMovies.filter(m => liked.includes(m?.title)) : filteredMovies).length === 0) ? (
-          <div className="no-movies-msg">
-            <span className="no-movies-icon">🎬</span>
-            There is nothing here.
-            <div className="no-movies-hint">Try changing your search, filters, or like some movies to see them here!</div>
-          </div>
+        {loading ? (
+          Array.from({ length: 12 }).map((_, idx) => <SkeletonCard key={idx} />)
         ) : (
-          (showLikedOnly ? filteredMovies.filter(m => liked.includes(m?.title)) : filteredMovies).map((movie, idx) => (
-            <div className="movie-grid-card" key={idx}>
-              <span
-                className={`heart-icon${liked.includes(movie?.title) ? ' liked' : ''}`}
-                onClick={() => toggleLike(movie?.title)}
-                title={liked.includes(movie?.title) ? 'Unlike' : 'Like'}
-              >
-                {liked.includes(movie?.title) ? '❤️' : '🤍'}
-              </span>
-              <img src={movie?.poster} alt={movie?.title} className="movie-card-img" />
-              <h3 className="movie-card-h2">{movie?.title}</h3>
-              <div style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>Rating: {movie?.rating} | {movie?.date}</div>
-              <button className="book-now-btn">Book Now</button>
+          ((showLikedOnly ? filteredMovies.filter(m => liked.includes(m?.title)) : filteredMovies).length === 0) ? (
+            <div className="no-movies-msg">
+              <span className="no-movies-icon">🎬</span>
+              There is nothing here.
+              <div className="no-movies-hint">Try changing your search, filters, or like some movies to see them here!</div>
             </div>
-          ))
+          ) : (
+            (showLikedOnly ? filteredMovies.filter(m => liked.includes(m?.title)) : filteredMovies).map((movie, idx) => (
+              <div className="movie-grid-card" key={idx}>
+                <span
+                  className={`heart-icon${liked.includes(movie?.title) ? ' liked' : ''}`}
+                  onClick={() => toggleLike(movie?.title)}
+                  title={liked.includes(movie?.title) ? 'Unlike' : 'Like'}
+                >
+                  {liked.includes(movie?.title) ? '❤️' : '🤍'}
+                </span>
+                <img 
+                  src={movie?.poster} 
+                  alt={movie?.title} 
+                  className="movie-card-img" 
+                  width="500" 
+                  height="750" 
+                />
+                <h3 className="movie-card-h2">{movie?.title}</h3>
+                <div style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>Rating: {movie?.rating} | {movie?.date}</div>
+                <button className="book-now-btn">Book Now</button>
+              </div>
+            ))
+          )
         )}
       </div>
       </>
@@ -143,4 +156,4 @@ const MovieSelection = (props) => {
       )
 }
 
-export default MovieSelection
+export default React.memo(MovieSelection);

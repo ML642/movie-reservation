@@ -175,7 +175,7 @@ useEffect(() => {
         <div> 
             <div ref={vantaRef} style={{ width: '100%', minHeight: '100vh' , overflow:"hidden"}} >  
                 <div style={{height:"100px"}}></div>
-                <MovieSelection movies={movies}></MovieSelection>
+                <MovieSelection movies={movies} loading={isLoading || loading} />
                 
                 <div style={{ textAlign: 'center', margin: '20px' , display:"flex" , justifyContent:"center"  }}>
                     {hasMore && (

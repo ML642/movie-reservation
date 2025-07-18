@@ -35,13 +35,13 @@ const MovieSlider = (props)=> {
         <div className="carousel-row">
        {/* Previous Movie */}
        <div className="movie-card-side">
-         <img src={getMovie(current-1)?.poster} alt={getMovie(current-1)?.title} className="movie-card-img-side" />
+         <img src={getMovie(current-1)?.poster} alt={getMovie(current-1)?.title} className="movie-card-img-side" width="500" height="750" />
          <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>{getMovie(current-1)?.title}</div>
        </div>
        {/* Current Movie */}
        <div className={`movie-card-current${animating ? (direction === 'right' ? ' animating-right' : ' animating-left') : ''}`}>
         
-         <img src={getMovie(current)?.poster} alt={getMovie(current)?.title} className="movie-card-img" />
+         <img src={getMovie(current)?.poster} alt={getMovie(current)?.title} className="movie-card-img" width="500" height="750" />
          <h2 className="movie-card-h2">{getMovie(current)?.title}</h2>
          <div className="movie-card-controls">
            <button onClick={prevMovie} className="carousel-arrow" style={{ position: 'static' }}>&lt;</button>
@@ -51,7 +51,7 @@ const MovieSlider = (props)=> {
        </div>
 
        <div className="movie-card-side">
-         <img src={getMovie(current+1)?.poster} alt={getMovie(current+1)?.title} className="movie-card-img-side" />
+         <img src={getMovie(current+1)?.poster} alt={getMovie(current+1)?.title} className="movie-card-img-side" width="500" height="750" />
          <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>{getMovie(current+1)?.title}</div>
        </div>
      </div>
