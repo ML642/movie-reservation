@@ -122,6 +122,7 @@ const Movie = () => {
 
   // Render movie details
   return (
+    <div className="movie-page">
     <div className="movie-container">
       {/* Back button */}
       <button className="back-button" onClick={() => navigate(-1)}>
@@ -315,6 +316,7 @@ const Movie = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };
