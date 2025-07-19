@@ -12,6 +12,7 @@ import Header from './components/HEADER1/header';
 import Footer from './components/Foter/Footer';
 import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
 import Movie from './pages/movie';
+
 const queryClient = new QueryClient();
 
 const Layout = (Children) => {
