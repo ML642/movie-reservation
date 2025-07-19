@@ -11,7 +11,7 @@ import MovieList from "./pages/movies_list";
 import Header from './components/HEADER1/header';
 import Footer from './components/Foter/Footer';
 import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
-
+import Movie from './pages/movie';
 const queryClient = new QueryClient();
 
 const Layout = (Children) => {
@@ -31,7 +31,7 @@ const router = createBrowserRouter([
  {path: '/login', element: <Layout element={ <Login/> } />},
  {path: '/register', element:<Layout element={ <Signin/> } />},
  {path: '/movie_list' , element : <Layout element={ <MovieList/> } />}, 
-
+ {path: '/movie/:id' , element : <Layout element={ <Movie/> } />}, 
 ])
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

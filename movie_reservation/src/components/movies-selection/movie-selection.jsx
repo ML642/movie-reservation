@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react" ;
 import "./movie-selection.css";
 import SkeletonCard from './SkeletonCard';
+import { Link } from "react-router-dom";
 
 const genresMap = {
   28: "Action",
@@ -145,7 +146,7 @@ const MovieSelection = (props) => {
                 />
                 <h3 className="movie-card-h2">{movie?.title}</h3>
                 <div style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>Rating: {movie?.rating} | {movie?.date}</div>
-                <button className="book-now-btn">Book Now</button>
+                <Link to={`/movie/${movie?.id}`}>   <button className="book-now-btn">Book Now</button></Link>
               </div>
             ))
           )
