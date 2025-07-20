@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './movie.css';
-const API_KEY = '306506d2d27da7e2c7e566411a66ea35';
+const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
 // Mock theater data - in a real app, this would come from your backend
 const THEATERS = [

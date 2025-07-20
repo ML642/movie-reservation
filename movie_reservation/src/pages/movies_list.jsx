@@ -10,7 +10,7 @@ import MovieSlider from '../components/movies-slider/movie-slider';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
-  const API_KEY = '306506d2d27da7e2c7e566411a66ea35'; 
+  const API_KEY = process.env.REACT_APP_TMDB_API_KEY; 
 
 
   const fetchPopularMovies = async () => {
