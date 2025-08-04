@@ -57,10 +57,11 @@ const Signin = () => {
         setError("");
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Dummy validation
-        if (!form.email || !form.password) {
+        setError("");
+
+        if (!form.username || !form.email || !form.password) {
             setError("Please fill in all fields.");
             return;
         }
@@ -69,8 +70,26 @@ const Signin = () => {
         } else {
             localStorage.removeItem("rememberedEmail");
         }
-        // TODO: Add authentication logic here
-        alert("Logged in!");
+        try {
+            const response = await fetch("http://localhost:5000/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: form.username,
+                    email: form.email,
+                    password: form.password
+                })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert("Registration successful! You can now log in.");
+                // Optionally redirect to login page here
+            } else {
+                setError(data.message || "Registration failed");
+            }
+        } catch (err) {
+            setError("Network error");
+        }
     };
 
     return (

@@ -92,7 +92,10 @@ a {
   gap: 1rem;
   height: 55vh;
   width: 80%;
+  margin-bottom : 2rem ; 
+  margin-top: 8rem;
   max-width: 550px;
+  height :max-content;
 }
 
 input {
