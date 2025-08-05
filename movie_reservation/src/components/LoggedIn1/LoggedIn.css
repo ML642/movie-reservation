@@ -1,0 +1,13 @@
+.LoggedIn  {
+   position : fixed  ; 
+   z-index: 100;
+   display : flex ; 
+   background:linear-gradient(to right , #ef4444 , #f59e0b);
+   
+   justify-content: space-between;
+   align-items: center;
+   padding: 1rem 2rem;
+   width: 5rem ;
+   height: 5rem;
+  
+}

@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import Header from "../components/HEADER1/header"; 
-import Footer from "../components/Foter/Footer"; 
+import React, { useState, useEffect, useRef } from "react";
 import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import './Login.css';
-import { useEffect, useRef } from "react";
-import  { Link } from "react-router-dom";
+import  { Link, useNavigate } from "react-router-dom";
+
+
 const Login = () => {
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!vantaEffect && vantaRef.current) {
@@ -61,13 +61,37 @@ const Login = () => {
             setError("Please fill in all fields.");
             return;
         }
+        const Login = async () => { 
+          try {
+            const result  =  await fetch ("http://localhost:5000/api/login",{
+              method : "POST" , 
+              headers : { "Content-type":"application/json"},
+              body: JSON.stringify({
+                email: form.email,
+                password: form.password
+              })
+            })
+            const data = await result.json();
+            if (result.ok) {
+              // Store the token in localStorage
+              localStorage.setItem('token', data.token);
+              alert("Login successful!");
+              // Redirect to home page
+              navigate('/');
+            } else {
+              setError(data.message || "Login failed");
+            }
+          } catch (err) {
+            setError("Network error");
+          }
+        }
+        Login();
         if (rememberMe) {
             localStorage.setItem("rememberedEmail", form.email);
         } else {
             localStorage.removeItem("rememberedEmail");
         }
-        // TODO: Add authentication logic here
-        alert("Logged in!");
+ 
     };
 
     return (

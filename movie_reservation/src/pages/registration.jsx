@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import Header from "../components/HEADER1/header"; 
-import Footer from "../components/Foter/Footer"; 
 import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import './Login.css';

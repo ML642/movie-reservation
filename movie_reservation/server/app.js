@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -7,49 +6,37 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors());
+// Add a simple logger to see if requests are coming in
+app.use((req, res, next) => {
+  console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// More explicit CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:3001',
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true, // allow session cookie from browser to pass through
+  optionsSuccessStatus: 204 // for pre-flight requests
+};
+
+app.use(cors(corsOptions));
+
+// Then, parse JSON bodies
 app.use(express.json());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/movie_reservation')
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+// In-memory user storage
+let users = [];
+let currentId = 1;
 
-// User Schema
-const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        minlength: 3
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
-        trim: true
-    },
-    password: {
-        type: String,
-        required: true,
-        minlength: 6
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
+// Helper function to find user by email
+const findUserByEmail = (email) => users.find(user => user.email === email);
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 12);
-    next();
-});
+// Helper function to find user by username
+const findUserByUsername = (username) => users.find(user => user.username === username);
 
-const User = mongoose.model('User', userSchema);
+// Helper function to generate user ID
+const generateId = () => (currentId++).toString();
 
 // Health Check
 app.get('/', (req, res) => {
@@ -63,25 +50,31 @@ app.post('/api/register', async (req, res) => {
         const { username, email, password } = req.body;
 
         // Check if user exists
-        const existingUser = await User.findOne({
-            $or: [{ email }, { username }]
-        });
-
-        if (existingUser) {
-            console.log('User already exists:', existingUser);
+        if (findUserByEmail(email) || findUserByUsername(username)) {
+            console.log('User already exists');
             return res.status(400).json({
                 success: false,
                 message: 'User already exists'
             });
         }
 
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 12);
+        
         // Create new user
-        const user = new User({ username, email, password });
-        await user.save();
+        const user = {
+            id: generateId(),
+            username,
+            email,
+            password: hashedPassword,
+            createdAt: new Date()
+        };
+        
+        users.push(user);
 
         // Generate token
         const token = jwt.sign(
-            { userId: user._id },
+            { userId: user.id },
             process.env.JWT_SECRET || 'secret-key',
             { expiresIn: '7d' }
         );
@@ -91,7 +84,7 @@ app.post('/api/register', async (req, res) => {
             message: 'User registered successfully',
             token,
             user: {
-                id: user._id,
+                id: user.id,
                 username: user.username,
                 email: user.email
             }
@@ -112,7 +105,7 @@ app.post('/api/login', async (req, res) => {
         const { email, password } = req.body;
 
         // Find user
-        const user = await User.findOne({ email });
+        const user = findUserByEmail(email);
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -131,7 +124,7 @@ app.post('/api/login', async (req, res) => {
 
         // Generate token
         const token = jwt.sign(
-            { userId: user._id },
+            { userId: user.id },
             process.env.JWT_SECRET || 'secret-key',
             { expiresIn: '7d' }
         );
@@ -141,7 +134,7 @@ app.post('/api/login', async (req, res) => {
             message: 'Login successful',
             token,
             user: {
-                id: user._id,
+                id: user.id,
                 username: user.username,
                 email: user.email
             }

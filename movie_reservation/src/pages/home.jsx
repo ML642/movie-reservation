@@ -1,12 +1,7 @@
 import { useEffect, useRef } from 'react';
-import Header from '../components/HEADER1/header.jsx';
-
-import { FaGlasses ,Md3dRotation , FaFilm , FaTicketAlt , FaPopcorn, FaVideo} from 'react-icons/fa'
-
+import { FaGlasses  , FaFilm , FaTicketAlt , FaVideo} from 'react-icons/fa'
 import Hero from '../components/HeroSection/HeroSection.jsx';
-import Footer from '../components/Foter/Footer.jsx';
 import './home.css';
-
 import {motion ,  useAnimation,  useInView} from 'framer-motion' ; 
 
 export default function Home() {
@@ -73,7 +68,7 @@ export default function Home() {
         initial =  "hidden"
         animate = "visible"
         transition={{ duration: 1.5, ease: "easeInOut" , delay: 0.5 }}
-        style = {{ position: 'absolute', top: '50', left: '0', left : '0'  , right: '0' , background: 'linear-gradient(to right,rgb(131, 56, 38),rgb(172, 157, 145))', padding: '10px', borderRadius: '50px', color: '#fff', textAlign: 'center', zIndex: 1, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' , width: '80%', height: '30%' }}
+        style = {{ position: 'absolute', top: '50', left: '0', right: '0' , background: 'linear-gradient(to right,rgb(131, 56, 38),rgb(172, 157, 145))', padding: '10px', borderRadius: '50px', color: '#fff', textAlign: 'center', zIndex: 1, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' , width: '80%', height: '30%' }}
         >
             <div style={{fontSize :"20px" , display : "flex" }}><h2 style={{justifyContent:"center", alignItems:"center" , color:"black" ,  paddingRight:"20px"}}> Get Started </h2> </div>
         </motion.div >
@@ -103,7 +98,7 @@ export default function Home() {
         initial =  "hidden"
         animate = {slideControls}
         transition={{ duration: 1.5, ease: "easeInOut" , delay: 0.5 }}
-        style = {{ position: 'absolute', top: '5', left: '0', left : '0'  , right: '0' , background: 'linear-gradient(to right, #ff7e5f,rgb(172, 157, 145))', padding: '10px', borderRadius: '20px', color: '#fff', textAlign: 'center', zIndex: 1, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' , width: '60%', height: '100%' }}
+        style = {{ position: 'absolute', top: '5', left: '0' , right: '0' , background: 'linear-gradient(to right, #ff7e5f,rgb(172, 157, 145))', padding: '10px', borderRadius: '20px', color: '#fff', textAlign: 'center', zIndex: 1, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' , width: '60%', height: '100%' }}
         >
             <div style={{fontSize :"20px" , display : "flex" }}><h2 style={{justifyContent:"center", alignItems:"center", color:"black"}}> 🎥 Where Every Frame Comes to Life </h2> </div>
         </motion.div >

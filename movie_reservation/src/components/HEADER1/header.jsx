@@ -2,12 +2,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import LoggedIn from "../LoggedIn1/LoggedIn.jsx"
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
+  
+  const [isLoggedIn , SetIsLoggedIn] = useState( false );
+  
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      SetIsLoggedIn(true);
+    }
+  }, []);
   // Track scroll for header shadow
   useEffect(() => {
     const handleScroll = () => {
@@ -151,8 +161,9 @@ const Header = () => {
         />
       </motion.div>
 
-      {/* User Section */}
+     
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        {isLoggedIn  ? (<> </>) : 
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -168,7 +179,7 @@ const Header = () => {
         >
           <Link to="/login" style={{ color: "inherit", textDecoration: "none" }}>Sign In</Link>
         </motion.button>
-        
+          }
         {/* Mobile Menu Toggle */}
         <motion.button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
