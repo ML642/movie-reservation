@@ -73,8 +73,9 @@ const Login = () => {
             })
             const data = await result.json();
             if (result.ok) {
-              // Store the token in localStorage
+              // Store the token and username in localStorage
               localStorage.setItem('token', data.token);
+              localStorage.setItem('username', data.user.username);
               alert("Login successful!");
               // Redirect to home page
               navigate('/');
