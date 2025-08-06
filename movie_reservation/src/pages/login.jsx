@@ -101,12 +101,13 @@ const Login = () => {
         <div ref={vantaRef} class ="container" >
             <form onSubmit={handleSubmit} class = "form" >
                 <h1 style={{color:"white", textAlign:"center" , }}> Login</h1>
-                <div>   
+                <div style={{display:"block" , width : "80%"}}>   
                 <label for="email" className = "label">Email Address   </label>  
                 <input
                     
                     className="input"
                     type="email"
+                    id = "email"
                     name="email"
                     placeholder="Email"
                     value={form.email}
@@ -114,27 +115,29 @@ const Login = () => {
                     
                 />
                 </div>
-                <div> 
+                <div style={{display:"block" , width : "80%"}}> 
                 <label for="password" className= "label">Password     </label>
                 <input
                     className="input"
                     type="password"
+                    id = "password"
                     name="password"
                     placeholder="Password"
                     value={form.password}
                     onChange={handleChange}
                 />
                 </div>
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" , color:"white"}}>
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                    style ={ { width: "20px", height: "20px" } }
-                  />
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" , color:"white",width:"80%"}}>
+                  <div class="liquid-checkbox">
+                        <input type="checkbox" id="remember" name="remember"/>
+                        <div class="liquid-container">
+                            <div class="liquid-fill"></div>
+                            <div class="checkmark-float">✓</div>
+                        </div>
+                    </div>
                   Remember Me
                 </label>
-                <button type="submit"  className="gradient-border">
+                <button type="submit"  className="gradient-border" style={{width:"80%"}}>
                     Log In
                 </button>
                 <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
