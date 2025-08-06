@@ -80,18 +80,18 @@ a {
 }
 
 .form {
-  background: rgba(255, 255, 255, 0.2); /* semi-transparent white */
+  background: rgba(96, 86, 160, 0.2); /* semi-transparent white */
   backdrop-filter: blur(1px);           /* blur background behind the form */
   border-radius: 8px;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
   justify-content: center;
-  align-items: center;
+  
   flex-direction: column;
   gap: 1rem;
   height: 55vh;
-  width: 80%;
+  width: 100%;
   margin-bottom : 2rem ; 
   margin-top: 8rem;
   max-width: 550px;
@@ -102,7 +102,7 @@ input {
   padding: 0.75rem;
   border-radius: 4px;
   border: 1px solid #ccc;
-  width:30vh;
+  width:50%;
   font-size: 1rem;
 }
 
@@ -125,4 +125,27 @@ button:hover, .login-btn:hover {
 .error {
   color: red;
   font-size: 0.9rem;
+}
+.input {
+ 
+    width: 80%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+   margin-top: 0.5rem;
+}
+.label {
+  color: rgb(207, 203, 203)  ;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+
+  padding-bottom: 1rem;
+  margin-top: 1rem;
+
 }

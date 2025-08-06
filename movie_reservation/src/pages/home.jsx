@@ -3,6 +3,7 @@ import { FaGlasses  , FaFilm , FaTicketAlt , FaVideo} from 'react-icons/fa'
 import Hero from '../components/HeroSection/HeroSection.jsx';
 import './home.css';
 import {motion ,  useAnimation,  useInView} from 'framer-motion' ; 
+import {Link} from "react-router-dom" ; 
 
 export default function Home() {
   const ref = useRef(null);
@@ -146,9 +147,11 @@ export default function Home() {
           </div>
         </section>
        <section className="book-section" >
+        <Link to = "/movie_list">
          <button className="book-now-btn">
             Book Now
          </button>
+        </Link>
         
         </section>
     

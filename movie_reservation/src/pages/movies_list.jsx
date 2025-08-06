@@ -1,9 +1,6 @@
 import React from 'react';
 import { useState, useRef, useEffect } from "react"
-import Footer from "../components/Foter/Footer";
-import Header from "../components/HEADER1/header";
 import * as THREE from 'three';
-import WAVES from 'vanta/dist/vanta.waves.min';
 import FOG from 'vanta/dist/vanta.fog.min';
 import MovieSelection  from '../components/movies-selection/movie-selection';
 import MovieSlider from '../components/movies-slider/movie-slider';
@@ -58,7 +55,7 @@ const genresMap = {
  
 const MovieList = () => { 
     
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading} = useQuery({
       queryKey: ['popularMovies'],
       queryFn: fetchPopularMovies,
     });

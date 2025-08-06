@@ -100,9 +100,12 @@ const Login = () => {
         
         <div ref={vantaRef} class ="container" >
             <form onSubmit={handleSubmit} class = "form" >
-                <h1 style={{color:"#234", textAlign:"center" , }}> Login</h1>
-                
+                <h1 style={{color:"white", textAlign:"center" , }}> Login</h1>
+                <div>   
+                <label for="email" className = "label">Email Address   </label>  
                 <input
+                    
+                    className="input"
                     type="email"
                     name="email"
                     placeholder="Email"
@@ -110,14 +113,19 @@ const Login = () => {
                     onChange={handleChange}
                     
                 />
+                </div>
+                <div> 
+                <label for="password" className= "label">Password     </label>
                 <input
+                    className="input"
                     type="password"
                     name="password"
                     placeholder="Password"
                     value={form.password}
                     onChange={handleChange}
                 />
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" }}>
+                </div>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" , color:"white"}}>
                   <input
                     type="checkbox"
                     checked={rememberMe}
