@@ -129,7 +129,9 @@ const Login = () => {
                 </div>
                 <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" , color:"white",width:"80%"}}>
                   <div class="liquid-checkbox">
-                        <input type="checkbox" id="remember" name="remember"/>
+                        <input type="checkbox" id="remember" name="remember" checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                    style ={ { width: "20px", height: "20px" } }/>
                         <div class="liquid-container">
                             <div class="liquid-fill"></div>
                             <div class="checkmark-float">✓</div>

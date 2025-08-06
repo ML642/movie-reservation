@@ -12,10 +12,15 @@ import Header from './components/HEADER1/header';
 import Footer from './components/Foter/Footer';
 import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
 import Movie from './pages/movie';
+import Terms from './pages/terms';
+import NotFound from './pages/notFound';
 
 const queryClient = new QueryClient();
 
 const Layout = (Children) => {
+  if (Children.element.type === NotFound) {
+    return (<NotFound/>)}
+    else {
   return (
     <div>
       <Header />
@@ -23,7 +28,7 @@ const Layout = (Children) => {
       <Footer />
 
     </div>
-  );
+  );}
 }
 
 const router = createBrowserRouter([
@@ -33,6 +38,8 @@ const router = createBrowserRouter([
  {path: '/register', element:<Layout element={ <Signin/> } />},
  {path: '/movie_list' , element : <Layout element={ <MovieList/> } />}, 
  {path: '/movie/:id' , element : <Layout element={ <Movie/> } />}, 
+ {path: '/terms' , element : <Layout element={ <Terms/> } />},
+ {path: '*', element : <Layout element={ <NotFound/> } />}, 
 ])
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

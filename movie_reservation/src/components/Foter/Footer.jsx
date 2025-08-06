@@ -1,6 +1,6 @@
 import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
-  import './footer.css';
-
+import './footer.css';
+import { Link } from "react-router-dom"
 export default function Footer() {
   return (
     <footer className="footer">
@@ -12,16 +12,16 @@ export default function Footer() {
         <div className="footer-section">
           <h4>Quick Links</h4>
           <ul className="footer-links">
-            <li><a href="/">Movies</a></li>
-            <li><a href="/">Theaters</a></li>
-            <li><a href="/">Pricing</a></li>
+            <li><Link to = "/movie_list">Movies</Link></li>
+            <li><Link to = "/theaters">Theaters</Link></li>
+            <li><Link to = "/pricing">Pricing</Link></li>
           </ul>
         </div>
         <div className="footer-section">
           <h4>Legal</h4>
           <ul className="footer-links">
-            <li><a href="/">Terms</a></li>
-            <li><a href="/">Privacy</a></li>
+            <li> <Link to = "/terms">Terms</Link></li>
+            <li><Link to = "/terms">Privacy</Link></li>
           </ul>
         </div>
         <div className="footer-section">

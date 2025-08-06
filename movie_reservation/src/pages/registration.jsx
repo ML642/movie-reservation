@@ -95,40 +95,60 @@ const Signin = () => {
        
         <div ref={vantaRef} class = "container" >
             <form onSubmit={handleSubmit} class = "form" >
-                <h1 style={{color:"#234", textAlign:"center" , }}> Registration </h1>
-                
+                <h1 style={{color:"white", textAlign:"center" , }}> Registration </h1>
+                <div style={{display:"block" , width : "80%"}}>   
+                <label for="username" className = "label">Username   </label>  
                 <input
+                    className="input"
                     type="text"
+                    id = "username"
                     name="username"
                     placeholder="Username"
                     value={form.username}
                     onChange={handleChange}
                 />
+                </div>
+
+
+                <div style={{display:"block" , width : "80%"}}>   
+                <label for="email" className = "label">Email Address   </label>  
                 <input
+                    
+                    className="input"
                     type="email"
+                    id = "email"
                     name="email"
                     placeholder="Email"
                     value={form.email}
                     onChange={handleChange}
                     
                 />
+                </div>
+                <div style={{display:"block" , width : "80%"}}> 
+                <label for="password" className= "label">Password     </label>
                 <input
+                    className="input"
                     type="password"
+                    id = "password"
                     name="password"
                     placeholder="Password"
                     value={form.password}
                     onChange={handleChange}
                 />
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" }}>
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
+                </div>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" , color:"white",width:"80%"}}>
+                  <div class="liquid-checkbox">
+                        <input type="checkbox" id="remember" name="remember" checked={rememberMe}
                     onChange={e => setRememberMe(e.target.checked)}
-                    style ={ { width: "20px", height: "20px" } }
-                  />
+                    style ={ { width: "20px", height: "20px" } }/>
+                        <div class="liquid-container">
+                            <div class="liquid-fill"></div>
+                            <div class="checkmark-float">✓</div>
+                        </div>
+                    </div>
                   Remember Me
                 </label>
-                <button type="submit"  className="gradient-border">
+                <button type="submit"  className="gradient-border" style={{width:"80%"}}>
                    Reg IN
                 </button>
                 <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
