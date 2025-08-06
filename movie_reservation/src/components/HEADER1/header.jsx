@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import LoggedIn from "../LoggedIn1/LoggedIn.jsx"
 
@@ -12,12 +13,22 @@ const Header = () => {
   
   const [isLoggedIn , SetIsLoggedIn] = useState( false );
   
+  const Location  = useLocation() ; 
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    SetIsLoggedIn(false);
+    // Optionally, you can redirect the user to the homepage or login page
+    // window.location.href = '/';
+  };
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       SetIsLoggedIn(true);
+      console.log("token",token);
     }
-  }, []);
+  }, [Location]);
   // Track scroll for header shadow
   useEffect(() => {
     const handleScroll = () => {
@@ -163,7 +174,7 @@ const Header = () => {
 
      
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        {isLoggedIn  ? (<LoggedIn/>) : 
+        {isLoggedIn  ? (<LoggedIn onLogout={handleLogout}/>) : 
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -211,7 +222,6 @@ const Header = () => {
               left: 0,
               right: 0,
               background: "#1f2937",
-              overflow: "hidden",
               zIndex: 999,
             }}
           >

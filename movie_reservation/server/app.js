@@ -14,7 +14,7 @@ app.use((req, res, next) => {
 
 // More explicit CORS configuration
 const corsOptions = {
-  origin: 'http://localhost:3001',
+  origin: 'http://localhost:3000 ',
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true, // allow session cookie from browser to pass through
   optionsSuccessStatus: 204 // for pre-flight requests
@@ -74,7 +74,7 @@ app.post('/api/register', async (req, res) => {
 
         // Generate token
         const token = jwt.sign(
-            { userId: user.id },
+            { userId: user.id, username: user.username },
             process.env.JWT_SECRET || 'secret-key',
             { expiresIn: '7d' }
         );
@@ -124,7 +124,7 @@ app.post('/api/login', async (req, res) => {
 
         // Generate token
         const token = jwt.sign(
-            { userId: user.id },
+            { userId: user.id, username: user.username },
             process.env.JWT_SECRET || 'secret-key',
             { expiresIn: '7d' }
         );

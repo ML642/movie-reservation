@@ -1,14 +1,103 @@
-.LoggedIn  {
-   display : flex ; 
-   justify-content: center;
-   align-items: center;
-   background:linear-gradient(to right , #ef4444 , #f59e0b);
-   color: white;
-   font-weight: bold;
-   font-size: 1.2rem;
-   border-radius: 50%;
-   width: 48px; 
-   height: 48px; 
-   cursor: pointer;
-   text-transform: uppercase;
+.LoggedIn {
+  position: relative; /* Establishes a positioning context for the dropdown */
+  z-index: 1100; /* Ensure this container is above the header */
+}
+
+.user-profile-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Space between icon and name */
+  cursor: pointer;
+  padding: 4px;
+  padding-right: 1rem;
+  border-radius: 30px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.user-profile-container:hover {
+  background-color: #374151; /* Darker background on hover */
+}
+
+.user-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to right, #ef4444, #f59e0b);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  border-radius: 50%;
+  width: 40px; /* Slightly smaller icon */
+  height: 40px;
+  text-transform: uppercase;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.header-username {
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+}
+
+.dropdown-user-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to right, #ef4444, #f59e0b);
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  text-transform: uppercase;
+}
+
+.dropdown-username {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.dropdown-menu {
+  position: fixed;
+  background-color: #1f2937; /* Dark background */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  padding: 0.5rem 0;
+  z-index: 1100;
+  width: 150px; /* Set a width for the dropdown */
+  border: 1px solid #374151;
+}
+
+.dropdown-item {
+  background: transparent;
+  border: none;
+  color: #d1d5db; /* Light gray text */
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: block; /* Make it a block element */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.dropdown-item:hover {
+  background-color: #374151; /* Slightly lighter on hover */
+  color: white;
+}
+
+.dropdown-separator {
+  height: 1px;
+  background-color: #374151; /* Separator line color */
+  margin: 0.5rem 0;
 }
