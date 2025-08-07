@@ -39,10 +39,10 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { name: "Now Playing", href: "#now-playing", icon: <FaTicketAlt /> },
-    { name: "Coming Soon", href: "#coming-soon", icon: <FaTicketAlt /> },
-    { name: "Theaters", href: "#theaters", icon: <FaTicketAlt /> },
-    { name: "Special Offers", href: "#offers", icon: <FaTicketAlt /> },
+    { name: "Home page ", href: "/", icon: <FaTicketAlt /> },
+    { name: "Now playing", href: "/movie_list", icon: <FaTicketAlt /> },
+    { name: "Theaters", href: "/theaters", icon: <FaTicketAlt /> },
+    { name: "Special Offers", href: "/pricing", icon: <FaTicketAlt /> },
   ];
 
   const headerVariants = {
@@ -253,7 +253,8 @@ const Header = () => {
 
               {/* Mobile Nav Links */}
               {navLinks.map((link) => (
-                <motion.a
+               <Link to={link.href}>
+               <motion.a
                   key={link.name}
                   href={link.href}
                   variants={navItemVariants}
@@ -271,7 +272,8 @@ const Header = () => {
                 >
                   {link.icon}
                   {link.name}
-                </motion.a>
+                </motion.a> 
+                </Link>
               ))}
             </div>
           </motion.div>

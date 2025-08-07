@@ -5,6 +5,7 @@ import './home.css';
 import {motion ,  useAnimation,  useInView} from 'framer-motion' ; 
 import {Link} from "react-router-dom" ; 
 
+
 export default function Home() {
   const ref = useRef(null);
   const isInView = useInView(ref,{ margin: "-20%"});
@@ -148,9 +149,12 @@ export default function Home() {
         </section>
        <section className="book-section" >
         <Link to = "/movie_list">
-         <button className="book-now-btn">
-            Book Now
-         </button>
+        <div class="cta-section">
+                <div class="book-now">
+                    Book Now
+                    <span class="arrow">→</span>
+                </div>
+            </div>
         </Link>
         
         </section>
