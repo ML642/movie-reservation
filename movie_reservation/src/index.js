@@ -14,6 +14,7 @@ import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
 import Movie from './pages/movie';
 import Terms from './pages/terms';
 import NotFound from './pages/notFound';
+import Pricing from './pages/pricing';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
  {path: '/movie_list' , element : <Layout element={ <MovieList/> } />}, 
  {path: '/movie/:id' , element : <Layout element={ <Movie/> } />}, 
  {path: '/terms' , element : <Layout element={ <Terms/> } />},
+ {path: '/pricing' , element : <Layout element={ <Pricing/> } />},
  {path: '*', element : <Layout element={ <NotFound/> } />}, 
 ])
 

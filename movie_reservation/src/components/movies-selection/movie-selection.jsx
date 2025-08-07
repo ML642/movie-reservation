@@ -73,7 +73,7 @@ const MovieSelection = (props) => {
 
     return (  <> 
     <div className="movie-filter-bar">
-        <div className="filter-group" style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+        <div className="filter-group" style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' , width:"100%",paddingBottom:"25px" }}>
           <span className="search-icon">🔍</span>
           <input
             type="text"
@@ -86,7 +86,7 @@ const MovieSelection = (props) => {
             className={`heart-toggle${showLikedOnly ? ' liked' : ''}`}
             onClick={toggleShowLiked}
             title={showLikedOnly ? 'Show all movies' : 'Show only liked movies'}
-            style={{ position: 'absolute', right: '0.7rem', top: '50%', transform: 'translateY(-50%)', fontSize: '1.7rem', cursor: 'pointer', zIndex: 2 }}
+            style={{ position: 'absolute', right: '0.7rem', top: '30%', transform: 'translateY(-50%)', fontSize: '1.7rem', cursor: 'pointer', zIndex: 2 }}
           >
             {showLikedOnly ? '❤️' : '🤍'}
           </span>

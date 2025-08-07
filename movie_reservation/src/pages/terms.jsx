@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../index.css";
 import "./terms.css";
+import { useLocation } from "react-router-dom";
 
-const Terms = () => (
+const Terms = () => {
+    const Location =  useLocation() ;
+    useEffect(() => {
+        window.scrollTo({top:0, left:0, behavior: "smooth"});
+    }, [Location.key] );
+  return(
   <div className="terms-container">
-    
     <h1>Terms of Service</h1>
     <p>Last updated: August 6, 2025</p>
     <h2>1. Introduction</h2>
@@ -57,6 +62,6 @@ const Terms = () => (
     <h2>6. Contact</h2>
     <p>If you have any questions about these Terms, please contact us via the support page.</p>
   </div>
-);
-
+    );
+}
 export default Terms;
