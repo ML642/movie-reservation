@@ -121,8 +121,6 @@ export default function Home() {
             <h2>Coming Soon</h2>
             <div className="movie-grid">
               <Hero variant="1"></Hero>
-              <Hero variant="2"></Hero>
-              <Hero variant="3"></Hero>
              </div>
           </div>
           </motion.div>
@@ -146,9 +144,8 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
-       <section className="book-section" >
-        <Link to = "/movie_list">
+          <div style={{display : "flex" , justifyContent : "center" , alignItems : "center"}}>
+               <Link to = "/movie_list">
         <div class="cta-section">
                 <div class="book-now">
                     Book Now
@@ -156,7 +153,8 @@ export default function Home() {
                 </div>
             </div>
         </Link>
-        
+          </div>
+       
         </section>
     
       </main>

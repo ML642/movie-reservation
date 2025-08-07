@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { FaPlay, FaInfoCircle } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 import './HeroSection.css';
+
+import { Link } from 'react-router-dom';
 
 const featuredMovies = [
   [{
@@ -63,38 +66,53 @@ export default function HeroSection({variant}) {
   const [currentSlide, setCurrentSlide] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % featuredMovies.length);
-    }, 5000);
+      setCurrentSlide((prev) => (prev + 1) % featuredMovies[variant-1].length);
+    }, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [variant]);
 
   return (
     <section className="hero-section">
       <div className="hero-slider">
-        {featuredMovies[variant-1].map((movie, idx) => (
-          <div
-            key={movie.id}
-            className={`hero-slide${idx === currentSlide ? ' active' : ''}`}
-            style={{ backgroundImage: `url(${movie.backdrop})` }}
-            aria-hidden={idx !== currentSlide}
-          >
-            <div className="hero-content">
-              <h1>{movie?.title}</h1>
-              <p>{movie?.desc}</p>
-              <div className="hero-actions">
-                <button className="hero-btn play">
-                  <FaPlay /> Play Trailer
-                </button>
-                <button className="hero-btn info">
-                  <FaInfoCircle /> More Info
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+        <AnimatePresence mode="wait">
+          {featuredMovies[variant-1].map((movie, idx) => (
+            idx === currentSlide && (
+              <motion.div
+                key={movie.id}
+                className="hero-slide active"
+                style={{ backgroundImage: `url(${movie.backdrop})` }}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.7 }}
+                aria-hidden={idx !== currentSlide}
+              >
+                <div className="hero-content">
+                  <motion.div
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.7, delay: 0.3 }}
+                    className="hero-text-content"
+                  >
+                    <h1>{movie?.title}</h1>
+                    <p>{movie?.desc}</p>
+                    <div className="hero-actions">
+                      <Link to ="/movie_list" className="hero-btn play">
+                        <FaPlay /> explore
+                      </Link>
+                      <Link to ="/pricing" className="hero-btn info">
+                        <FaInfoCircle /> More Info
+                      </Link>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )
+          ))}
+        </AnimatePresence>
       </div>
       <div className="hero-indicators">
-        {featuredMovies.map((_, idx) => (
+        {featuredMovies[variant-1].map((_, idx) => (
           <button
             key={idx}
             className={idx === currentSlide ? 'active' : ''}
