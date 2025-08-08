@@ -15,8 +15,9 @@ import Movie from './pages/movie';
 import Terms from './pages/terms';
 import NotFound from './pages/notFound';
 import Pricing from './pages/pricing';
-import  Profile   from './pages/profile';
-
+import Profile from './pages/profile';
+import MyReservations from './pages/myReservations';
+  
 const queryClient = new QueryClient();
 
 const Layout = (Children) => {
@@ -42,8 +43,9 @@ const router = createBrowserRouter([
  {path: '/movie/:id' , element : <Layout element={ <Movie/> } />}, 
  {path: '/terms' , element : <Layout element={ <Terms/> } />},
  {path: '/pricing' , element : <Layout element={ <Pricing/> } />},
+ {path: '/profile' , element : <Layout element={ <Profile/> } />},
+ {path: '/my-reservations' , element : <Layout element={ <MyReservations/> } />},
  {path: '*', element : <Layout element={ <NotFound/> } />}, 
- {path: '/profile' , element : <Layout element={ <Profile/> } />}, 
 ])
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
