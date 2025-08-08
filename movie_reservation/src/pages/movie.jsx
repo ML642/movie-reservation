@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate , useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { FaArrowLeft, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaStar, FaPlay, FaTicketAlt, FaUsers } from 'react-icons/fa';
 import styles from './movie.module.css';
@@ -47,7 +47,10 @@ const Movie = () => {
   const [selectedTime, setSelectedTime] = useState(SHOWTIMES[0]);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [showtime, setShowtime] = useState(null);
-
+  const Location =  useLocation() ;
+  useEffect(() => {
+      window.scrollTo({top:0, left:0, behavior: "smooth"});
+  }, [Location.key] );
   // Fetch movie details
   useEffect(() => {
     const fetchMovieDetails = async () => {

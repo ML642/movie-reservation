@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import styles from './pricing.module.css';
-
+import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 export default function MovieTheaterPricing() {
   const [hoveredItem, setHoveredItem] = useState(null);
-
+  const Location =  useLocation() ;
+    useEffect(() => {
+        window.scrollTo({top:0, left:0, behavior: "smooth"});
+    }, [Location.key] );
   const discounts = [
     { type: 'Student Discount', price: '25% OFF', icon: '🎓', popular: true },
     { type: 'Senior Discount (65+)', price: '20% OFF', icon: '👴', popular: false },

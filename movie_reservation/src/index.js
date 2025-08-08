@@ -15,6 +15,7 @@ import Movie from './pages/movie';
 import Terms from './pages/terms';
 import NotFound from './pages/notFound';
 import Pricing from './pages/pricing';
+import  Profile   from './pages/profile';
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
  {path: '/terms' , element : <Layout element={ <Terms/> } />},
  {path: '/pricing' , element : <Layout element={ <Pricing/> } />},
  {path: '*', element : <Layout element={ <NotFound/> } />}, 
+ {path: '/profile' , element : <Layout element={ <Profile/> } />}, 
 ])
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

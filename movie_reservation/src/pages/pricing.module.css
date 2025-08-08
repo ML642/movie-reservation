@@ -127,12 +127,13 @@
   padding: 2rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: 1px solid #374151;
-  transition: all 0.5s ease;
+  transition: all 2s ease;
 }
 
 .priceCard:hover {
   border-color: #a855f7;
   box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.2);
+
 }
 
 .cardTitle {
@@ -157,15 +158,15 @@
   background: rgba(55, 65, 81, 0.5);
   border-radius: 0.75rem;
   padding: 1rem;
-  backdrop-filter: blur(4px);
-  transition: all 0.5s ease;
   border: 1px solid #4b5563;
   cursor: pointer;
+ 
+  transform: scale(1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .priceItem:hover {
   background: rgba(75, 85, 99, 0.5);
-  transform: scale(1.05);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border-width: 2px;
 }
@@ -179,6 +180,7 @@
 .beverageItem:hover {
   box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4);
   border-color: #60a5fa;
+  
 }
 
 .popcornItem:hover {
@@ -189,6 +191,7 @@
 .snackItem:hover {
   box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.4);
   border-color: #f87171;
+  
 }
 
 .popularBadge {

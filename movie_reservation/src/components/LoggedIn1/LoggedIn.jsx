@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-
+import { Link } from "react-router-dom";
 
 import "./LoggedIn.css";
 
@@ -51,15 +51,6 @@ const LoggedIn = (props) => {
     return name ? name.charAt(0).toUpperCase() : '';
   };
 
-  const handleProfileClick = () => {
-    // navigate('/profile');
-    setIsMenuOpen(false);
-  };
-
-  const handleReservationsClick = () => {
-    // navigate('/my-reservations');
-    setIsMenuOpen(false);
-  };
 
   return (
     <div ref={dropdownRef}>
@@ -88,12 +79,12 @@ const LoggedIn = (props) => {
               <span className="dropdown-username">{username}</span>
             </div>
             <div className="dropdown-separator" />
-            <button className="dropdown-item" onClick={handleProfileClick}>
-              Profile
-            </button>
-            <button className="dropdown-item" onClick={handleReservationsClick}>
+            <Link to = "/profile" className="dropdown-item" >
+              Profile 
+            </Link>
+            <Link to = "/my-reservations" className="dropdown-item" >
               My Reservations
-            </button>
+            </Link>
             <div className="dropdown-separator" />
             <button className="dropdown-item" onClick={props.onLogout}>
               Logout

@@ -3,7 +3,7 @@ import { FaGlasses  , FaFilm , FaTicketAlt , FaVideo} from 'react-icons/fa'
 import Hero from '../components/HeroSection/HeroSection.jsx';
 import './home.css';
 import {motion ,  useAnimation,  useInView} from 'framer-motion' ; 
-import {Link} from "react-router-dom" ; 
+import {Link , useLocation} from "react-router-dom" ; 
 
 
 export default function Home() {
@@ -12,6 +12,10 @@ export default function Home() {
 
   const slideControls = useAnimation();
   const mainControls = useAnimation();
+  const Location =  useLocation() ;
+  useEffect(() => {
+      window.scrollTo({top:0, left:0, behavior: "smooth"});
+  }, [Location.key] );
   useEffect(() => {
     if (isInView) {
       mainControls.start("visible");

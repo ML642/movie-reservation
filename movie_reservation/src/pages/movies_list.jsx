@@ -6,6 +6,7 @@ import MovieSelection  from '../components/movies-selection/movie-selection';
 import MovieSlider from '../components/movies-slider/movie-slider';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
   const API_KEY = process.env.REACT_APP_TMDB_API_KEY; 
 
@@ -54,6 +55,10 @@ const genresMap = {
 
  
 const MovieList = () => { 
+  const Location =  useLocation() ;
+  useEffect(() => {
+      window.scrollTo({top:0, left:0, behavior: "smooth"});
+  }, [Location.key] );
     
     const { data, isLoading} = useQuery({
       queryKey: ['popularMovies'],
