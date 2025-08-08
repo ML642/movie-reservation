@@ -22,17 +22,29 @@ export default function Home() {
   }, [isInView]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const parallaxElements = document.querySelectorAll('.parallax-section');
-      parallaxElements.forEach((element) => {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.3;
-        element.style.backgroundPositionY = `${rate}px`;
-      });
+    // Check if device is mobile or tablet
+    const isMobileOrTablet = () => {
+      return window.innerWidth <= 1024 || 
+             /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      // Only apply parallax effect on desktop devices
+      if (!isMobileOrTablet()) {
+        const parallaxElements = document.querySelectorAll('.parallax-section');
+        parallaxElements.forEach((element) => {
+          const scrolled = window.pageYOffset;
+          const rate = scrolled * -0.3;
+          element.style.backgroundPositionY = `${rate}px`;
+        });
+      }
+    };
+
+    // Only add scroll listener if not on mobile/tablet
+    if (!isMobileOrTablet()) {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   return (
@@ -55,12 +67,12 @@ export default function Home() {
 
 >
             <h2>🍿 Your Perfect Movie Night Starts With One Click</h2>
-            <div className="movie-grid">
+            <div className="movie-grid-homepage">
          
-             <FaFilm size={100} className="Icon" ></FaFilm>
-             <FaTicketAlt size={100} className="Icon"></FaTicketAlt>
-             <FaVideo size = {100} className="Icon"></FaVideo>
-             <FaGlasses size = {100} className='Icon'></FaGlasses>  
+             <FaFilm  className="Icon" ></FaFilm>
+             <FaTicketAlt  className="Icon"></FaTicketAlt>
+             <FaVideo  className="Icon"></FaVideo>
+             <FaGlasses  className='Icon'></FaGlasses>  
             </div></motion.div>
         <motion.div
         variants={{
@@ -102,7 +114,7 @@ export default function Home() {
         transition={{ duration: 1.5, ease: "easeInOut" , delay: 0.5 }}
         style = {{ position: 'absolute', top: '5', left: '0' , right: '0' , background: 'linear-gradient(to right, #ff7e5f,rgb(172, 157, 145))', padding: '10px', borderRadius: '20px', color: '#fff', textAlign: 'center', zIndex: 1, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' , width: '60%', height: '100%' }}
         >
-            <div style={{fontSize :"20px" , display : "flex" }}><h2 style={{justifyContent:"center", alignItems:"center", color:"black"}}> 🎥 Where Every Frame Comes to Life </h2> </div>
+            <div style={{  display : "flex" , justifyContent : "center" , alignItems : "center" }}><div style={{ color:"black", fontSize : "2rem"}}> 🎥 Where Every Frame Comes to Life </div> </div>
         </motion.div >
           </div>
         </section>
@@ -149,7 +161,7 @@ export default function Home() {
         <div class="cta-section">
                 <div class="book-now">
                     Book Now
-                    <span class="arrow">→</span>
+                    <span class="arrow" > → </span>
                 </div>
             </div>
         </Link>

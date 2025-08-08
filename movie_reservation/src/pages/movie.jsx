@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './movie.css';
+import { FaArrowLeft, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaStar, FaPlay, FaTicketAlt, FaUsers } from 'react-icons/fa';
+import styles from './movie.module.css';
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
 // Mock theater data - in a real app, this would come from your backend
@@ -19,6 +20,21 @@ const SHOWTIMES = [
 // Seat map configuration
 const SEAT_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 const SEATS_PER_ROW = 10;
+
+// Generate stable booked seats (in a real app, this would come from your backend)
+const generateBookedSeats = () => {
+  const bookedSeats = new Set();
+  SEAT_ROWS.forEach(row => {
+    for (let seatNum = 1; seatNum <= SEATS_PER_ROW; seatNum++) {
+      if (Math.random() < 0.1) { // 10% chance a seat is "booked"
+        bookedSeats.add(`${row}${seatNum}`);
+      }
+    }
+  });
+  return bookedSeats;
+};
+
+const BOOKED_SEATS = generateBookedSeats();
 
 const Movie = () => {
   const { id } = useParams();
@@ -102,8 +118,8 @@ const Movie = () => {
   // Render loading state
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
         <p>Loading movie details...</p>
       </div>
     );
@@ -112,7 +128,7 @@ const Movie = () => {
   // Render error state
   if (error) {
     return (
-      <div className="error-container">
+      <div className={styles.errorContainer}>
         <h2>Error</h2>
         <p>{error}</p>
         <button onClick={() => window.location.reload()}>Try Again</button>
@@ -122,98 +138,124 @@ const Movie = () => {
 
   // Render movie details
   return (
-    <div className="movie-page">
-    <div className="movie-container">
-      {/* Back button */}
-      <button className="back-button" onClick={() => navigate(-1)}>
-        &larr; Back to Movies
-      </button>
-
-      {/* Movie Header */}
-      <div className="movie-header">
-        <div className="movie-poster">
-          {movie.poster_path ? (
-            <img
-              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-              alt={movie.title}
-              loading="lazy"
-            />
-          ) : (
-            <div className="poster-placeholder">No Image</div>
-          )}
-        </div>
-        <div className="movie-info">
-          <h1>{movie.title}</h1>
-          <div className="movie-meta">
-            <span>{new Date(movie.release_date).getFullYear()}</span>
-            <span>{Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</span>
-            <span className="rating">
-              ★ {movie.vote_average.toFixed(1)}/10
-            </span>
-          </div>
-          <div className="genres">
-            {movie.genres.map(genre => (
-              <span key={genre.id} className="genre-tag">
-                {genre.name}
-              </span>
-            ))}
-          </div>
-          <p className="overview">{movie.overview}</p>
+    <div className={styles.moviePage}>
+      {/* Hero Section with Background */}
+      <div className={styles.movieHero} style={{
+        backgroundImage: movie.backdrop_path ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url(https://image.tmdb.org/t/p/original${movie.backdrop_path})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}>
+        <div className={styles.heroContent}>
+          <button className={styles.backButton} onClick={() => navigate(-1)}>
+            <FaArrowLeft /> Back to Movies
+          </button>
           
-          {/* Movie Details */}
-          <div className="movie-details">
-            <div className="detail">
-              <span className="detail-label">Director:</span>
-              <span>{
-                movie.credits?.crew?.find(p => p.job === 'Director')?.name || 'N/A'
-              }</span>
+          <div className={styles.movieHeader}>
+            <div className={styles.moviePoster}>
+              {movie.poster_path ? (
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                  alt={movie.title}
+                />
+              ) : (
+                <div className={styles.posterPlaceholder}>
+                  <FaPlay size={40} />
+                  <span>No Image Available</span>
+                </div>
+              )}
             </div>
-            <div className="detail">
-              <span className="detail-label">Cast:</span>
-              <span>{
-                movie.credits?.cast?.slice(0, 3).map(p => p.name).join(', ')
-              }</span>
+            
+            <div className={styles.movieInfo}>
+              <h1>{movie.title}</h1>
+              <div className={styles.movieMeta}>
+                <div className={styles.metaItem}>
+                  <FaStar className={styles.metaIcon} />
+                  <span className={styles.rating}>{movie.vote_average?.toFixed(1)}/10</span>
+                </div>
+                <div className={styles.metaItem}>
+                  <FaClock className={styles.metaIcon} />
+                  <span>{movie.runtime} min</span>
+                </div>
+                <div className={styles.metaItem}>
+                  <FaCalendarAlt className={styles.metaIcon} />
+                  <span>{new Date(movie.release_date).getFullYear()}</span>
+                </div>
+              </div>
+              
+              <div className={styles.genres}>
+                {movie.genres?.map(genre => (
+                  <span key={genre.id} className={styles.genreTag}>{genre.name}</span>
+                ))}
+              </div>
+              
+              <p className={styles.overview}>{movie.overview}</p>
+              
+              <div className={styles.movieDetails}>
+                <div className={styles.detail}>
+                  <span className={styles.detailLabel}>Director:</span>
+                  <span>{movie.credits?.crew?.find(person => person.job === 'Director')?.name || 'N/A'}</span>
+                </div>
+                <div className={styles.detail}>
+                  <span className={styles.detailLabel}>Cast:</span>
+                  <span>{movie.credits?.cast?.slice(0, 3).map(actor => actor.name).join(', ') || 'N/A'}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      <div className={styles.movieContainer}>
+
       {/* Booking Section */}
-      <div className="booking-section">
-        <h2>Book Tickets</h2>
+      <div className={styles.bookingSection}>
+        <h2>Book Your Tickets</h2>
         
         {/* Theater Selection */}
-        <div className="booking-option">
-          <h3>Select Theater</h3>
-          <div className="theater-options">
+        <div className={styles.bookingOption}>
+          <div className={styles.sectionHeader}>
+            <FaMapMarkerAlt className={styles.sectionIcon} />
+            <h3>Select Theater</h3>
+          </div>
+          <div className={styles.theaterOptions}>
             {THEATERS.map(theater => (
               <button
                 key={theater.id}
-                className={`theater-option ${selectedTheater === theater.id ? 'selected' : ''}`}
+                className={`${styles.theaterOption} ${
+                  selectedTheater === theater.id ? styles.selected : ''
+                }`}
                 onClick={() => setSelectedTheater(theater.id)}
               >
-                <h4>{theater.name}</h4>
-                <p>{theater.location}</p>
+                <div className={styles.theaterInfo}>
+                  <h4>{theater.name}</h4>
+                  <p><FaMapMarkerAlt /> {theater.location}</p>
+                </div>
+                {selectedTheater === theater.id && (
+                  <div className={styles.selectedIndicator}>✓</div>
+                )}
               </button>
             ))}
           </div>
         </div>
 
         {/* Date Selection */}
-        <div className="booking-option">
-          <h3>Select Date</h3>
-          <div className="date-options">
+        <div className={styles.bookingOption}>
+          <div className={styles.sectionHeader}>
+            <FaCalendarAlt className={styles.sectionIcon} />
+            <h3>Select Date</h3>
+          </div>
+          <div className={styles.dateOptions}>
             {getAvailableDates().map((date, index) => (
               <button
                 key={index}
-                className={`date-option ${selectedDate.toDateString() === date.toDateString() ? 'selected' : ''}`}
+                className={`${styles.dateOption} ${
+                  selectedDate.toDateString() === date.toDateString() ? styles.selected : ''
+                }`}
                 onClick={() => setSelectedDate(date)}
               >
-                <span className="day">
+                <span className={styles.day}>
                   {date.toLocaleDateString('en-US', { weekday: 'short' })}
                 </span>
-                <span className="date">{date.getDate()}</span>
-                <span className="month">
+                <span className={styles.date}>{date.getDate()}</span>
+                <span className={styles.month}>
                   {date.toLocaleDateString('en-US', { month: 'short' })}
                 </span>
               </button>
@@ -222,15 +264,19 @@ const Movie = () => {
         </div>
 
         {/* Time Selection */}
-        <div className="booking-option">
-          <h3>Select Time</h3>
-          <div className="time-options">
+        <div className={styles.bookingOption}>
+          <div className={styles.sectionHeader}>
+            <FaClock className={styles.sectionIcon} />
+            <h3>Select Time</h3>
+          </div>
+          <div className={styles.timeOptions}>
             {SHOWTIMES.map((time, index) => (
               <button
                 key={index}
-                className={`time-option ${selectedTime === time ? 'selected' : ''}`}
+                className={`${styles.timeOption} ${selectedTime === time ? styles.selected : ''}`}
                 onClick={() => setSelectedTime(time)}
               >
+                <FaClock className={styles.timeIcon} />
                 {time}
               </button>
             ))}
@@ -238,24 +284,30 @@ const Movie = () => {
         </div>
 
         {/* Seat Selection */}
-        <div className="seat-selection">
-          <h3>Select Seats</h3>
-          <div className="screen">Screen</div>
-          <div className="seat-map">
+        <div className={styles.seatSelection}>
+          <div className={styles.sectionHeader}>
+            <FaUsers className={styles.sectionIcon} />
+            <h3>Select Seats</h3>
+            <div className={styles.seatCounter}>
+              {selectedSeats.length} seat{selectedSeats.length !== 1 ? 's' : ''} selected
+            </div>
+          </div>
+          <div className={styles.screen}>🎬 SCREEN 🎬</div>
+          <div className={styles.seatMap}>
             {SEAT_ROWS.map((row, rowIndex) => (
-              <div key={row} className="seat-row">
-                <span className="row-label">{row}</span>
-                <div className="seats">
+              <div key={row} className={styles.seatRow}>
+                <span className={styles.rowLabel}>{row}</span>
+                <div className={styles.seats}>
                   {Array.from({ length: SEATS_PER_ROW }, (_, seatNum) => {
                     const seatId = `${row}${seatNum + 1}`;
-                    // In a real app, check if seat is already booked
-                    const isBooked = Math.random() < 0.1; // 10% chance a seat is "booked"
+                    // Check if seat is already booked from our stable booked seats
+                    const isBooked = BOOKED_SEATS.has(seatId);
                     const isSelected = selectedSeats.includes(seatId);
                     
                     return (
                       <button
                         key={seatId}
-                        className={`seat ${isBooked ? 'booked' : ''} ${isSelected ? 'selected' : ''}`}
+                        className={`${styles.seat} ${isBooked ? styles.booked : ''} ${isSelected ? styles.selected : ''}`}
                         onClick={() => !isBooked && toggleSeat(seatId)}
                         disabled={isBooked}
                         aria-label={`Seat ${seatId}${isBooked ? ' (Booked)' : ''}`}
@@ -266,53 +318,57 @@ const Movie = () => {
               </div>
             ))}
           </div>
-          <div className="seat-legend">
-            <div className="legend-item">
-              <div className="seat available"></div>
+          <div className={styles.seatLegend}>
+            <div className={styles.legendItem}>
+              <div className={`${styles.seat} ${styles.available}`}></div>
               <span>Available</span>
             </div>
-            <div className="legend-item">
-              <div className="seat selected"></div>
+            <div className={styles.legendItem}>
+              <div className={`${styles.seat} ${styles.selected}`}></div>
               <span>Selected</span>
             </div>
-            <div className="legend-item">
-              <div className="seat booked"></div>
+            <div className={styles.legendItem}>
+              <div className={`${styles.seat} ${styles.booked}`}></div>
               <span>Booked</span>
             </div>
           </div>
         </div>
 
         {/* Booking Summary */}
-        <div className="booking-summary">
-          <h3>Order Summary</h3>
-          <div className="summary-details">
-            <div className="summary-row">
+        <div className={styles.bookingSummary}>
+          <div className={styles.sectionHeader}>
+            <FaTicketAlt className={styles.sectionIcon} />
+            <h3>Order Summary</h3>
+          </div>
+          <div className={styles.summaryDetails}>
+            <div className={styles.summaryRow}>
               <span>Movie:</span>
               <span>{movie.title}</span>
             </div>
-            <div className="summary-row">
+            <div className={styles.summaryRow}>
               <span>Theater:</span>
               <span>{THEATERS.find(t => t.id === selectedTheater)?.name}</span>
             </div>
-            <div className="summary-row">
+            <div className={styles.summaryRow}>
               <span>Date & Time:</span>
               <span>{formatDate(selectedDate)} at {selectedTime}</span>
             </div>
-            <div className="summary-row">
+            <div className={styles.summaryRow}>
               <span>Seats ({selectedSeats.length}):</span>
               <span>{selectedSeats.join(', ') || 'None selected'}</span>
             </div>
-            <div className="summary-total">
+            <div className={styles.summaryTotal}>
               <span>Total:</span>
               <span>${(selectedSeats.length * 12.99).toFixed(2)}</span>
             </div>
           </div>
           <button 
-            className="book-button"
+            className={styles.bookButton}
             onClick={handleBooking}
             disabled={selectedSeats.length === 0}
           >
-            Book Now
+            <FaTicketAlt className={styles.buttonIcon} />
+            {selectedSeats.length === 0 ? 'Select Seats to Continue' : `Book ${selectedSeats.length} Ticket${selectedSeats.length !== 1 ? 's' : ''}`}
           </button>
         </div>
       </div>

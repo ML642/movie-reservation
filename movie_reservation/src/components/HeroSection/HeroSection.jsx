@@ -67,7 +67,7 @@ export default function HeroSection({variant}) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % featuredMovies[variant-1].length);
-    }, 8000);
+    }, 18000);
     return () => clearInterval(interval);
   }, [variant]);
 

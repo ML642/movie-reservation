@@ -18,7 +18,7 @@
   color: white;
 }
 .Icon {
-    font-size: 2rem;
+    font-size: 5rem;
     color: white;
     margin-right: 0.5rem;
           
@@ -192,7 +192,7 @@
 }
 
 /* Movie grid */
-.movie-grid {
+.movie-grid-homepage {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   align-items: center;
@@ -217,10 +217,18 @@ section h2 {
   }
 }
 
-/* Responsive design */
+/* Responsive design - Disable parallax on mobile and tablet */
+@media (max-width: 1024px) {
+  .parallax-section {
+    background-attachment: scroll !important;
+    background-position: center center !important;
+  }
+}
+
 @media (max-width: 768px) {
   .parallax-section {
     background-attachment: scroll;
+    background-position: center center;
   }
 
   section h2 {
@@ -229,6 +237,51 @@ section h2 {
 
   .features-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 576px) {
+  .parallax-section {
+    background-attachment: scroll;
+    background-position: center center;
+    min-height: 300px;
+  }
+  
+  section h2 {
+    font-size: 1.8rem;
+  }
+  
+  .Icon {
+    font-size: 70px !important;
+  }
+  
+  .movie-grid-homepage {
+    padding-top:5rem;
+    grid-template-columns: repeat(2, 2fr);
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .parallax-section {
+    background-attachment: scroll;
+    background-position: center center;
+    min-height: 250px;
+  }
+  
+  section h2 {
+    font-size: 1.6rem;
+  }
+  
+  .Icon {
+    font-size: 60px !important;
+  }
+  
+  .movie-grid-homepage {
+    padding-top:5rem;
+    grid-template-columns: 2fr;
+    gap: 0.5rem;
   }
 }
 .book-now-btn {
