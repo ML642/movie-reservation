@@ -6,6 +6,10 @@ require('dotenv').config();
 
 const app = express();
 
+const reservationRouter = require("./reservation") ; 
+
+app.use("/reservation" , reservationRouter) ; 
+
 // Add a simple logger to see if requests are coming in
 app.use((req, res, next) => {
   console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
@@ -14,7 +18,7 @@ app.use((req, res, next) => {
 
 // More explicit CORS configuration
 const corsOptions = {
-  origin: 'http://localhost:3000 ',
+  origin: 'http://localhost:3000',
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true, // allow session cookie from browser to pass through
   optionsSuccessStatus: 204 // for pre-flight requests
@@ -150,6 +154,12 @@ app.post('/api/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+const HOST = '0.0.0.0'; // Listen on all network interfaces
+
+app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
+    console.log('Available endpoints:');
+    console.log(`- GET  /`);
+    console.log(`- POST /api/register`);
+    console.log(`- POST /api/login`);
 });

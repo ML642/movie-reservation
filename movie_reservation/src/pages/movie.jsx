@@ -86,6 +86,35 @@ const Movie = () => {
     );
   };
 
+  const Fetch  = async () => { 
+    try {
+     
+     const ReservationData = {
+      userID : localStorage.getItem("userID") , 
+      movieID : id,
+      theaterID : selectedTheater,
+      showtime : selectedTime,
+      seats : selectedSeats,
+      totalPrice : selectedSeats.length * 10,
+      isLoggedIN : true
+     }
+     const response = await axios.post("http://localhost:5000/reservation" , ReservationData, {
+      headers : {
+        "Content-Type" : "application/json"
+      }
+     }) ; 
+
+     if(response.status === 200) {
+      alert("Reservation successful");
+    }
+  }
+
+    
+
+    catch(error) {
+      console.log(error);
+    }
+  }
   // Handle booking
   const handleBooking = () => {
     if (selectedSeats.length === 0) {
@@ -93,8 +122,7 @@ const Movie = () => {
       return;
     }
     // In a real app, you would navigate to checkout or show a booking confirmation
-    alert(`Booking confirmed for ${selectedSeats.length} seat(s)!`);
-    // navigate('/checkout', { state: { movie, selectedSeats, showtime } });
+    Fetch()
   };
 
   // Format date for display
