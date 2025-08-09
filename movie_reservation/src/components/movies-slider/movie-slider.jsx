@@ -1,6 +1,6 @@
 import {useState} from "react" ; 
 import "./movie-slider.css" ;
-
+import { Link } from "react-router-dom";
 
 const MovieSlider = (props)=> {
     const movies = props.movies ; 
@@ -45,7 +45,7 @@ const MovieSlider = (props)=> {
          <h2 className="movie-card-h2">{getMovie(current)?.title}</h2>
          <div className="movie-card-controls">
            <button onClick={prevMovie} className="carousel-arrow" style={{ position: 'static' }}>&lt;</button>
-           <button className="book-now-btn">Book Now</button>
+           <Link to={`/movie/${getMovie(current)?.id}`} className="book-now-btn">Book Now</Link>
            <button onClick={nextMovie} className="carousel-arrow" style={{ position: 'static' }}>&gt;</button>
          </div>
        </div>

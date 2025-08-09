@@ -4,20 +4,20 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Login from './pages/login';
-import Signin from './pages/registration';
+import Login from './pages/Login/login';
+import Signin from './pages/Registration/registration';
 import { BrowserRouter, createBrowserRouter, RouterProvider } from 'react-router-dom';
-import MovieList from "./pages/movies_list";
-import Header from './components/HEADER1/header';
-import Footer from './components/Foter/Footer';
+import MovieList from "./pages/movie_list/movies_list";
+import Header from './components/header/header';
+import Footer from './components/footer/Footer';
 import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
-import Movie from './pages/movie';
-import Terms from './pages/terms';
-import NotFound from './pages/notFound';
-import Pricing from './pages/pricing';
-import Profile from './pages/profile';
-import MyReservations from './pages/myReservations';
-  
+import Movie from './pages/movie_information/movie';
+import Terms from './pages/terms_and_privacy/terms';
+import NotFound from './pages/NotFound/notFound';
+import Pricing from './pages/pricing/pricing';
+import Profile from './pages/Profile/profile';
+import MyReservations from './pages/Reservation_info/myReservations';
+import Home from './pages/Home/home';  
 const queryClient = new QueryClient();
 
 const Layout = (Children) => {
@@ -35,8 +35,8 @@ const Layout = (Children) => {
 }
 
 const router = createBrowserRouter([
- {path: '/', element: <Layout element={ <App/> } />},
- {path: '/home', element: <Layout element={ <App/> } />},
+ {path: '/', element: <Layout element={ <Home/> } />},
+ {path: '/home', element: <Layout element={ <Home/> } />},
  {path: '/login', element: <Layout element={ <Login/> } />},
  {path: '/register', element:<Layout element={ <Signin/> } />},
  {path: '/movie_list' , element : <Layout element={ <MovieList/> } />}, 

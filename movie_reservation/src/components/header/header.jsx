@@ -3,7 +3,7 @@ import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import LoggedIn from "../LoggedIn1/LoggedIn.jsx"
+import LoggedIn from "../LoggedIn/LoggedIn.jsx"
 
 
 const Header = () => {

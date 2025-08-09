@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { FaGlasses  , FaFilm , FaTicketAlt , FaVideo} from 'react-icons/fa'
-import Hero from '../components/HeroSection/HeroSection.jsx';
+import Hero from '../../components/Hero_Section/HeroSection.jsx';
 import './home.css';
 import {motion ,  useAnimation,  useInView} from 'framer-motion' ; 
 import {Link , useLocation} from "react-router-dom" ; 

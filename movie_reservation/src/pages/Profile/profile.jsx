@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './profile.module.css';
-import { getUserFromToken, isAuthenticated } from '../utils/jwtDecoder';
+import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 
 // Dummy reservations data (replace with API call)
 const dummyReservations = [

@@ -2,8 +2,8 @@ import React from 'react';
 import { useState, useRef, useEffect } from "react"
 import * as THREE from 'three';
 import FOG from 'vanta/dist/vanta.fog.min';
-import MovieSelection  from '../components/movies-selection/movie-selection';
-import MovieSlider from '../components/movies-slider/movie-slider';
+import MovieSelection  from '../../components/movies-selection/movie-selection';
+import MovieSlider from '../../components/movies-slider/movie-slider';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';

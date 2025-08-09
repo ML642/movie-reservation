@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
-import './Login.css';
+import './registration.css' ;
 import { useEffect, useRef } from "react";
 import  { Link } from "react-router-dom";
 
