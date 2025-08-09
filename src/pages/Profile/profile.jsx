@@ -1,0 +1,299 @@
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import styles from './profile.module.css';
+import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
+
+// Dummy reservations data (replace with API call)
+const dummyReservations = [
+  {
+    id: 1,
+    movie: 'Inception',
+    poster: '🎬',
+    date: '2025-08-01',
+    time: '19:30',
+    seat: 'C12',
+    status: 'upcoming',
+    theater: 'Screen 1'
+  },
+  {
+    id: 2,
+    movie: 'Oppenheimer',
+    poster: '🎭',
+    date: '2025-07-20',
+    time: '21:00',
+    seat: 'A5',
+    status: 'completed',
+    theater: 'Screen 2'
+  },
+  {
+    id: 3,
+    movie: 'Dune: Part Two',
+    poster: '🚀',
+    date: '2025-08-15',
+    time: '18:00',
+    seat: 'B8',
+    status: 'upcoming',
+    theater: 'IMAX'
+  },
+];
+
+export default function Profile() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [location.key]);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    // Get user data from JWT token
+    const userData = getUserFromToken();
+    if (userData) {
+      // Format the user data with defaults
+      const formattedUser = {
+        name: userData.name || userData.username || 'User',
+        email: userData.email || 'No email provided',
+        avatar: userData.avatar || userData.picture || '',
+        memberSince: userData.memberSince ? new Date(userData.memberSince).getFullYear() : '2024',
+        totalReservations: userData.totalReservations || dummyReservations.length,
+        favoriteGenre: userData.favoriteGenre || 'Action',
+        reservations: userData.reservations || dummyReservations, // Use real reservations if available
+        id: userData.id,
+        role: userData.role
+      };
+      setUser(formattedUser);
+    }
+    setLoading(false);
+  }, [navigate]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}></div>
+          <p className={styles.loadingText}>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if no user data
+  if (!user) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <h2>Unable to load profile</h2>
+          <p>Please try logging in again.</p>
+          <button onClick={() => navigate('/login')} className={styles.loginBtn}>
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const upcomingReservations = user.reservations.filter(r => r.status === 'upcoming');
+  const pastReservations = user.reservations.filter(r => r.status === 'completed');
+
+  return (
+    <div className={styles.container}>
+      {/* Animated Background */}
+      <div className={styles.animatedBackground}>
+        <div className={styles.bgOrb1}></div>
+        <div className={styles.bgOrb2}></div>
+        <div className={styles.bgOrb3}></div>
+      </div>
+
+      <div className={styles.profileContainer}>
+        {/* Profile Header */}
+        <div className={styles.profileHeader}>
+          <div className={styles.avatarSection}>
+            <div className={styles.avatarWrapper}>
+              {user.avatar ? (
+                <img src={user.avatar} alt="Avatar" className={styles.avatar} />
+              ) : (
+                <div className={styles.avatarFallback}>
+                  {user.name.split(' ').map(n => n[0]).join('')}
+                </div>
+              )}
+              <div className={styles.avatarBadge}>👑</div>
+            </div>
+            <button className={styles.changePhotoBtn}>📷 Change Photo</button>
+          </div>
+          
+          <div className={styles.userInfo}>
+            <h1 className={styles.userName}>{user.name}</h1>
+            <p className={styles.userEmail}>✉️ {user.email}</p>
+            <p className={styles.memberSince}>🎭 Member since {user.memberSince}</p>
+            
+            <div className={styles.userStats}>
+              <div className={styles.stat}>
+                <span className={styles.statNumber}>{user.totalReservations}</span>
+                <span className={styles.statLabel}>Movies Watched</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statNumber}>{upcomingReservations.length}</span>
+                <span className={styles.statLabel}>Upcoming</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statNumber}>{user.favoriteGenre}</span>
+                <span className={styles.statLabel}>Favorite Genre</span>
+              </div>
+            </div>
+            
+            <button className={styles.editBtn}>✏️ Edit Profile</button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className={styles.tabNavigation}>
+          <button 
+            className={`${styles.tabBtn} ${activeTab === 'overview' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            📊 Overview
+          </button>
+          <button 
+            className={`${styles.tabBtn} ${activeTab === 'upcoming' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('upcoming')}
+          >
+            🎬 Upcoming ({upcomingReservations.length})
+          </button>
+          <button 
+            className={`${styles.tabBtn} ${activeTab === 'history' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            📚 History ({pastReservations.length})
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className={styles.tabContent}>
+          {activeTab === 'overview' && (
+            <div className={styles.overviewTab}>
+              <div className={styles.quickActions}>
+                <h3 className={styles.sectionTitle}>🚀 Quick Actions</h3>
+                <div className={styles.actionGrid}>
+                  <button className={styles.actionCard}>
+                    <span className={styles.actionIcon}>🎫</span>
+                    <span className={styles.actionText}>Book New Ticket</span>
+                  </button>
+                  <button className={styles.actionCard}>
+                    <span className={styles.actionIcon}>💰</span>
+                    <span className={styles.actionText}>View Pricing</span>
+                  </button>
+                  <button className={styles.actionCard}>
+                    <span className={styles.actionIcon}>🎁</span>
+                    <span className={styles.actionText}>Rewards & Offers</span>
+                  </button>
+                  <button className={styles.actionCard}>
+                    <span className={styles.actionIcon}>⚙️</span>
+                    <span className={styles.actionText}>Settings</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className={styles.recentActivity}>
+                <h3 className={styles.sectionTitle}>📈 Recent Activity</h3>
+                <div className={styles.activityList}>
+                  <div className={styles.activityItem}>
+                    <span className={styles.activityIcon}>🎬</span>
+                    <span className={styles.activityText}>Booked ticket for Dune: Part Two</span>
+                    <span className={styles.activityTime}>2 days ago</span>
+                  </div>
+                  <div className={styles.activityItem}>
+                    <span className={styles.activityIcon}>⭐</span>
+                    <span className={styles.activityText}>Rated Oppenheimer 5 stars</span>
+                    <span className={styles.activityTime}>1 week ago</span>
+                  </div>
+                  <div className={styles.activityItem}>
+                    <span className={styles.activityIcon}>🎁</span>
+                    <span className={styles.activityText}>Earned loyalty points</span>
+                    <span className={styles.activityTime}>2 weeks ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'upcoming' && (
+            <div className={styles.reservationsTab}>
+              <h3 className={styles.sectionTitle}>🎬 Upcoming Movies</h3>
+              {upcomingReservations.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <span className={styles.emptyIcon}>🎭</span>
+                  <p className={styles.emptyText}>No upcoming reservations</p>
+                  <button className={styles.bookNowBtn}>📅 Book Now</button>
+                </div>
+              ) : (
+                <div className={styles.reservationsList}>
+                  {upcomingReservations.map((r) => (
+                    <div key={r.id} className={styles.reservationCard}>
+                      <div className={styles.moviePoster}>{r.poster}</div>
+                      <div className={styles.reservationDetails}>
+                        <h4 className={styles.movieTitle}>{r.movie}</h4>
+                        <div className={styles.reservationInfo}>
+                          <span className={styles.infoItem}>📅 {r.date}</span>
+                          <span className={styles.infoItem}>🕐 {r.time}</span>
+                          <span className={styles.infoItem}>🎪 {r.theater}</span>
+                          <span className={styles.infoItem}>💺 Seat {r.seat}</span>
+                        </div>
+                      </div>
+                      <div className={styles.reservationActions}>
+                        <button className={styles.actionBtnSecondary}>📱 QR Code</button>
+                        <button className={styles.actionBtnPrimary}>🎫 View Ticket</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'history' && (
+            <div className={styles.reservationsTab}>
+              <h3 className={styles.sectionTitle}>📚 Movie History</h3>
+              {pastReservations.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <span className={styles.emptyIcon}>📽️</span>
+                  <p className={styles.emptyText}>No movie history yet</p>
+                </div>
+              ) : (
+                <div className={styles.reservationsList}>
+                  {pastReservations.map((r) => (
+                    <div key={r.id} className={`${styles.reservationCard} ${styles.pastReservation}`}>
+                      <div className={styles.moviePoster}>{r.poster}</div>
+                      <div className={styles.reservationDetails}>
+                        <h4 className={styles.movieTitle}>{r.movie}</h4>
+                        <div className={styles.reservationInfo}>
+                          <span className={styles.infoItem}>📅 {r.date}</span>
+                          <span className={styles.infoItem}>🕐 {r.time}</span>
+                          <span className={styles.infoItem}>🎪 {r.theater}</span>
+                          <span className={styles.infoItem}>💺 Seat {r.seat}</span>
+                        </div>
+                      </div>
+                      <div className={styles.reservationActions}>
+                        <button className={styles.actionBtnSecondary}>⭐ Rate Movie</button>
+                        <button className={styles.actionBtnSecondary}>🔄 Book Again</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

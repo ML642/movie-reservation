@@ -1,0 +1,81 @@
+.terms-container {
+  width: 100vw;
+  min-height: 100vh;
+  margin-top:2.5rem;
+  padding: 48px 8vw 48px 8vw;
+  background: #18181b;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #f3f4f6;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .terms-container {
+    padding: 20px 8px;
+    min-height: 100vh;
+    width: 100vw;
+  }
+  .terms-container h1 {
+    font-size: 1.4rem;
+  }
+  .terms-container h2, .terms-container h3 {
+    font-size: 1.05rem;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .terms-container {
+    padding: 20px 8px;
+    min-height: 100vh;
+    max-width: 100vw;
+  }
+  .terms-container h1 {
+    font-size: 1.4rem;
+  }
+  .terms-container h2, .terms-container h3 {
+    font-size: 1.05rem;
+  }
+}
+
+.terms-container h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5em;
+  color: #eab308;
+  letter-spacing: 0.5px;
+}
+
+.terms-container h2, .terms-container h3 {
+  font-size: 1.3rem;
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.terms-container ul {
+  margin: 0 0 1em 1.5em;
+  padding: 0;
+  list-style: disc inside;
+}
+
+.terms-container p {
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+.terms-container a {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+.terms-container strong {
+  color: #fbbf24;
+}
