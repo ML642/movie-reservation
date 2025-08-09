@@ -1,43 +1,69 @@
-const express = require ("express") ; 
+const express = require("express");
 const router = express.Router();
 
 let LastId = 0;
-let Reservations = [ ] ; 
+let Reservations = [];
 
-router.post("/", (req , res)=>{
-    console.log("reservationAPI") ; 
+// POST /reservation
+router.post("/", (req, res) => {
+    console.log("POST /reservation - Request body:", req.body);
 
-
-    const generateId = () => {
-            return (LastId+=1).toString()
-        }
+    const generateId = () => (++LastId).toString();
 
     try {
-
-        const {userId , movieId , seats , totalPrice , isLoggedIN  } = req.body;
+        const { jwt, movieId, theaterId,   showtime , seats, totalPrice , isLoggedIN } = req.body;
         
-        if (!isLoggedIN) {
-            return res.redirect("/login") ; 
-
+        // Validate required fields
+        if (!jwt) {
+            console.log("Unauthorized: User not logged in");
+            return res.status(401).json({ 
+                success: false, 
+                message: "Please log in to make a reservation" 
+            });
         }
+
+        if (!jwt || !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !isLoggedIN) {
+            console.log("Bad request: Missing required fields");
+            return res.status(400).json({ 
+                success: false, 
+                message: "Missing required fields" 
+            });
+        }
+
         const reservation = {
-            userId,
+            id: generateId(),
+            jwt,
             movieId,
             seats,
             totalPrice,
-            createdAt: new Date() , 
-            id: generateId()
+            createdAt: new Date().toISOString()
         };
         
-       Reservations.push(reservation) ; 
-       res.status(201).json(reservation) ;
-    }
+        Reservations.push(reservation);
+        console.log("New reservation created:", reservation);
+        
+        res.status(201).json({
+            success: true,
+            message: "Reservation created successfully",
+            data: reservation
+        });
 
-    catch (error){
-        console.log(error);
-        res.status(500).json({message: error.message});
+    } catch (error) {
+        console.error("Reservation error:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Error creating reservation" 
+        });
     }
-}
-)
+});
 
-module.exports = router ; 
+// GET /reservation
+router.get("/", (req, res) => {
+    console.log("GET /reservation - Returning all reservations");
+    res.status(200).json({
+        success: true, 
+        data: Reservations
+    });
+});
+
+module.exports = router;

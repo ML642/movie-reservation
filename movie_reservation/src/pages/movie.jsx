@@ -90,21 +90,21 @@ const Movie = () => {
     try {
      
      const ReservationData = {
-      userID : localStorage.getItem("userID") , 
-      movieID : id,
-      theaterID : selectedTheater,
+      jwt : localStorage.getItem("token") , 
+      movieId : id,
+      theaterId : selectedTheater,
       showtime : selectedTime,
       seats : selectedSeats,
-      totalPrice : selectedSeats.length * 10,
+      totalPrice : (selectedSeats.length * 12.99).toFixed(2) ,
       isLoggedIN : true
      }
-     const response = await axios.post("http://localhost:5000/reservation" , ReservationData, {
+     const response = await axios.post("http://localhost:5000/api/reservation" , ReservationData, {
       headers : {
         "Content-Type" : "application/json"
       }
      }) ; 
 
-     if(response.status === 200) {
+     if(response.status === 201) {
       alert("Reservation successful");
     }
   }
@@ -122,7 +122,16 @@ const Movie = () => {
       return;
     }
     // In a real app, you would navigate to checkout or show a booking confirmation
-    Fetch()
+    console.log({
+      jwt : localStorage.getItem("token") , 
+      movieID : id,
+      theaterID : selectedTheater,
+      showtime : selectedTime,
+      seats : selectedSeats,
+      totalPrice : (selectedSeats.length * 12.99) ,
+      isLoggedIN : true
+     })
+     Fetch();
   };
 
   // Format date for display
