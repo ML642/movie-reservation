@@ -144,9 +144,9 @@ const MovieSelection = (props) => {
                   width="500" 
                   height="750" 
                 />
-                <h3 className="movie-card-h2">{movie?.title}</h3>
+                <h3 className="movie-card-h2" style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>{movie?.title}</h3>
                 <div style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>Rating: {movie?.rating} | {movie?.date}</div>
-                <Link to={`/movie/${movie?.id}`}>   <button className="book-now-btn">Book Now</button></Link>
+                <Link to={`/movie/${movie?.id}`}>   <div className="movie-selection">Book Now</div></Link>
               </div>
             ))
           )

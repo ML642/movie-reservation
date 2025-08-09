@@ -92,3 +92,25 @@
   box-shadow: 0 0 32px 8px #65575588;
 }
 
+.movie-selection {
+ background-color: #222a4b;
+ color : white  ;
+ width : 15rem  ;
+ height : 3rem  ;
+ border-radius : 1rem ;
+ font-size : 1rem ;
+ display:flex ;
+  align-items : center;
+  justify-content : center; 
+
+
+  transition : all ease 0.6s ;
+
+}
+
+.movie-selection:hover  {
+  background-color: #31198b;
+
+  box-shadow : 2px 2px 2px  #52427f;
+  transform : scale(1.05) ;
+}

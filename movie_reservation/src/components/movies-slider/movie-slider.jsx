@@ -45,7 +45,7 @@ const MovieSlider = (props)=> {
          <h2 className="movie-card-h2">{getMovie(current)?.title}</h2>
          <div className="movie-card-controls">
            <button onClick={prevMovie} className="carousel-arrow" style={{ position: 'static' }}>&lt;</button>
-           <Link to={`/movie/${getMovie(current)?.id}`} className="book-now-btn">Book Now</Link>
+           <Link to={`/movie/${getMovie(current)?.id}`} className="movie-selection">Book Now</Link>
            <button onClick={nextMovie} className="carousel-arrow" style={{ position: 'static' }}>&gt;</button>
          </div>
        </div>
