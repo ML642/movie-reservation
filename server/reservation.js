@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { getUsernameFromToken } = require("./utils/auth.js");
 
 let LastId = 0;
 let Reservations = [];
@@ -57,8 +58,8 @@ router.post("/", (req, res) => {
     }
 });
 
-// GET /reservation
-router.get("/", (req, res) => {
+
+router.get("/all", (req, res) => {
     console.log("GET /reservation - Returning all reservations");
     res.status(200).json({
         success: true, 
@@ -66,4 +67,49 @@ router.get("/", (req, res) => {
     });
 });
 
+router.get("/:id", (req , res) => {
+    const UserId = req.UserId ;
+    let userReservations = [] ;
+ 
+    if (!UserId) {
+            console.log("bad request: User ID is required");
+            return res.status(400).json({ 
+                success: false, 
+                message: "User ID is required" 
+            });
+        }
+   
+ 
+
+    for (let i of Reservations) { 
+        let { reservationId} = getUsernameFromToken(i.jwt)
+        try {
+       
+        if (!reservationId) {
+            console.log("Decoding error");
+            return res.status(400).json({
+                success: false,
+                message: "Invalid token"
+            });
+        }
+    } 
+    catch (error) {
+        console.error("Error decoding token:", error);
+        return res.status(400).json({
+            success: false,
+            message: "Invalid token"
+        });
+    }  
+        if (reservationId=== UserId) {
+            userReservations.push(i);
+    }
+
+    }
+    console.log("GET /reservation/:id - User reservations:", userReservations);
+    res.status(200).json({
+        success: true,
+        data: userReservations
+    });
+    
+})
 module.exports = router;
