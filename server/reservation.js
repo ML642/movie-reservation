@@ -5,7 +5,28 @@ const { getUsernameFromToken } = require("./utils/auth.js");
 let LastId = 0;
 let Reservations = [];
 
-// POST /reservation
+//midlleware to log request 
+
+router.use((req, res, next) => {
+    console.log(`${req.method} ${req.originalUrl} - Body:`, req.body);
+    
+    if (req.body.jwt === undefined || req.body.jwt === null || req.body.jwt === "") {
+        console.log("Unauthorized: User not logged in");
+        return res.status(401).json({
+            success: false,
+            message: "Please log in to make a reservation"
+        });
+    }
+    next();
+
+})
+
+
+
+
+
+
+
 router.post("/", (req, res) => {
     console.log("POST /reservation - Request body:", req.body);
 
@@ -67,10 +88,10 @@ router.get("/all", (req, res) => {
     });
 });
 
-router.get("/:id", (req , res) => {
-    const UserId = req.UserId ;
+router.post("/id", (req , res) => {
+    const {UserId} = req.body ;
     let userReservations = [] ;
- 
+    console.log("POST /reservation/id - User ID:", UserId);
     if (!UserId) {
             console.log("bad request: User ID is required");
             return res.status(400).json({ 

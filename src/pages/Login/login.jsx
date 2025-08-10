@@ -2,13 +2,18 @@ import React, { useState, useEffect, useRef } from "react";
 import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import './Login.css';
-import  { Link, useNavigate } from "react-router-dom";
+import  { Link, useNavigate , useLocation  } from "react-router-dom";
 
 
 const Login = () => {
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
   const navigate = useNavigate();
+
+   const Location =  useLocation() ;
+    useEffect(() => {
+        window.scrollTo({top:0, left:0, behavior: "smooth"});
+    }, [Location.key] );
 
   useEffect(() => {
     if (!vantaEffect && vantaRef.current) {

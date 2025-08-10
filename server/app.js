@@ -198,11 +198,7 @@
 
     
     app.listen(PORT, () => {
-        console.log(`Server running on http://${HOST}:${PORT}`);
-        console.log('Available endpoints:');
-        console.log(`- GET  /`);
-        console.log(`- POST /api/register`);
-        console.log(`- POST /api/login`);
+    
        console.log(listEndpoints(app));
      
     });

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate , useLocation } from 'react-router-dom';
+import { useParams, useNavigate , useLocation, redirect } from 'react-router-dom';
 import axios from 'axios';
 import { FaArrowLeft, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaStar, FaPlay, FaTicketAlt, FaUsers } from 'react-icons/fa';
 import styles from './movie.module.css';
+
+
+
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
 // Mock theater data - in a real app, this would come from your backend
@@ -48,6 +51,8 @@ const Movie = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [showtime, setShowtime] = useState(null);
   const Location =  useLocation() ;
+
+
   useEffect(() => {
       window.scrollTo({top:0, left:0, behavior: "smooth"});
   }, [Location.key] );
@@ -76,9 +81,10 @@ const Movie = () => {
 
     fetchMovieDetails();
   }, [id]);
-
+  
   // Handle seat selection
   const toggleSeat = (seatId) => {
+  
     setSelectedSeats(prev => 
       prev.includes(seatId)
         ? prev.filter(id => id !== seatId)
@@ -103,6 +109,7 @@ const Movie = () => {
         "Content-Type" : "application/json"
       }
      }) ; 
+      
 
      if(response.status === 201) {
       alert("Reservation successful");
@@ -112,6 +119,14 @@ const Movie = () => {
     
 
     catch(error) {
+      
+
+     console.log("Reservation Response:", error.status);
+     if (error.status === 401  ){
+      alert("Please log in to make a reservation");
+      navigate("/login");
+    
+     }
       console.log(error);
     }
   }
