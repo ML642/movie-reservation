@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { getUsernameFromToken } = require("./utils/auth.js");
-const { time } = require("framer-motion");
 
 let LastId = 0;
 let Reservations = [];
