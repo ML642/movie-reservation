@@ -106,7 +106,8 @@ const Movie = () => {
      }
      const response = await axios.post("http://localhost:5000/api/reservation" , ReservationData, {
       headers : {
-        "Content-Type" : "application/json"
+        "Content-Type" : "application/json",
+        authorization: `Bearer ${localStorage.getItem("token")}` ,
       }
      }) ; 
       

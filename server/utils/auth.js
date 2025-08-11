@@ -16,9 +16,8 @@ const getUsernameFromToken = (token) => {
 
         // Verify the token using the secret key
         const decoded = jwt.verify(tokenToVerify, process.env.JWT_SECRET || 'secret-key');
-        
-        // Return the username from the decoded payload
-        return decoded.username;
+        let user ={username: decoded.username , userId: decoded.userId} ;
+        return user;
     } catch (error) {
         // If the token is invalid (e.g., expired, malformed), an error will be thrown
         console.error('Failed to decode or verify token:', error.message);

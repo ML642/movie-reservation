@@ -9,14 +9,23 @@ let Reservations = [];
 
 router.use((req, res, next) => {
     console.log(`${req.method} ${req.originalUrl} - Body:`, req.body);
+    const authHeader = req.headers["authorization"];
+    console.log("Authorization header:", authHeader)
+    const token = authHeader && authHeader.split(" ")[1];
     
-    if (req.body.jwt === undefined || req.body.jwt === null || req.body.jwt === "") {
+    
+    
+
+
+    if (authHeader === undefined || authHeader === null || authHeader === "") {
         console.log("Unauthorized: User not logged in");
         return res.status(401).json({
             success: false,
             message: "Please log in to make a reservation"
         });
     }
+    console.log("Authoritation token:", token);
+    req.user = getUsernameFromToken(token)
     next();
 
 })
@@ -33,18 +42,12 @@ router.post("/", (req, res) => {
     const generateId = () => (++LastId).toString();
 
     try {
-        const { jwt, movieId, theaterId,   showtime , seats, totalPrice , isLoggedIN } = req.body;
+        const {  movieId, theaterId,   showtime , seats, totalPrice , isLoggedIN } = req.body;
         
         // Validate required fields
-        if (!jwt) {
-            console.log("Unauthorized: User not logged in");
-            return res.status(401).json({ 
-                success: false, 
-                message: "Please log in to make a reservation" 
-            });
-        }
+       
 
-        if (!jwt || !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !isLoggedIN) {
+        if ( !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !isLoggedIN) {
             console.log("Bad request: Missing required fields");
             return res.status(400).json({ 
                 success: false, 
@@ -54,12 +57,14 @@ router.post("/", (req, res) => {
 
         const reservation = {
             id: generateId(),
-            jwt,
+            jwt : req.headers["authorization"],
             movieId,
             seats,
             totalPrice,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString() , 
+
         };
+       
         
         Reservations.push(reservation);
         console.log("New reservation created:", reservation);
@@ -86,13 +91,17 @@ router.get("/all", (req, res) => {
         success: true, 
         data: Reservations
     });
+    console.log("All reservations:", Reservations);
 });
 
 router.post("/id", (req , res) => {
-    const {UserId} = req.body ;
+    const {userId} = req.user  ;
     let userReservations = [] ;
-    console.log("POST /reservation/id - User ID:", UserId);
-    if (!UserId) {
+    console.log("POST /reservation/id - User ID:", userId);
+    console.log(Reservations)
+    //  console.log("Checking reservation:", Reservations[0].jwt);
+    //  console.log("Checking reservation:", getUsernameFromToken(Reservations[0].jwt));
+    if (!userId) {
             console.log("bad request: User ID is required");
             return res.status(400).json({ 
                 success: false, 
@@ -101,9 +110,11 @@ router.post("/id", (req , res) => {
         }
    
  
-
+    
     for (let i of Reservations) { 
-        let { reservationId} = getUsernameFromToken(i.jwt)
+       
+        let  reservationId = getUsernameFromToken(i.jwt).userId
+        console.log("Checking reservation:", reservationId);
         try {
        
         if (!reservationId) {
@@ -121,7 +132,7 @@ router.post("/id", (req , res) => {
             message: "Invalid token"
         });
     }  
-        if (reservationId=== UserId) {
+        if (reservationId=== userId) {
             userReservations.push(i);
     }
 
