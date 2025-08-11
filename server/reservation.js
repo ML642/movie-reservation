@@ -168,4 +168,30 @@ router.post("/id", (req , res) => {
     });
     
 })
+
+router.delete("/delete/:id", (req, res) => {
+    const id = req.params.id
+    console.log(`DELETE /reservation/delete/${id} - Request received`);
+
+    const index = Reservations.findIndex(r => r.id === id);
+    if (index === -1) {
+        console.log(`Reservation with ID ${id} not found`);
+        return res.status(404).json({
+            success: false,
+            message: "Reservation not found"
+        });
+    }
+    else {
+        Reservations[index].status = "cancelled";
+    }
+    console.log(`Reservation with ID ${id} cancelled`);
+    
+    res.status(200).json({
+        success: true,
+        message: "Reservation cancelled successfully",
+        data: Reservations[index]
+    })
+}
+)
+
 module.exports = router;

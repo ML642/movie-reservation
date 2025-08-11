@@ -152,13 +152,29 @@ export default function MyReservations() {
 
   const handleCancelReservation = (reservationId) => {
     if (window.confirm('Are you sure you want to cancel this reservation?')) {
+      
       setReservations(prev => 
         prev.map(res => 
           res.id === reservationId 
             ? { ...res, status: 'cancelled' }
             : res
         )
-      );
+      )
+      
+       try {
+
+          axios.delete(`http://localhost:5000/api/reservation/delete/${reservationId}`,{
+          headers: {
+            'Content-Type': 'application/json',
+            'authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        })}
+      catch (error) {
+        console.error("Error cancelling reservation:", error);
+        alert("Failed to cancel reservation. Please try again later.");
+      }
+      
+      ;
     }
   };
 
