@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './myReservations.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
+import axios from 'axios';
+import { set } from 'mongoose';
 
 // Dummy reservations data (replace with API call)
 const dummyReservations = [
@@ -91,9 +93,28 @@ export default function MyReservations() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  useEffect(()=> {  
+      axios.post("http://localhost:5000/api/reservation/id", {}, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+    }).catch(error => {
+      console.log("Error fetching reservations:", error);
+    })
+      .then(response => {
+        if (response.data.success) {
+          setReservations(response.data.data);
+          console.log("Reservations fetched successfully:", response.data.data);
+        }})
+
+    }, []);
+    console.log(  "Reservations:", reservations);
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [location.key]);
+  
+
 
   useEffect(() => {
     // Check if user is authenticated
@@ -101,14 +122,16 @@ export default function MyReservations() {
       navigate('/login');
       return;
     }
-
+    
     // Get user data from JWT token
     const userData = getUserFromToken();
-    if (userData) {
-      setUser(userData);
-      // In a real app, you'd fetch reservations from API using user.id
-      setReservations(dummyReservations);
+    if (!userData) {
+      navigate('/login');
+      return;
     }
+    setReservations(dummyReservations);
+    setUser(userData);
+    
     setLoading(false);
   }, [navigate]);
 
@@ -268,7 +291,7 @@ export default function MyReservations() {
               
               return (
                 <div key={reservation.id} className={styles.reservationCard}>
-                  <div className={styles.moviePoster}>{reservation.poster}</div>
+                  <div className={styles.moviePoster}>{<img style={{width:"100%"}} src={reservation.poster} alt="failed to load"/> } </div>
                   
                   <div className={styles.reservationDetails}>
                     <div className={styles.movieHeader}>

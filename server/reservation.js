@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { getUsernameFromToken } = require("./utils/auth.js");
+const { time } = require("framer-motion");
 
 let LastId = 0;
 let Reservations = [];
@@ -42,12 +43,13 @@ router.post("/", (req, res) => {
     const generateId = () => (++LastId).toString();
 
     try {
-        const {  movieId, theaterId,   showtime , seats, totalPrice , isLoggedIN } = req.body;
+        const {  movieId, theaterId , seats, totalPrice , isLoggedIN , movieName ,  moviePoster ,  theaterName ,  movieDuration ,movieGenre ,showtime , bookingDate  } = req.body;
         
         // Validate required fields
-       
+  
 
-        if ( !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !isLoggedIN) {
+
+        if ( !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !isLoggedIN || !theaterId || !movieName || !moviePoster || !theaterName || !movieDuration || !movieGenre || !bookingDate) {
             console.log("Bad request: Missing required fields");
             return res.status(400).json({ 
                 success: false, 
@@ -61,11 +63,33 @@ router.post("/", (req, res) => {
             movieId,
             seats,
             totalPrice,
+           
             createdAt: new Date().toISOString() , 
+            movie: movieName ,
+            poster : moviePoster,
+            date: bookingDate,
+            time: showtime,
+            seat : seats.join(", "),
+            status : "upcoming",
+            theater : theaterName , 
+            price : totalPrice,
+            bookingDate, 
+            genre: movieGenre,
+            duration: movieDuration,
+            rating : 0 ,
 
+
+            theaterId,
+            theaterName,
+            movieDuration,
+            movieGenre,
+            showtime,
+           
+       
+          
         };
        
-        
+      
         Reservations.push(reservation);
         console.log("New reservation created:", reservation);
         

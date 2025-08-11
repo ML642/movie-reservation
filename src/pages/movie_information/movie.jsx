@@ -97,8 +97,15 @@ const Movie = () => {
      
      const ReservationData = {
       jwt : localStorage.getItem("token") , 
-      movieId : id,
-      theaterId : selectedTheater,
+      movieId : id, 
+      movieName: movie.title,
+      moviePoster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+     theaterId : selectedTheater,
+      theaterName : THEATERS.find(t => t.id === selectedTheater)?.name,
+      movieDuration : movie.runtime,
+      movieGenre : movie.genres?.map(g => g.name).join(', ') || 'N/A',
+      bookingDate : new Date().toISOString(),
+      
       showtime : selectedTime,
       seats : selectedSeats,
       totalPrice : (selectedSeats.length * 12.99).toFixed(2) ,
