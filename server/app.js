@@ -17,12 +17,26 @@
     });
 
     // More explicit CORS configuration
-    const corsOptions = {
-    origin: 'https://movie-reservation-1.onrender.com',
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true, // allow session cookie from browser to pass through
-    optionsSuccessStatus: 204 // for pre-flight requests
-    };
+    const allowedOrigins = [
+        'https://movie-reservation-1.onrender.com',
+        'http://localhost:3000'
+    ]; 
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // allow requests with no origin (like curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  optionsSuccessStatus: 204
+};
 
     app.use(cors(corsOptions));
 
