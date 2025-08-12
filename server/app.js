@@ -18,7 +18,7 @@
 
     // More explicit CORS configuration
     const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: 'https://movie-reservation-1.onrender.com',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // allow session cookie from browser to pass through
     optionsSuccessStatus: 204 // for pre-flight requests
