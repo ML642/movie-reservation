@@ -10,7 +10,7 @@ const Signin = () => {
   
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
-  if (vantaEffect){vantaEffect.destroy()}
+
   useEffect(() => {
     if (!vantaEffect && vantaRef.current) {
       setVantaEffect(
