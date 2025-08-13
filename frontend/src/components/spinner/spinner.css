@@ -1,0 +1,222 @@
+
+
+/* ===== MORPHING SPINNER STYLES ===== */
+
+/* Base spinner styles */
+.morphing-spinner {
+  /* Default size - medium */
+  width: 48px;
+  height: 48px;
+  
+  /* Default color - cosmic gradient */
+  background: linear-gradient(45deg, #8b5cf6, #ec4899, #3b82f6);
+  
+  /* Initial border radius */
+  border-radius: 20px;
+  
+  /* Default animation - normal speed */
+  animation: morphingAnimation 2s ease-in-out infinite;
+  
+  /* Smooth transitions */
+  transition: all 0.3s ease;
+  
+  /* Center in container */
+  display: inline-block;
+}
+
+/* ===== SIZE VARIANTS ===== */
+.morphing-spinner--small {
+  width: 32px;
+  height: 32px;
+}
+
+.morphing-spinner--medium {
+  width: 48px;
+  height: 48px;
+}
+
+.morphing-spinner--large {
+  width: 64px;
+  height: 64px;
+}
+
+.morphing-spinner--xlarge {
+  width: 80px;
+  height: 80px;
+}
+
+/* ===== SPEED VARIANTS ===== */
+.morphing-spinner--slow {
+  animation: morphingAnimation 4s ease-in-out infinite;
+}
+
+.morphing-spinner--normal {
+  animation: morphingAnimation 2s ease-in-out infinite;
+}
+
+.morphing-spinner--fast {
+  animation: morphingAnimation 1s ease-in-out infinite;
+}
+
+/* ===== COLOR VARIANTS ===== */
+.morphing-spinner--cosmic {
+  background: linear-gradient(45deg, #8b5cf6, #ec4899, #3b82f6);
+}
+
+.morphing-spinner--fire {
+  background: linear-gradient(45deg, #ef4444, #f97316, #eab308);
+}
+
+.morphing-spinner--ocean {
+  background: linear-gradient(45deg, #3b82f6, #14b8a6, #10b981);
+}
+
+.morphing-spinner--sunset {
+  background: linear-gradient(45deg, #fb923c, #ef4444, #ec4899);
+}
+
+.morphing-spinner--aurora {
+  background: linear-gradient(45deg, #4ade80, #3b82f6, #8b5cf6);
+}
+
+.morphing-spinner--gold {
+  background: linear-gradient(45deg, #facc15, #eab308, #ca8a04);
+}
+
+.morphing-spinner--rainbow {
+  background: linear-gradient(45deg, 
+    #ef4444, 
+    #eab308, 
+    #10b981, 
+    #3b82f6, 
+    #8b5cf6
+  );
+}
+
+/* ===== GLOW EFFECT ===== */
+.morphing-spinner--glow {
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.3),
+    0 0 40px rgba(139, 92, 246, 0.2),
+    0 0 60px rgba(139, 92, 246, 0.1);
+}
+
+/* Specific glow colors for each variant */
+.morphing-spinner--glow.morphing-spinner--fire {
+  box-shadow: 
+    0 0 20px rgba(239, 68, 68, 0.4),
+    0 0 40px rgba(239, 68, 68, 0.3),
+    0 0 60px rgba(239, 68, 68, 0.2);
+}
+
+.morphing-spinner--glow.morphing-spinner--ocean {
+  box-shadow: 
+    0 0 20px rgba(59, 130, 246, 0.4),
+    0 0 40px rgba(59, 130, 246, 0.3),
+    0 0 60px rgba(59, 130, 246, 0.2);
+}
+
+.morphing-spinner--glow.morphing-spinner--sunset {
+  box-shadow: 
+    0 0 20px rgba(236, 72, 153, 0.4),
+    0 0 40px rgba(236, 72, 153, 0.3),
+    0 0 60px rgba(236, 72, 153, 0.2);
+}
+
+.morphing-spinner--glow.morphing-spinner--aurora {
+  box-shadow: 
+    0 0 20px rgba(74, 222, 128, 0.4),
+    0 0 40px rgba(74, 222, 128, 0.3),
+    0 0 60px rgba(74, 222, 128, 0.2);
+}
+
+.morphing-spinner--glow.morphing-spinner--gold {
+  box-shadow: 
+    0 0 20px rgba(250, 204, 21, 0.4),
+    0 0 40px rgba(250, 204, 21, 0.3),
+    0 0 60px rgba(250, 204, 21, 0.2);
+}
+
+/* ===== KEYFRAME ANIMATIONS ===== */
+
+/* Main morphing animation */
+@keyframes morphingAnimation {
+  /* Start: Rounded rectangle */
+  0% {
+    border-radius: 20px;
+    transform: rotate(0deg) scale(1);
+  }
+  
+  /* Quarter: Perfect circle with slight scale up */
+  25% {
+    border-radius: 50%;
+    transform: rotate(90deg) scale(1.1);
+  }
+  
+  /* Half: Back to rounded rectangle */
+  50% {
+    border-radius: 20px;
+    transform: rotate(180deg) scale(1);
+  }
+  
+  /* Three quarters: Sharp square with slight scale down */
+  75% {
+    border-radius: 8px;
+    transform: rotate(270deg) scale(0.9);
+  }
+  
+  /* End: Return to start */
+  100% {
+    border-radius: 20px;
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .morphing-spinner {
+    animation: none;
+    /* Fallback: simple fade animation */
+    opacity: 0.7;
+    animation: fadeAnimation 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes fadeAnimation {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Center spinner in flex containers */
+.morphing-spinner-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Loading text styles (optional) */
+.morphing-spinner-text {
+  margin-left: 12px;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Container for spinner + text */
+.morphing-spinner-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .morphing-spinner-text {
+    color: #94a3b8;
+  }
+}

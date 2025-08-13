@@ -3,12 +3,13 @@ import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import './Login.css';
 import  { Link, useNavigate , useLocation  } from "react-router-dom";
-
+import MorphingSpinner from "../../components/spinner/spinner";
 
 const Login = () => {
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
   const navigate = useNavigate();
+  const [isLoading , setIsLoading] =  useState(false)
 
    const Location =  useLocation() ;
     useEffect(() => {
@@ -62,6 +63,7 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // Dummy validation
+        setIsLoading(true);
         if (!form.email || !form.password) {
             setError("Please fill in all fields.");
             return;
@@ -97,6 +99,7 @@ const Login = () => {
         } else {
             localStorage.removeItem("rememberedEmail");
         }
+       
  
     };
 
@@ -145,7 +148,8 @@ const Login = () => {
                   Remember Me
                 </label>
                 <button type="submit"  className="gradient-border" style={{width:"80%"}}>
-                    Log In
+                    {isLoading ? <h1 style={{fontSize: "1.5rem", paddingRight: "1rem"}}> Logging in...  </h1>  : "Login"} 
+                    {isLoading ? <MorphingSpinner /> : null }
                 </button>
                 <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
                   Don't have an account yet?{' '}

@@ -45,3 +45,15 @@
   align-items: center;
   gap: 0.5rem;
 }
+.logo_img {
+  color: "#ef4444"; 
+  font-size: "5.5rem" ;
+}
+
+.logo_reservation {
+  font-size: "121.5rem"; 
+  font-weight: "bold";
+  background: "linear-gradient(to right, #ef4444, #f59e0b)";
+  -webkit-background-clip: "text";
+  color: "transparent"
+}

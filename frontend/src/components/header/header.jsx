@@ -1,9 +1,11 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, color } from "framer-motion";
 import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import LoggedIn from "../LoggedIn/LoggedIn.jsx"
+import ResponsiveLogo from "./cineReserve.jsx";
+import "./header.css"
 
 
 const Header = () => {
@@ -12,8 +14,26 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   
   const [isLoggedIn , SetIsLoggedIn] = useState( false );
-  
-  const Location  = useLocation() ; 
+  const Location  = useLocation() ;
+
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const style_login = {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: isMobile ? "0.8rem" : "1.5rem",
+    width: isMobile ? "50px" : "150px",
+    height: "2rem",
+    padding: "0",
+  };
+ 
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -106,16 +126,7 @@ const Header = () => {
           gap: "0.5rem",
         }}
       >
-        <FaTicketAlt style={{ color: "#ef4444", fontSize: "1.5rem" }} />
-        <span style={{ 
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-          background: "linear-gradient(to right, #ef4444, #f59e0b)",
-          WebkitBackgroundClip: "text",
-          color: "transparent"
-        }}>
-          CineReserve
-        </span>
+        <ResponsiveLogo />    
       </motion.div>
 
       {/* Desktop Navigation */}
@@ -173,7 +184,7 @@ const Header = () => {
       </motion.div>
 
      
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "center" , gap: "0.5 rem" }}>
         {isLoggedIn  ? (<LoggedIn onLogout={handleLogout}/>) : 
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -183,12 +194,12 @@ const Header = () => {
             color: "white",
             border: "none",
             borderRadius: "0.5rem",
-            padding: "0.5rem 1rem",
+            
             fontWeight: "bold",
             cursor: "pointer",
           }}
         >
-          <Link to="/login" style={{ color: "inherit", textDecoration: "none" }}>Sign In</Link>
+          <Link to="/login" style={style_login}>Sign In</Link>
         </motion.button>
           }
         {/* Mobile Menu Toggle */}
