@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import './registration.css' ;
 import { useEffect, useRef } from "react";
 import  { Link } from "react-router-dom";
-
+import MorphingSpinner from "../../components/spinner/spinner";
+import { useNavigate } from "react-router-dom";
 
 const Signin = () => {
   
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
-
+  
   useEffect(() => {
     if (!vantaEffect && vantaRef.current) {
       setVantaEffect(
@@ -41,6 +42,8 @@ const Signin = () => {
     const [form, setForm] = useState({ username: "" ,  email: "", password: "" });
     const [error, setError] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [isLoading, setIsLoading ] =  useState(false) ; 
+    const navigate =  useNavigate() ;
 
     useEffect(() => {
         const remembered = localStorage.getItem("rememberedEmail");
@@ -58,9 +61,11 @@ const Signin = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-
+        setIsLoading(true);
         if (!form.username || !form.email || !form.password) {
             setError("Please fill in all fields.");
+            alert("Please fill in all fields.");
+            setIsLoading(false);
             return;
         }
         if (rememberMe) {
@@ -81,13 +86,19 @@ const Signin = () => {
             const data = await response.json();
             if (response.ok) {
                 alert("Registration successful! You can now log in.");
-                // Optionally redirect to login page here
+                // Redirect to login page
+                navigate('/login');
             } else {
-                setError(data.message || "Registration failed");
+              if (response.status === 400)   alert("Bad request: " + data.message); 
+              else if (!response.ok){alert("reservation error") ;}
             }
         } catch (err) {
-            setError("Network error");
+
+            alert(error.message)
+            
         }
+       
+        setIsLoading(false);
     };
 
     return (
@@ -148,8 +159,9 @@ const Signin = () => {
                     </div>
                   Remember Me
                 </label>
-                <button type="submit"  className="gradient-border" style={{width:"80%"}}>
-                   Reg IN
+                <button type="submit" disabled={isLoading} className="gradient-border" style={{width:"80%"}}>
+                   {isLoading ? <h1 style={{fontSize: "1.5rem", paddingRight: "1rem"}}> loading...  </h1>  : "RegIn"} 
+                    {isLoading ? <MorphingSpinner /> : null }
                 </button>
                 <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
                   Already have an account ?{' '}

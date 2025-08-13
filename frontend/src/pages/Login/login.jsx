@@ -10,6 +10,7 @@ const Login = () => {
   const [vantaEffect, setVantaEffect] = useState(null);
   const navigate = useNavigate();
   const [isLoading , setIsLoading] =  useState(false)
+  
 
    const Location =  useLocation() ;
     useEffect(() => {
@@ -46,7 +47,7 @@ const Login = () => {
     const [form, setForm] = useState({ email: "", password: "" });
     const [error, setError] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
-
+  
     useEffect(() => {
         const remembered = localStorage.getItem("rememberedEmail");
         if (remembered) {
@@ -54,17 +55,19 @@ const Login = () => {
             setRememberMe(true);
         }
     }, []);
-
+    
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
         setError("");
     };
-
+    
     const handleSubmit = (e) => {
         e.preventDefault();
         // Dummy validation
         setIsLoading(true);
         if (!form.email || !form.password) {
+            alert("Please fill in all fields.");
+            setIsLoading(false);
             setError("Please fill in all fields.");
             return;
         }
@@ -80,13 +83,15 @@ const Login = () => {
             })
             const data = await result.json();
             if (result.ok) {
-              // Store the token and username in localStorage
+              setIsLoading(false);
               localStorage.setItem('token', data.token);
               localStorage.setItem('username', data.user.username);
               alert("Login successful!");
               // Redirect to home page
               navigate('/');
             } else {
+              setIsLoading(false);
+              if(result.status == "401") alert("wrong email or password");
               setError(data.message || "Login failed");
             }
           } catch (err) {
@@ -99,8 +104,7 @@ const Login = () => {
         } else {
             localStorage.removeItem("rememberedEmail");
         }
-       
- 
+        
     };
 
     return (
@@ -124,7 +128,7 @@ const Login = () => {
                 />
                 </div>
                 <div style={{display:"block" , width : "80%"}}> 
-                <label for="password" className= "label">Password     </label>
+                <label for="password" className= "label">Password      </label>
                 <input
                     className="input"
                     type="password"
@@ -145,9 +149,9 @@ const Login = () => {
                             <div class="checkmark-float">✓</div>
                         </div>
                     </div>
-                  Remember Me
+                   Remember Me
                 </label>
-                <button type="submit"  className="gradient-border" style={{width:"80%"}}>
+                <button type="submit" disabled = {isLoading}  className="gradient-border" style={{width:"80%"}}>
                     {isLoading ? <h1 style={{fontSize: "1.5rem", paddingRight: "1rem"}}> Logging in...  </h1>  : "Login"} 
                     {isLoading ? <MorphingSpinner /> : null }
                 </button>

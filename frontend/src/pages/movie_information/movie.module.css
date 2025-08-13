@@ -850,3 +850,53 @@
     font-size: 0.8rem;
   }
 }
+
+@media (max-width: 480px) {
+  .seatMap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  overflow-x: auto; /* allow horizontal scroll on small screens */
+}
+
+.seatRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rowLabel {
+  width: 2rem;
+  font-weight: bold;
+}
+
+.seats {
+  display: flex;
+  flex-wrap: wrap; /* wrap seats on smaller screens */
+  gap: 0.3rem;
+}
+
+.seat {
+  width: 2rem;
+  height: 2rem;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.seat:hover {
+  transform: scale(1.1);
+}
+
+.booked {
+  background-color: #ef4444;
+  cursor: not-allowed;
+}
+
+.selected {
+  background-color: #f59e0b;
+}
+}
