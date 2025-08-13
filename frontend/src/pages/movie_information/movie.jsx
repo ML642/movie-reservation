@@ -3,7 +3,7 @@ import { useParams, useNavigate , useLocation, redirect } from 'react-router-dom
 import axios from 'axios';
 import { FaArrowLeft, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaStar, FaPlay, FaTicketAlt, FaUsers } from 'react-icons/fa';
 import styles from './movie.module.css';
-
+import MorphingSpinner from '../../components/spinner/spinner';
 
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
@@ -51,6 +51,7 @@ const Movie = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [showtime, setShowtime] = useState(null);
   const Location =  useLocation() ;
+  const [isLoading, setIsLoading] =  useState(false) ;
 
 
   useEffect(() => {
@@ -93,6 +94,13 @@ const Movie = () => {
   };
 
   const Fetch  = async () => { 
+    setIsLoading(true) ;
+    if (!localStorage.getItem("token")) {
+      alert("Please log in to make a reservation");
+      navigate("/login");
+      setIsLoading(false);
+      return;
+    }
     try {
      
      const ReservationData = {
@@ -121,7 +129,9 @@ const Movie = () => {
 
      if(response.status === 201) {
       alert("Reservation successful");
+      setIsLoading(false);
     }
+
   }
 
     
@@ -428,11 +438,14 @@ const Movie = () => {
           <button 
             className={styles.bookButton}
             onClick={handleBooking}
-            disabled={selectedSeats.length === 0}
+            disabled={selectedSeats.length === 0 ||  isLoading }
           >
             <FaTicketAlt className={styles.buttonIcon} />
-            {selectedSeats.length === 0 ? 'Select Seats to Continue' : `Book ${selectedSeats.length} Ticket${selectedSeats.length !== 1 ? 's' : ''}`}
-          </button>
+            {selectedSeats.length === 0  ? 'Select Seats to Continue' : null }
+            {selectedSeats.length > 0 && isLoading === false ? `Book ${selectedSeats.length} Ticket${selectedSeats.length !== 1 ? 's' : ''}` : null}
+            {isLoading ? "Booking... " : null}     
+            {isLoading ? <MorphingSpinner/> : null }    
+           </button>
         </div>
       </div>
     </div>
