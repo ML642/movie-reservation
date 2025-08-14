@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, color } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -38,8 +38,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     SetIsLoggedIn(false);
-    // Optionally, you can redirect the user to the homepage or login page
-    // window.location.href = '/';
+   
   };
   
   useEffect(() => {
@@ -49,7 +48,6 @@ const Header = () => {
       console.log("token",token);
     }
   }, [Location]);
-  // Track scroll for header shadow
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);

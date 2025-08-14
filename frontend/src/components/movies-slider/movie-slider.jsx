@@ -24,7 +24,6 @@ const MovieSlider = (props)=> {
         }, 250);
       };
    
-      // Helper to get movie index with wrap-around
       const getMovie = (idx) => movies[(idx + movies.length) % movies.length];
    
 

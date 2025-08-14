@@ -1,30 +1,19 @@
 
-
-/* ===== MORPHING SPINNER STYLES ===== */
-
-/* Base spinner styles */
 .morphing-spinner {
-  /* Default size - medium */
   width: 48px;
   height: 48px;
   
-  /* Default color - cosmic gradient */
   background: linear-gradient(45deg, #8b5cf6, #ec4899, #3b82f6);
   
-  /* Initial border radius */
   border-radius: 20px;
   
-  /* Default animation - normal speed */
   animation: morphingAnimation 2s ease-in-out infinite;
   
-  /* Smooth transitions */
   transition: all 0.3s ease;
   
-  /* Center in container */
   display: inline-block;
 }
 
-/* ===== SIZE VARIANTS ===== */
 .morphing-spinner--small {
   width: 32px;
   height: 32px;
@@ -45,7 +34,7 @@
   height: 80px;
 }
 
-/* ===== SPEED VARIANTS ===== */
+/*SPEED VARIANTS ==*/
 .morphing-spinner--slow {
   animation: morphingAnimation 4s ease-in-out infinite;
 }
@@ -58,7 +47,7 @@
   animation: morphingAnimation 1s ease-in-out infinite;
 }
 
-/* ===== COLOR VARIANTS ===== */
+/*  COLOR VARIANTS ===== */
 .morphing-spinner--cosmic {
   background: linear-gradient(45deg, #8b5cf6, #ec4899, #3b82f6);
 }
@@ -93,7 +82,7 @@
   );
 }
 
-/* ===== GLOW EFFECT ===== */
+/* GLoW EFFECT  */
 .morphing-spinner--glow {
   box-shadow: 
     0 0 20px rgba(139, 92, 246, 0.3),
@@ -101,7 +90,6 @@
     0 0 60px rgba(139, 92, 246, 0.1);
 }
 
-/* Specific glow colors for each variant */
 .morphing-spinner--glow.morphing-spinner--fire {
   box-shadow: 
     0 0 20px rgba(239, 68, 68, 0.4),
@@ -137,48 +125,41 @@
     0 0 60px rgba(250, 204, 21, 0.2);
 }
 
-/* ===== KEYFRAME ANIMATIONS ===== */
 
-/* Main morphing animation */
 @keyframes morphingAnimation {
-  /* Start: Rounded rectangle */
+  
   0% {
     border-radius: 20px;
     transform: rotate(0deg) scale(1);
   }
   
-  /* Quarter: Perfect circle with slight scale up */
   25% {
     border-radius: 50%;
     transform: rotate(90deg) scale(1.1);
   }
   
-  /* Half: Back to rounded rectangle */
+  
   50% {
     border-radius: 20px;
     transform: rotate(180deg) scale(1);
   }
   
-  /* Three quarters: Sharp square with slight scale down */
   75% {
     border-radius: 8px;
     transform: rotate(270deg) scale(0.9);
   }
   
-  /* End: Return to start */
   100% {
     border-radius: 20px;
     transform: rotate(360deg) scale(1);
   }
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
 
-/* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   .morphing-spinner {
     animation: none;
-    /* Fallback: simple fade animation */
+ 
     opacity: 0.7;
     animation: fadeAnimation 2s ease-in-out infinite alternate;
   }
@@ -189,16 +170,15 @@
   100% { opacity: 1; }
 }
 
-/* ===== UTILITY CLASSES ===== */
 
-/* Center spinner in flex containers */
+
+
 .morphing-spinner-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Loading text styles (optional) */
 .morphing-spinner-text {
   margin-left: 12px;
   font-size: 14px;
@@ -206,7 +186,6 @@
   font-weight: 500;
 }
 
-/* Container for spinner + text */
 .morphing-spinner-container {
   display: inline-flex;
   align-items: center;
@@ -214,7 +193,6 @@
   padding: 16px;
 }
 
-/* Dark theme support */
 @media (prefers-color-scheme: dark) {
   .morphing-spinner-text {
     color: #94a3b8;

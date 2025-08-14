@@ -1,6 +1,4 @@
-/* NotFound.css */
 
-/* Container Styles */
 .not-found-container {
     min-height: 100vh;
     position: relative;
@@ -15,9 +13,7 @@
     background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
   }
   
-  /* Overlay */
 
-  /* Background Orbs */
   .bg-orb {
     position: absolute;
     border-radius: 50%;
@@ -44,7 +40,6 @@
     animation-delay: 1s;
   }
   
-  /* 404 Error Number */
   .error-number-container {
     position: relative;
     margin-bottom: 2rem;
@@ -81,7 +76,6 @@
     -webkit-text-fill-color: transparent;
   }
   
-  /* Subtitle */
   .subtitle-container {
     display: flex;
     align-items: center;
@@ -97,7 +91,6 @@
     margin: 0;
   }
   
-  /* Description */
   .description {
     font-size: 1.125rem;
     line-height: 1.75;
@@ -107,7 +100,6 @@
     opacity: 0.9;
   }
   
-  /* Status Dots */
   .status-dot {
     width: 0.75rem;
     height: 0.75rem;
@@ -131,7 +123,6 @@
     background-color: #3b82f6;
   }
   
-  /* Button Container */
   .button-container {
     display: flex;
     flex-direction: column;
@@ -141,7 +132,6 @@
     margin-bottom: 4rem;
   }
   
-  /* Buttons */
   .btn {
     position: relative;
     padding: 1rem 2rem;
@@ -209,7 +199,6 @@
     font-size: 1.25rem;
   }
   
-  /* Status Bar */
   .status-bar {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 0.75rem;
@@ -303,7 +292,6 @@
     }
   }
   
-  /* Pulse animations with delays */
   .animate-pulse {
     animation: pulse 2s ease-in-out infinite;
   }
@@ -323,7 +311,6 @@
     animation-delay: 1.5s;
   }
   
-  /* Responsive Design */
   @media (min-width: 640px) {
     .button-container {
       flex-direction: row;

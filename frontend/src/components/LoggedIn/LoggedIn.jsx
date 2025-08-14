@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 
 import "./LoggedIn.css";
 
-// Custom hook to detect clicks outside of a component
 const useOutsideClick = (ref, callback) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -24,8 +23,8 @@ const LoggedIn = (props) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
 
-  const dropdownRef = useRef(null); // For click outside and positioning
-  const profileRef = useRef(null); // For measuring position
+  const dropdownRef = useRef(null); 
+  const profileRef = useRef(null); 
 
   useOutsideClick(dropdownRef, () => setIsMenuOpen(false));
 
@@ -54,7 +53,7 @@ const LoggedIn = (props) => {
 
   return (
     <div ref={dropdownRef}>
-      {/* This is the clickable element in the header */}
+    
       <div 
         className="user-profile-container"
         ref={profileRef}
@@ -64,7 +63,7 @@ const LoggedIn = (props) => {
         <span className="header-username">{username}</span>
       </div>
 
-      {/* This is the dropdown menu itself, rendered with a portal if needed, but fixed position works */}
+      {/* This is the dropdown menu itself */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div

@@ -1,4 +1,4 @@
-/* Carousel container */
+
 .carousel-bg {
   height: 600px;
   display: flex;
@@ -122,9 +122,9 @@
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
   letter-spacing: 1px;
-    white-space: nowrap;       /* Prevent line breaks */
-  overflow: hidden;          /* Hide overflowing text */
-  text-overflow: ellipsis;   /* Show '...' at the end */
+    white-space: nowrap;    
+  overflow: hidden;          
+  text-overflow: ellipsis;   
   max-width: 200px; 
 }
 
@@ -151,7 +151,6 @@
   transition: background 0.2s;
 }
 
-/* Movie Grid Styles */
 .movie-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -184,7 +183,6 @@
   box-shadow: 0 8px 32px rgba(49,25,139,0.18);
 }
 
-/* Enhanced Filter and Sort Bar Styles */
 .movie-filter-bar {
   display: flex;
   align-items: center;

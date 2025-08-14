@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './profile.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 
-// Dummy reservations data (replace with API call)
+// Dummy reservations data 
 const dummyReservations = [
   {
     id: 1,

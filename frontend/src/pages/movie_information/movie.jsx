@@ -8,23 +8,19 @@ import MorphingSpinner from '../../components/spinner/spinner';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
-// Mock theater data - in a real app, this would come from your backend
 const THEATERS = [
   { id: 1, name: 'Cineplex Downtown', location: '123 Movie St, City' },
   { id: 2, name: 'MegaPlex Mall', location: '456 Cinema Ave, Town' },
   { id: 3, name: 'Starlight Theater', location: '789 Film Blvd, Village' },
 ];
 
-// Mock showtimes - in a real app, this would come from your backend
 const SHOWTIMES = [
   '10:00 AM', '1:00 PM', '4:00 PM', '7:00 PM', '10:00 PM'
 ];
 
-// Seat map configuration
 const SEAT_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 const SEATS_PER_ROW = 10;
 
-// Generate stable booked seats (in a real app, this would come from your backend)
 const generateBookedSeats = () => {
   const bookedSeats = new Set();
   SEAT_ROWS.forEach(row => {
@@ -83,7 +79,6 @@ const Movie = () => {
     fetchMovieDetails();
   }, [id]);
   
-  // Handle seat selection
   const toggleSeat = (seatId) => {
   
     setSelectedSeats(prev => 
@@ -148,13 +143,12 @@ const Movie = () => {
       console.log(error);
     }
   }
-  // Handle booking
+  
   const handleBooking = () => {
     if (selectedSeats.length === 0) {
       alert('Please select at least one seat');
       return;
     }
-    // In a real app, you would navigate to checkout or show a booking confirmation
     console.log({
       jwt : localStorage.getItem("token") , 
       movieID : id,
@@ -167,7 +161,6 @@ const Movie = () => {
      Fetch();
   };
 
-  // Format date for display
   const formatDate = (date) => {
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -177,7 +170,6 @@ const Movie = () => {
     });
   };
 
-  // Generate dates for the next 7 days
   const getAvailableDates = () => {
     const dates = [];
     for (let i = 0; i < 7; i++) {
@@ -188,7 +180,7 @@ const Movie = () => {
     return dates;
   };
 
-  // Render loading state
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -198,7 +190,7 @@ const Movie = () => {
     );
   }
 
-  // Render error state
+  
   if (error) {
     return (
       <div className={styles.errorContainer}>
@@ -209,7 +201,7 @@ const Movie = () => {
     );
   }
 
-  // Render movie details
+ 
   return (
     <div className={styles.moviePage}>
       {/* Hero Section with Background */}

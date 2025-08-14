@@ -1,11 +1,11 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './myReservations.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 import axios from 'axios';
-import { set } from 'mongoose';
 
-// Dummy reservations data (replace with API call)
+
+// Dummy reservations data 
 const dummyReservations = [
   {
     id: 1,

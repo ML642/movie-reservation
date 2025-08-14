@@ -1,6 +1,6 @@
 .LoggedIn {
-  position: relative; /* Establishes a positioning context for the dropdown */
-  z-index: 1100; /* Ensure this container is above the header */
+  position: relative; 
+  z-index: 1100;
 }
 
 .user-profile-container {
@@ -15,7 +15,7 @@
 }
 
 .user-profile-container:hover {
-  background-color: #374151; /* Darker background on hover */
+  background-color: #374151;
 }
 
 .user-icon {
@@ -27,10 +27,10 @@
   font-weight: bold;
   font-size: 1.2rem;
   border-radius: 50%;
-  width: 40px; /* Slightly smaller icon */
+  width: 40px; 
   height: 40px;
   text-transform: uppercase;
-  flex-shrink: 0; /* Prevent icon from shrinking */
+  flex-shrink: 0; 
 }
 
 .header-username {
@@ -68,36 +68,36 @@
 
 .dropdown-menu {
   position: fixed;
-  background-color: #1f2937; /* Dark background */
+  background-color: #1f2937; 
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   padding: 0.5rem 0;
   z-index: 1100;
-  width: 150px; /* Set a width for the dropdown */
+  width: 150px; 
   border: 1px solid #374151;
 }
 
 .dropdown-item {
   background: transparent;
   border: none;
-  color: #d1d5db; /* Light gray text */
+  color: #d1d5db;
   padding: 0.75rem 1rem;
   cursor: pointer;
   width: 80%;
   text-align: left;
   font-size: 0.9rem;
   font-weight: 500;
-  display: block; /* Make it a block element */
+  display: block; 
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .dropdown-item:hover {
-  background-color: #374151; /* Slightly lighter on hover */
+  background-color: #374151;
   color: white;
 }
 
 .dropdown-separator {
   height: 1px;
-  background-color: #374151; /* Separator line color */
+  background-color: #374151;
   margin: 0.5rem 0;
 }
