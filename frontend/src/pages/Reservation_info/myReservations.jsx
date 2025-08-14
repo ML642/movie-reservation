@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './myReservations.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 import axios from 'axios';
-
+import { Link } from 'react-router-dom';
 
 // Dummy reservations data 
 const dummyReservations = [
@@ -294,12 +294,14 @@ export default function MyReservations() {
                   : `No ${activeFilter} reservations found.`
                 }
               </p>
-              <button 
-                onClick={() => navigate('/movies')} 
+              
+               <button 
+                onClick={() => navigate('/movie_list')} 
                 className={styles.bookNowBtn}
               >
                 🎬 Browse Movies
               </button>
+           
             </div>
           ) : (
             filteredReservations.map((reservation) => {
@@ -365,9 +367,10 @@ export default function MyReservations() {
                     
                     {reservation.status === 'completed' && (
                       <>
+                      <Link to ="/movie_list">
                         <button className={styles.secondaryBtn}>
                           🔄 Book Again
-                        </button>
+                        </button> </Link>
                         {!reservation.userRating ? (
                           <button 
                             className={styles.primaryBtn}
@@ -387,9 +390,12 @@ export default function MyReservations() {
                     )}
                     
                     {reservation.status === 'cancelled' && (
+                     <Link to = "/movie_list">
+
                       <button className={styles.secondaryBtn}>
                         🔄 Book Again
                       </button>
+                      </Link>
                     )}
                   </div>
                 </div>
