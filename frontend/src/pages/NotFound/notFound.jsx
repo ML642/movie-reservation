@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './NotFound.css';
-import { Link } from 'react-router-dom';
 import NET from 'vanta/dist/vanta.net.min';
-
+  
 const VantaNotFoundPage = () => {
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-
+  
   useEffect(() => {
     let isMounted = true;
 
@@ -79,7 +78,7 @@ const VantaNotFoundPage = () => {
   }, []);
 
   const goHome = () => {
-    // Replace with your routing logic
+
     window.location.href = '/';
   };
 

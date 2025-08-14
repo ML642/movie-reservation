@@ -47,7 +47,11 @@ const Login = () => {
     const [form, setForm] = useState({ email: "", password: "" });
     const [error, setError] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
-  
+    
+    let errorMessage = error ? <p className="error-message">{error}</p> : null;
+    if (error) {
+      console.log(errorMessage)
+    }
     useEffect(() => {
         const remembered = localStorage.getItem("rememberedEmail");
         if (remembered) {
@@ -91,7 +95,7 @@ const Login = () => {
               navigate('/');
             } else {
               setIsLoading(false);
-              if(result.status == "401") alert("wrong email or password");
+              if(result.status === "401") alert("wrong email or password");
               setError(data.message || "Login failed");
             }
           } catch (err) {

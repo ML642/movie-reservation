@@ -1,12 +1,12 @@
 // index.js (updated)
-import React, { Children } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
 import reportWebVitals from './reportWebVitals';
 import Login from './pages/Login/login';
 import Signin from './pages/Registration/registration';
-import { BrowserRouter, createBrowserRouter, RouterProvider } from 'react-router-dom';
+import {  createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MovieList from "./pages/movie_list/movies_list";
 import Header from './components/header/header';
 import Footer from './components/footer/Footer';

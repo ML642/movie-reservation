@@ -4,7 +4,7 @@ import axios from 'axios';
 import { FaArrowLeft, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaStar, FaPlay, FaTicketAlt, FaUsers } from 'react-icons/fa';
 import styles from './movie.module.css';
 import MorphingSpinner from '../../components/spinner/spinner';
-
+import CustomAlert from './movie_alert.jsx';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
@@ -45,11 +45,10 @@ const Movie = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(SHOWTIMES[0]);
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [showtime, setShowtime] = useState(null);
   const Location =  useLocation() ;
   const [isLoading, setIsLoading] =  useState(false) ;
-
-
+  const [alertData, setAlertData] = useState(null); // null = no alert, object = show alert
+  
   useEffect(() => {
       window.scrollTo({top:0, left:0, behavior: "smooth"});
   }, [Location.key] );
@@ -123,7 +122,13 @@ const Movie = () => {
       
 
      if(response.status === 201) {
-      alert("Reservation successful");
+       setAlertData({
+        movieTitle: movie.title,
+        theaterName: THEATERS.find(t => t.id === selectedTheater)?.name,
+        seat: selectedSeats,
+        showtime: selectedTime
+      });
+    
       setIsLoading(false);
     }
 
@@ -398,7 +403,17 @@ const Movie = () => {
             </div>
           </div>
         </div>
-
+       {alertData && (
+        <CustomAlert
+          open={true}
+          movieTitle={alertData.movieTitle}
+          theaterName={alertData.theaterName}
+          seat={alertData.seat}
+          showtime={alertData.showtime}
+          onViewReservation={() => console.log("Go to reservations")}
+          onBack={() => setAlertData(null)}
+        />
+      )}
         {/* Booking Summary */}
         <div className={styles.bookingSummary}>
           <div className={styles.sectionHeader}>

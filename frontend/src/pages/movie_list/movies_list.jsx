@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useRef, useEffect } from "react"
 import * as THREE from 'three';
 import FOG from 'vanta/dist/vanta.fog.min';
