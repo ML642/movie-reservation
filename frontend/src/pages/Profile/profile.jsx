@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './profile.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
-
+import axios from "axios" ;
 // Dummy reservations data 
 const dummyReservations = [
   {
@@ -42,38 +42,55 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const navigate = useNavigate();
+  const [reservations, setReservations] = useState([]);
+  
 
+  const navigate = useNavigate();
+   useEffect(()=> {  
+      axios.post(`${process.env.REACT_APP_API_URL}/api/reservation/id`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+    }).catch(error => {
+      console.log("Error fetching reservations:", error);
+    })
+      .then(response => {
+        if (response.data.success) {
+          setReservations(response.data.data);
+          console.log("Reservations fetched successfully:", response.data.data);
+         
+           const userData = getUserFromToken();
+            if (userData) {
+              // Format the user data with defaults
+              const formattedUser = {
+                name: userData.name || userData.username || 'User',
+                email: userData.email || 'No email provided',
+                avatar: userData.avatar || userData.picture || '',
+                memberSince: userData.memberSince ? new Date(userData.memberSince).getFullYear() : '2024',
+                totalReservations: response.data.data.length ,
+                favoriteGenre: userData.favoriteGenre || 'Action',
+                reservations: response.data.data  , // Use real reservations if available
+                id: userData.id,
+                role: userData.role
+              };
+             setUser(formattedUser);
+              console.log("User data set:", formattedUser);
+            } 
+           
+            setLoading(false);
+                }})
+          
+    }, []);
+    console.log(  "Reservations:", reservations);
+    
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [location.key]);
 
-  useEffect(() => {
-    // Check if user is authenticated
-    if (!isAuthenticated()) {
-      navigate('/login');
-      return;
-    }
+ 
 
-    // Get user data from JWT token
-    const userData = getUserFromToken();
-    if (userData) {
-      // Format the user data with defaults
-      const formattedUser = {
-        name: userData.name || userData.username || 'User',
-        email: userData.email || 'No email provided',
-        avatar: userData.avatar || userData.picture || '',
-        memberSince: userData.memberSince ? new Date(userData.memberSince).getFullYear() : '2024',
-        totalReservations: userData.totalReservations || dummyReservations.length,
-        favoriteGenre: userData.favoriteGenre || 'Action',
-        reservations: userData.reservations || dummyReservations, // Use real reservations if available
-        id: userData.id,
-        role: userData.role
-      };
-      setUser(formattedUser);
-    }
-    setLoading(false);
-  }, [navigate]);
+
 
   // Show loading state
   if (loading) {
@@ -239,7 +256,7 @@ export default function Profile() {
                 <div className={styles.reservationsList}>
                   {upcomingReservations.map((r) => (
                     <div key={r.id} className={styles.reservationCard}>
-                      <div className={styles.moviePoster}>{r.poster}</div>
+                      <div className={styles.moviePoster}>{<img style={{width:"100%"}} src={r.poster} alt="failed to load"/> }</div>
                       <div className={styles.reservationDetails}>
                         <h4 className={styles.movieTitle}>{r.movie}</h4>
                         <div className={styles.reservationInfo}>
@@ -251,7 +268,7 @@ export default function Profile() {
                       </div>
                       <div className={styles.reservationActions}>
                         <button className={styles.actionBtnSecondary}>📱 QR Code</button>
-                        <button className={styles.actionBtnPrimary}>🎫 View Ticket</button>
+                       
                       </div>
                     </div>
                   ))}
@@ -272,7 +289,7 @@ export default function Profile() {
                 <div className={styles.reservationsList}>
                   {pastReservations.map((r) => (
                     <div key={r.id} className={`${styles.reservationCard} ${styles.pastReservation}`}>
-                      <div className={styles.moviePoster}>{r.poster}</div>
+                      <div className={styles.moviePoster}>{<img style={{width:"100%"}} src={r.poster} alt="failed to load"/> }</div>
                       <div className={styles.reservationDetails}>
                         <h4 className={styles.movieTitle}>{r.movie}</h4>
                         <div className={styles.reservationInfo}>
