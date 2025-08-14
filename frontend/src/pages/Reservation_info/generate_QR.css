@@ -1,0 +1,57 @@
+.qr-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .qr-modal {
+          background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+          border: 1px solid #333;
+          border-radius: 1rem;
+          padding: 2rem;
+          position: relative;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .qr-close-btn {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          background: rgba(239, 68, 68, 0.2);
+          border: 1px solid #f87171;
+          border-radius: 50%;
+          width: 2rem;
+          height: 2rem;
+          color: #f87171;
+          font-size: 1rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .qr-close-btn:hover {
+          background: rgba(239, 68, 68, 0.3);
+        }
+
+        .qr-code-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        @media (max-width: 480px) {
+          .qr-modal {
+            padding: 1.5rem;
+            margin: 1rem;
+            max-width: calc(100vw - 2rem);
+          }
+        }

@@ -4,7 +4,7 @@ import styles from './myReservations.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-
+import TicketQR from './generate_QR';
 // Dummy reservations data 
 const dummyReservations = [
   {
@@ -90,8 +90,10 @@ export default function MyReservations() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reservations, setReservations] = useState([]);
+ 
   const location = useLocation();
   const navigate = useNavigate();
+   const [alertQr , setAlertQr] = useState(null);
 
   useEffect(()=> {  
       axios.post(`${process.env.REACT_APP_API_URL}/api/reservation/id`, {}, {
@@ -308,9 +310,14 @@ export default function MyReservations() {
               const statusBadge = getStatusBadge(reservation.status);
               
               return (
+
                 <div key={reservation.id} className={styles.reservationCard}>
                   <div className={styles.moviePoster}>{<img style={{width:"100%"}} src={reservation.poster} alt="failed to load"/> } </div>
-                  
+                  {<TicketQR 
+                    reservationData={reservation} 
+                    isVisible={alertQr === reservation.id} 
+                    onClose={() => setAlertQr(false)} 
+                  />}
                   <div className={styles.reservationDetails}>
                     <div className={styles.movieHeader}>
                       <h3 className={styles.movieTitle}>{reservation.movie}</h3>
@@ -350,10 +357,7 @@ export default function MyReservations() {
                   <div className={styles.reservationActions}>
                     {reservation.status === 'upcoming' && (
                       <>
-                        <button className={styles.primaryBtn}>
-                          🎫 View Ticket
-                        </button>
-                        <button className={styles.secondaryBtn}>
+                        <button className={styles.secondaryBtn} onClick= {()=>setAlertQr(reservation.id)}>
                           📱 QR Code
                         </button>
                         <button 
