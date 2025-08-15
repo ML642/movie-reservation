@@ -236,29 +236,7 @@ const Header = () => {
           >
             <div style={{ padding: "1rem 2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
               {/* Mobile Search */}
-              <motion.div
-                variants={navItemVariants}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  background: "#374151",
-                  borderRadius: "2rem",
-                  padding: "0.5rem 1rem",
-                }}
-              >
-                <FaSearch style={{ color: "#9ca3af", marginRight: "0.5rem" }} />
-                <input
-                  type="text"
-                  placeholder="Search movies..."
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    outline: "none",
-                    color: "white",
-                    width: "100%",
-                  }}
-                />
-              </motion.div>
+              
 
               {/* Mobile Nav Links */}
               {navLinks.map((link) => (

@@ -139,7 +139,7 @@ export default  function Profile() {
               )}
               <div className={styles.avatarBadge}>👑</div>
             </div>
-            <button className={styles.changePhotoBtn}>📷 Change Photo</button>
+        
           </div>
           
           <div className={styles.userInfo}>
@@ -149,7 +149,7 @@ export default  function Profile() {
             
             <div className={styles.userStats}>
               <div className={styles.stat}>
-                <span className={styles.statNumber}>{user.totalReservations}</span>
+                <span className={styles.statNumber}>{reservations.reduce((value,obj,inde)=>{if(obj.status==="completed") value++ ; return value},0)}</span>
                 <span className={styles.statLabel}>Movies Watched</span>
               </div>
               <div className={styles.stat}>
@@ -195,39 +195,38 @@ export default  function Profile() {
               <div className={styles.quickActions}>
                 <h3 className={styles.sectionTitle}>🚀 Quick Actions</h3>
                 <div className={styles.actionGrid}>
-                  <button className={styles.actionCard}>
+                  <Link to="/movie_list" className={styles.actionCard}>
                     <span className={styles.actionIcon}>🎫</span>
                     <span className={styles.actionText}>Book New Ticket</span>
-                  </button>
-                  <button className={styles.actionCard}>
+                  </Link>
+                  <Link to="/pricing"className={styles.actionCard}>
                     <span className={styles.actionIcon}>💰</span>
                     <span className={styles.actionText}>View Pricing</span>
-                  </button>
-                  <button className={styles.actionCard}>
+                  </Link>
+                  <Link to="/pricing" className={styles.actionCard}>
                     <span className={styles.actionIcon}>🎁</span>
                     <span className={styles.actionText}>Rewards & Offers</span>
-                  </button>
+                  </Link>
                  
                 </div>
               </div>
-              
+              {/*HARDCODED DATA FOR DEMO PURPOSEs*/}
               <div className={styles.recentActivity}>
                 <h3 className={styles.sectionTitle}>📈 Recent Activity</h3>
                 <div className={styles.activityList}>
-                  <div className={styles.activityItem}>
-                    <span className={styles.activityIcon}>🎬</span>
-                    <span className={styles.activityText}>Booked ticket for Dune: Part Two</span>
-                    <span className={styles.activityTime}>2 days ago</span>
-                  </div>
-                  <div className={styles.activityItem}>
-                    <span className={styles.activityIcon}>⭐</span>
-                    <span className={styles.activityText}>Rated Oppenheimer 5 stars</span>
-                    <span className={styles.activityTime}>1 week ago</span>
+              <div className={styles.activityItem}>
+                    <span className={styles.activityIcon}>🎁</span>
+                    <span className={styles.activityText}>Earned loyalty points</span>
+                    <span className={styles.activityTime}>1 weeks ago</span>
+                  </div> <div className={styles.activityItem}>
+                    <span className={styles.activityIcon}>🎁</span>
+                    <span className={styles.activityText}>Earned loyalty points</span>
+                    <span className={styles.activityTime}>2 weeks ago</span>
                   </div>
                   <div className={styles.activityItem}>
                     <span className={styles.activityIcon}>🎁</span>
                     <span className={styles.activityText}>Earned loyalty points</span>
-                    <span className={styles.activityTime}>2 weeks ago</span>
+                    <span className={styles.activityTime}>3 weeks ago</span>
                   </div>
                 </div>
               </div>

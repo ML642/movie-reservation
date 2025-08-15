@@ -164,6 +164,12 @@ const Movie = () => {
       isLoggedIN : true
      })
      Fetch();
+
+          window.scrollTo({
+        top: "5rem",
+        left: 0,
+        behavior: 'smooth' 
+      });
   };
 
   const formatDate = (date) => {
