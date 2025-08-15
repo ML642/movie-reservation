@@ -59,19 +59,15 @@ const corsOptions = {
     let users = [];
     let currentId = 1;
 
-    // Helper function to find user by email
     const findUserByEmail = (email) => users.find(user => user.email === email);
 
-    // Helper function to find user by username
     const findUserByUsername = (username) => users.find(user => user.username === username);
 
     // Helper function to generate user ID
     const generateId = () => (currentId++).toString();
 
-    // Health Check
 
 
-    // User Registration
     app.post('/api/register', async (req, res) => {
         console.log('Received registration request:', req.body);
         try {
@@ -102,7 +98,7 @@ const corsOptions = {
 
             // Generate token
             const token = jwt.sign(
-                { userId: user.id, username: user.username },
+                { userId: user.id, username: user.username , userEmail: "some email" },
                 process.env.JWT_SECRET || 'secret-key',
                 { expiresIn: '7d' }
             );
@@ -117,7 +113,8 @@ const corsOptions = {
                     email: user.email
                 }
             });
-
+        
+       
         } catch (error) {
             console.error('Registration error:', error);
             res.status(500).json({
@@ -126,6 +123,36 @@ const corsOptions = {
             });
         }
     });
+
+    app.post("/api/userInfo" , (req ,res )=> {
+        const id = req.body.userId ; 
+        const user = users.find(user => user.id === id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            createdAt: user.createdAt
+        });
+
+        console.log("User info requested for ID:", id);
+        console.log("User data:", user);
+
+
+    })
+    app.patch("/api/changeInfo" , (req , res) => {
+        const { userId, newEmail ,  newName  } = req.body;
+        const user = users.find(user => user.id === userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        user.username = newName;
+        user.email = newEmail;
+        res.json({ message: "Email updated successfully", user });
+        console.log("Email changed for user ID:", userId, "New email:", newEmai , "New name:", newName);
+    })
     
     // app.post('/api/test', (req, res) => {
     //     console.log('Test endpoint hit! Request body:', req.body);

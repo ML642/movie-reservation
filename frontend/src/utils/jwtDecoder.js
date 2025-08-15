@@ -1,28 +1,15 @@
-/**
- * JWT Token Decoder Utility
- * Decodes JWT tokens to extract user information
- */
 
-/**
- * Decode JWT token payload
- * @param {string} token - JWT token
- * @returns {object|null} - Decoded payload or null if invalid
- */
 export const decodeJWT = (token) => {
   try {
     if (!token) return null;
     
-    // JWT has 3 parts separated by dots: header.payload.signature
     const parts = token.split('.');
     if (parts.length !== 3) return null;
     
-    // Decode the payload (second part)
     const payload = parts[1];
     
-    // Add padding if needed for base64 decoding
     const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
     
-    // Decode base64 and parse JSON
     const decodedPayload = JSON.parse(atob(paddedPayload));
     
     return decodedPayload;
@@ -32,10 +19,6 @@ export const decodeJWT = (token) => {
   }
 };
 
-/**
- * Get user data from stored JWT token
- * @returns {object|null} - User data or null if no valid token
- */
 export const getUserFromToken = () => {
   try {
     const token = localStorage.getItem('token');
@@ -50,15 +33,14 @@ export const getUserFromToken = () => {
       localStorage.removeItem('token');
       return null;
     }
-    
+    console.log("Decoded JWT:", decoded);
     return {
       id: decoded.id || decoded.userId || decoded.sub,
       name: decoded.name || decoded.username || decoded.displayName,
-      email: decoded.email,
+      email: decoded.userEmail,
       avatar: decoded.avatar || decoded.picture,
       role: decoded.role,
       memberSince: decoded.memberSince || decoded.createdAt,
-      // Add any other fields your JWT might contain
       ...decoded
     };
   } catch (error) {

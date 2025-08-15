@@ -3,85 +3,79 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './profile.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 import axios from "axios" ;
-// Dummy reservations data 
-const dummyReservations = [
-  {
-    id: 1,
-    movie: 'Inception',
-    poster: '🎬',
-    date: '2025-08-01',
-    time: '19:30',
-    seat: 'C12',
-    status: 'upcoming',
-    theater: 'Screen 1'
-  },
-  {
-    id: 2,
-    movie: 'Oppenheimer',
-    poster: '🎭',
-    date: '2025-07-20',
-    time: '21:00',
-    seat: 'A5',
-    status: 'completed',
-    theater: 'Screen 2'
-  },
-  {
-    id: 3,
-    movie: 'Dune: Part Two',
-    poster: '🚀',
-    date: '2025-08-15',
-    time: '18:00',
-    seat: 'B8',
-    status: 'upcoming',
-    theater: 'IMAX'
-  },
-];
+import TicketQR from '../Reservation_info/generate_QR';
+import {Link} from 'react-router-dom';
 
-export default function Profile() {
+
+export default  function Profile() {
   const [activeTab, setActiveTab] = useState('overview');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const [reservations, setReservations] = useState([]);
+  const [alertQr , setAlertQr] = useState(null);
   
-
+  const userData1 = getUserFromToken();
+    
   const navigate = useNavigate();
-   useEffect(()=> {  
-      axios.post(`${process.env.REACT_APP_API_URL}/api/reservation/id`, {}, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+
+
+  
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      // Fetch reservations
+      const resReservations = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/reservation/id`,
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         }
-    }).catch(error => {
-      console.log("Error fetching reservations:", error);
-    })
-      .then(response => {
-        if (response.data.success) {
-          setReservations(response.data.data);
-          console.log("Reservations fetched successfully:", response.data.data);
-         
-           const userData = getUserFromToken();
-            if (userData) {
-              // Format the user data with defaults
-              const formattedUser = {
-                name: userData.name || userData.username || 'User',
-                email: userData.email || 'No email provided',
-                avatar: userData.avatar || userData.picture || '',
-                memberSince: userData.memberSince ? new Date(userData.memberSince).getFullYear() : '2024',
-                totalReservations: response.data.data.length ,
-                favoriteGenre: userData.favoriteGenre || 'Action',
-                reservations: response.data.data  , // Use real reservations if available
-                id: userData.id,
-                role: userData.role
-              };
-             setUser(formattedUser);
-              console.log("User data set:", formattedUser);
-            } 
-           
-            setLoading(false);
-                }})
-          
-    }, []);
+      );
+      const reservationsData = resReservations.data.data || [];
+
+      // Fetch user data
+      const resUser = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/userInfo`,
+        { userId: userData1.id },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      const userData = resUser.data;
+
+      if (userData) {
+        const formattedUser = {
+          name: userData.name || userData.username || 'User',
+          email: userData.email || 'No email provided',
+          avatar: userData.avatar || userData.picture || '',
+          memberSince: userData.createdAt ? new Date(userData.createdAt).getFullYear() : '2024',
+          totalReservations: reservationsData.length,
+          favoriteGenre: userData.favoriteGenre || 'Action',
+          reservations: reservationsData,
+          id: userData.id,
+          role: userData.role
+        };
+        setUser(formattedUser);
+      }
+
+      setReservations(reservationsData); // still update state if needed
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
+    
     console.log(  "Reservations:", reservations);
     
   useEffect(() => {
@@ -168,7 +162,7 @@ export default function Profile() {
               </div>
             </div>
             
-            <button className={styles.editBtn}>✏️ Edit Profile</button>
+ 
           </div>
         </div>
 
@@ -213,10 +207,7 @@ export default function Profile() {
                     <span className={styles.actionIcon}>🎁</span>
                     <span className={styles.actionText}>Rewards & Offers</span>
                   </button>
-                  <button className={styles.actionCard}>
-                    <span className={styles.actionIcon}>⚙️</span>
-                    <span className={styles.actionText}>Settings</span>
-                  </button>
+                 
                 </div>
               </div>
               
@@ -255,9 +246,17 @@ export default function Profile() {
               ) : (
                 <div className={styles.reservationsList}>
                   {upcomingReservations.map((r) => (
+                    
                     <div key={r.id} className={styles.reservationCard}>
+
                       <div className={styles.moviePoster}>{<img style={{width:"100%"}} src={r.poster} alt="failed to load"/> }</div>
+                       {<TicketQR 
+                    reservationData={r} 
+                    isVisible={alertQr === r.id} 
+                    onClose={() => setAlertQr(false)} 
+                  />}
                       <div className={styles.reservationDetails}>
+                        
                         <h4 className={styles.movieTitle}>{r.movie}</h4>
                         <div className={styles.reservationInfo}>
                           <span className={styles.infoItem}>📅 {r.date}</span>
@@ -267,7 +266,7 @@ export default function Profile() {
                         </div>
                       </div>
                       <div className={styles.reservationActions}>
-                        <button className={styles.actionBtnSecondary}>📱 QR Code</button>
+                        <button className={styles.actionBtnSecondary} onClick={()=>{setAlertQr(r.id)}}>📱 QR Code</button>
                        
                       </div>
                     </div>
