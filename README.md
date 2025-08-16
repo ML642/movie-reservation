@@ -60,6 +60,58 @@ npm start
 # App at http://localhost:3000
 ```
 
+## 🔧 Environment Variables
+
+Set up the required environment variables for both backend and frontend.
+
+### Backend (`server/.env`)
+
+Create a `.env` file inside the `server/` directory:
+
+```ini
+# server/.env
+JWT_SECRET=your_secret_here
+PORT=5000
+```
+
+Windows (PowerShell) quick setup:
+
+```powershell
+Set-Location server
+"JWT_SECRET=change_me`nPORT=5000" | Out-File -Encoding ascii -NoNewline .env
+Get-Content .env
+```
+
+Notes:
+
+- `JWT_SECRET` is used to sign JSON Web Tokens.
+- `PORT` is optional; defaults to 5000 if not provided.
+
+### Frontend (`frontend/.env`)
+
+You already have an example at `frontend/.env_example`.
+
+Create `.env` using the example:
+
+```powershell
+Set-Location ../frontend
+Copy-Item .env_example .env
+Get-Content .env
+```
+
+Variables:
+
+```ini
+# frontend/.env
+REACT_APP_TMDB_API_KEY=your_api_key_here
+REACT_APP_API_URL = http://localhost:3000
+```
+
+Notes:
+
+- CRA only exposes variables prefixed with `REACT_APP_` to the client.
+- Keep `.env` files out of version control (already handled by `.gitignore`).
+
 ## 🔐 Authentication Flow
 
 - Register or login to receive a JWT
