@@ -1,70 +1,128 @@
-# Getting Started with Create React App
+# 🎬 Movie Reservation System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-3C873A?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white)](https://reactrouter.com/)
+[![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/docs/Web/CSS)
 
-## Available Scripts
+Preview : https://movie-reservation-1.onrender.com
 
-In the project directory, you can run:
+A full‑stack app to browse movies and book reservations. Frontend built with React (CRA). Backend built with Express. Auth uses JWT and passwords are hashed with bcrypt. Data is currently stored in‑memory for users and reservations.
 
-### `npm start`
+## ✨ Highlights
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- __Auth__: Register, Login, JWT issuance, basic profile update
+- __Reservations__: Create, list, cancel, and get reservations for the logged‑in user
+- __CORS__: Locked to `http://localhost:3000` and deployed origin (configurable)
+- __DX__: Clear project structure with `frontend/` and `server/`
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🗂️ Project Structure
 
-### `npm test`
+```
+movie-reservation project/
+├─ frontend/
+│  ├─ public/
+│  └─ src/
+│     ├─ components/           # UI components (hero section, header, sliders, etc.)
+│     └─ pages/                # Pages (Home, Login, Registration, Profile, etc.)
+└─ server/
+   ├─ app.js                   # Express app, auth routes, CORS, router mounting
+   ├─ reservation.js           # Reservation API routes
+   └─ utils/auth.js            # JWT helper
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🚀 Quick Start
 
-### `npm run build`
+### 1) Backend
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+cd server
+npm install
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+# .env (create in ./server)
+# JWT_SECRET=your_secret_here
+# PORT=5000  # optional (defaults to 5000)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+npm start
+# API available at http://localhost:5000
+```
 
-### `npm run eject`
+### 2) Frontend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+cd frontend
+npm install
+npm start
+# App at http://localhost:3000
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🔐 Authentication Flow
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- Register or login to receive a JWT
+- Include the token when calling protected endpoints:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
+Authorization: Bearer <your_jwt>
+Content-Type: application/json
+```
 
-## Learn More
+## 🧭 API Reference (current implementation)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Base URL: `http://localhost:5000`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- __Health__
+  - `GET /` → `{ message: 'Movie Reservation API is running!' }`
+  - `GET /api/test` → quick test response
 
-### Code Splitting
+- __Auth & User__ (in‑memory)
+  - `POST /api/register` → body: `{ username, email, password }`
+    - returns: `{ token, user }`
+  - `POST /api/login` → body: `{ email, password }`
+    - returns: `{ token, user }`
+  - `POST /api/userInfo` → body: `{ userId }` (requires valid token in `Authorization` header)
+  - `PATCH /api/changeInfo` → body: `{ userId, newEmail, newName }` (requires token)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- __Reservations__ (mounted at `/api/reservation`, requires token)
+  - `POST /api/reservation/`
+    - body: `{ movieId, theaterId, seats[], totalPrice, isLoggedIN, movieName, moviePoster, theaterName, movieDuration, movieGenre, showtime, bookingDate }`
+    - creates reservation
+  - `GET /api/reservation/all` → returns all reservations (debug)
+  - `POST /api/reservation/id` → returns reservations for current user
+  - `DELETE /api/reservation/delete/:id` → cancels reservation (sets status to `cancelled`)
 
-### Analyzing the Bundle Size
+## ⚙️ Scripts
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- __Backend (`server/package.json`)__
+  - `npm start` → `node app.js`
 
-### Making a Progressive Web App
+- __Frontend (`frontend/package.json`)__
+  - `npm start` → start CRA dev server
+  - `npm run build` → production build
+  - `npm test` → run tests
+  - `npm run eject` → eject CRA
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 🌐 CORS
 
-### Advanced Configuration
+Allowed origins in `server/app.js`:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```
+https://movie-reservation-1.onrender.com
+http://localhost:3000
+```
 
-### Deployment
+Adjust `allowedOrigins` in `server/app.js` as needed.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 🧩 Notes & Next Steps
 
-### `npm run build` fails to minify
+- Current storage is in‑memory. Restarting the server clears users and reservations.
+- Add persistent storage (MongoDB/Mongoose) and move auth to DB
+- Add validation & rate limiting for production readiness
+- Add .env handling in frontend for API base URL if needed
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📄 License
+
+MIT
