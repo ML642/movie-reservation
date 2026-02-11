@@ -1,8 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { decodeJWT } from './utils/jwtDecoder';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('decodeJWT returns null for malformed token', () => {
+  expect(decodeJWT('not-a-valid-token')).toBeNull();
 });

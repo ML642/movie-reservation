@@ -383,11 +383,20 @@
   gap: 0.2rem;
 }
 
-.dateOption:hover,
 .dateOption.selected {
-  border-color: var(--primary-color);
-  background: var(--card-hover);
-  transform: translateY(-2px);
+  border-color: #9aabff;
+  background: linear-gradient(150deg, rgba(102, 126, 234, 0.45) 0%, rgba(118, 75, 162, 0.38) 100%);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.28);
+  transform: translateY(-1px);
+}
+
+.dateOption.selected .day,
+.dateOption.selected .month {
+  color: rgba(241, 244, 255, 0.9);
+}
+
+.dateOption.selected .date {
+  color: #ffffff;
 }
 
 .dateOption .day {
@@ -427,35 +436,22 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.timeOption::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: var(--primary-gradient);
-  opacity: 0.1;
-  transition: var(--transition);
-}
-
-.timeOption:hover::before {
-  left: 0;
 }
 
 .timeIcon {
   color: var(--primary-color);
 }
 
-.timeOption:hover,
 .timeOption.selected {
-  border-color: var(--primary-color);
-  background: var(--card-hover);
-  transform: translateY(-2px);
+  border-color: #9aabff;
+  background: linear-gradient(150deg, rgba(102, 126, 234, 0.45) 0%, rgba(118, 75, 162, 0.38) 100%);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.28);
+  transform: translateY(-1px);
+}
+
+.timeOption.selected .timeIcon {
+  color: #ffffff;
 }
 
 .seatSelection {
@@ -463,7 +459,8 @@
 }
 
 .screen {
-  background: var(--primary-gradient);
+  background: #2a3046;
+  border: 1px solid #4a567f;
   color: white;
   text-align: center;
   padding: 1.5rem;
@@ -472,25 +469,7 @@
   border-radius: 50px 50px 15px 15px;
   font-weight: bold;
   font-size: 1.3rem;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  position: relative;
-  overflow: hidden;
-}
-
-.screen::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  box-shadow: none;
 }
 
 .seatMap {
