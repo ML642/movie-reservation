@@ -5,6 +5,17 @@ const { getUsernameFromToken } = require("./utils/auth.js");
 let LastId = 0;
 let Reservations = [];
 
+const getReservationOwnerId = (reservation) => {
+    if (reservation.userId) {
+        return reservation.userId;
+    }
+    if (!reservation.jwt) {
+        return null;
+    }
+    const decoded = getUsernameFromToken(reservation.jwt);
+    return decoded?.userId || null;
+};
+
 //midlleware to log request 
 
 router.use((req, res, next) => {
@@ -43,13 +54,21 @@ router.post("/", (req, res) => {
     const generateId = () => (++LastId).toString();
 
     try {
-        const {  movieId, theaterId , seats, totalPrice , isLoggedIN , movieName ,  moviePoster ,  theaterName ,  movieDuration ,movieGenre ,showtime , bookingDate  } = req.body;
+        const { userId } = req.user || {};
+        const {  movieId, theaterId , seats, totalPrice , movieName ,  moviePoster ,  theaterName ,  movieDuration ,movieGenre ,showtime , bookingDate  } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
         
         // Validate required fields
   
 
 
-        if ( !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !isLoggedIN || !theaterId || !movieName || !moviePoster || !theaterName || !movieDuration || !movieGenre || !bookingDate) {
+        if ( !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !theaterId || !movieName || !moviePoster || !theaterName || !movieDuration || !movieGenre || !bookingDate) {
             console.log("Bad request: Missing required fields");
             return res.status(400).json({ 
                 success: false, 
@@ -59,7 +78,7 @@ router.post("/", (req, res) => {
 
         const reservation = {
             id: generateId(),
-            jwt : req.headers["authorization"],
+            userId,
             movieId,
             seats,
             totalPrice,
@@ -110,12 +129,14 @@ router.post("/", (req, res) => {
 
 
 router.get("/all", (req, res) => {
-    console.log("GET /reservation - Returning all reservations");
+    const { userId } = req.user || {};
+    console.log("GET /reservation - Returning user reservations");
+    const userReservations = Reservations.filter((reservation) => getReservationOwnerId(reservation) === userId);
     res.status(200).json({
         success: true, 
-        data: Reservations
+        data: userReservations
     });
-    console.log("All reservations:", Reservations);
+    console.log("User reservations:", userReservations);
 });
 
 router.post("/id", (req , res) => {
@@ -135,27 +156,8 @@ router.post("/id", (req , res) => {
    
  
     
-    for (let i of Reservations) { 
-       
-        let  reservationId = getUsernameFromToken(i.jwt).userId
-        console.log("Checking reservation:", reservationId);
-        try {
-       
-        if (!reservationId) {
-            console.log("Decoding error");
-            return res.status(400).json({
-                success: false,
-                message: "Invalid token"
-            });
-        }
-    } 
-    catch (error) {
-        console.error("Error decoding token:", error);
-        return res.status(400).json({
-            success: false,
-            message: "Invalid token"
-        });
-    }  
+    for (let i of Reservations) {
+        const reservationId = getReservationOwnerId(i);
         if (reservationId=== userId) {
             userReservations.push(i);
     }
@@ -171,6 +173,7 @@ router.post("/id", (req , res) => {
 
 router.delete("/delete/:id", (req, res) => {
     const id = req.params.id
+    const { userId } = req.user || {};
     console.log(`DELETE /reservation/delete/${id} - Request received`);
 
     const index = Reservations.findIndex(r => r.id === id);
@@ -181,9 +184,16 @@ router.delete("/delete/:id", (req, res) => {
             message: "Reservation not found"
         });
     }
-    else {
-        Reservations[index].status = "cancelled";
+
+    const reservationOwnerId = getReservationOwnerId(Reservations[index]);
+    if (!reservationOwnerId || reservationOwnerId !== userId) {
+        return res.status(403).json({
+            success: false,
+            message: "Forbidden: not your reservation"
+        });
     }
+
+    Reservations[index].status = "cancelled";
     console.log(`Reservation with ID ${id} cancelled`);
     
     res.status(200).json({

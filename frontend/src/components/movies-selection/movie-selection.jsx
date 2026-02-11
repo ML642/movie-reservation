@@ -73,7 +73,7 @@ const MovieSelection = (props) => {
 
     return (  <> 
     <div className="movie-filter-bar">
-        <div className="filter-group" style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' , width:"100%",paddingBottom:"25px" }}>
+        <div className="filter-group search-group">
           <span className="search-icon">🔍</span>
           <input
             type="text"
@@ -82,14 +82,15 @@ const MovieSelection = (props) => {
             onChange={e => setSearch(e.target.value)}
             className="search-input"
           />
-          <span
-            className={`heart-toggle${showLikedOnly ? ' liked' : ''}`}
+          <button
+            type="button"
+            className={`heart-toggle${showLikedOnly ? " liked" : ""}`}
             onClick={toggleShowLiked}
-            title={showLikedOnly ? 'Show all movies' : 'Show only liked movies'}
-            style={{ position: 'absolute', right: '0.7rem', top: '30%', transform: 'translateY(-50%)', fontSize: '1.7rem', cursor: 'pointer', zIndex: 2 }}
+            title={showLikedOnly ? "Show all movies" : "Show only liked movies"}
+            aria-label={showLikedOnly ? "Show all movies" : "Show only liked movies"}
           >
-            {showLikedOnly ? '❤️' : '🤍'}
-          </span>
+            {showLikedOnly ? "\u2665" : "\u2661"}
+          </button>
         </div>
         <div className="filter-group">
           <label htmlFor="genre-select" className="sort-label">Genre:</label>
@@ -97,7 +98,7 @@ const MovieSelection = (props) => {
             <option value="all">All</option>
             <option value="Action">Action</option>
             <option value="Comedy">Comedy</option>
-            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Science Fiction">Science Fiction</option>
             <option value="Animation">Animation</option>
             <option value="Adventure">Adventure</option>
             <option value="Drama">Drama</option>

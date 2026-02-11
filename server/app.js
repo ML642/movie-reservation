@@ -120,7 +120,7 @@ const corsOptions = {
         }
     });
 
-    app.post("/api/userInfo" , (req ,res )=> {
+    app.post("/api/userInfo" , (req ,res)=> {
         const authHeader = req.headers["authorization"];
         let decodedToken = null;
 
@@ -172,15 +172,51 @@ const corsOptions = {
         return res.status(404).json({ message: "User not found" });
     })
     app.patch("/api/changeInfo" , (req , res) => {
-        const { userId, newEmail ,  newName  } = req.body;
-        const user = users.find(user => user.id === userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const authHeader = req.headers["authorization"];
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ success: false, message: "Invalid or expired token" });
         }
-        user.username = newName;
-        user.email = newEmail;
-        res.json({ message: "Email updated successfully", user });
-        console.log("Email changed for user ID:", userId, "New email:", newEmai , "New name:", newName);
+
+        let decodedToken = null;
+        try {
+            const token = authHeader.split(" ")[1];
+            decodedToken = jwt.verify(token, process.env.JWT_SECRET || "secret-key");
+        } catch (error) {
+            return res.status(401).json({ success: false, message: "Invalid or expired token" });
+        }
+
+        const tokenUserId = decodedToken?.userId;
+        const bodyUserId = req.body.userId;
+        if (!tokenUserId) {
+            return res.status(401).json({ success: false, message: "Invalid or expired token" });
+        }
+        if (bodyUserId && bodyUserId !== tokenUserId) {
+            return res.status(403).json({ success: false, message: "Forbidden: user mismatch" });
+        }
+
+        const user = users.find((u) => u.id === tokenUserId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const { newEmail, newName } = req.body;
+        if (!newEmail && !newName) {
+            return res.status(400).json({ success: false, message: "Nothing to update" });
+        }
+
+        if (newName) user.username = newName;
+        if (newEmail) user.email = newEmail;
+
+        return res.json({
+            success: true,
+            message: "Profile updated successfully",
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                createdAt: user.createdAt
+            }
+        });
     })
     
     // app.post('/api/test', (req, res) => {
@@ -210,12 +246,10 @@ const corsOptions = {
         
     }
 )
-    // User Login
     app.post('/api/login', async (req, res) => {
         try {
             const { email, password } = req.body;
 
-            // Find user
             const user = findUserByEmail(email);
             if (!user) {
                 return res.status(401).json({
@@ -224,7 +258,6 @@ const corsOptions = {
                 });
             }
 
-            // Check password
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
                 return res.status(401).json({
@@ -233,7 +266,6 @@ const corsOptions = {
                 });
             }
 
-            // Generate token
             const token = jwt.sign(
                 { userId: user.id, username: user.username, userEmail: user.email },
                 process.env.JWT_SECRET || 'secret-key',

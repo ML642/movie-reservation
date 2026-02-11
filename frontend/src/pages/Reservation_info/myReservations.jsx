@@ -18,7 +18,7 @@ const dummyReservations = [
     theater: 'Screen 1',
     price: '$12.50',
     bookingDate: '2025-07-25',
-    genre: 'Sci-Fi',
+    genre: 'Science Fiction',
     duration: '148 min',
     rating: 'PG-13'
   },
@@ -49,7 +49,7 @@ const dummyReservations = [
     theater: 'IMAX',
     price: '$18.00',
     bookingDate: '2025-08-01',
-    genre: 'Sci-Fi',
+    genre: 'Science Fiction',
     duration: '166 min',
     rating: 'PG-13'
   },
