@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
+import NET from 'vanta/dist/vanta.net.min';
 import './NotFound.css';
   
 const VantaNotFoundPage = () => {
@@ -7,69 +9,33 @@ const VantaNotFoundPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   useEffect(() => {
-    let isMounted = true;
+    if (!vantaRef.current || vantaEffectRef.current) return;
 
-    const initVanta = async () => {
-      try {
-        // Load THREE.js
-        if (!window.THREE) {
-          await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-          });
-        }
-
-        // Load Vanta NET
-        if (!window.VANTA) {
-          await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-          });
-        }
-
-        // Initialize Vanta effect
-        if (isMounted && vantaRef.current && window.VANTA && window.THREE) {
-          const effect = window.VANTA.NET({
-            el: vantaRef.current,
-            THREE: window.THREE,
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            color: 0x9333ea, // Purple
-            backgroundColor: 0x0a0a0f, // Very dark
-            points: 12.00,
-            maxDistance: 23.00,
-            spacing: 18.00,
-            showDots: true
-          });
-          
-          if (isMounted) {
-            vantaEffectRef.current = effect;
-            setIsLoaded(true);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load Vanta.js:', error);
-        if (isMounted) {
-          setIsLoaded(true); // Show content even if Vanta fails
-        }
-      }
-    };
-
-    initVanta();
+    try {
+      vantaEffectRef.current = NET({
+        el: vantaRef.current,
+        THREE,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        scale: 1.0,
+        scaleMobile: 1.0,
+        color: 0x9333ea,
+        backgroundColor: 0x0a0a0f,
+        points: 12.0,
+        maxDistance: 23.0,
+        spacing: 18.0,
+        showDots: true,
+      });
+      setIsLoaded(true);
+    } catch (error) {
+      console.error('Failed to initialize Vanta NET effect:', error);
+      setIsLoaded(false);
+    }
 
     return () => {
-      isMounted = false;
       if (vantaEffectRef.current) {
         vantaEffectRef.current.destroy();
         vantaEffectRef.current = null;
@@ -101,9 +67,6 @@ const VantaNotFoundPage = () => {
       {/* Main Content */}
       <div className="main-content">
         
-        {/* Animated Background Elements */}
-        <div className="bg-orb bg-orb-1"></div>
-        <div className="bg-orb bg-orb-2"></div>
         
         {/* 404 Text */}
         <div className="error-number-container">
@@ -149,35 +112,10 @@ const VantaNotFoundPage = () => {
           </button>
         </div>
 
-        {/* Network Status Bar */}
-        <div className="status-bar">
-          <div className="status-items">
-            <div className="status-item">
-              <div className="status-dot status-dot-red animate-pulse"></div>
-              <span>Network Error</span>
-            </div>
-            <div className="status-item">
-              <div className="status-dot status-dot-orange animate-pulse-delayed-1"></div>
-              <span>Status: 404</span>
-            </div>
-            <div className="status-item">
-              <div className="status-dot status-dot-green animate-pulse-delayed-2"></div>
-              <span>System Online</span>
-            </div>
-            <div className="status-item">
-              <div className="status-dot status-dot-blue animate-pulse-delayed-3"></div>
-              <span>Reconnecting...</span>
-            </div>
-          </div>
+        
         </div>
       </div>
 
-      {/* Floating Network Icons */}
-      <div className="floating-icon floating-icon-1">🔗</div>
-      <div className="floating-icon floating-icon-2">📡</div>
-      <div className="floating-icon floating-icon-3">🌐</div>
-      <div className="floating-icon floating-icon-4">⚡</div>
-    </div>
   );
 };
 
