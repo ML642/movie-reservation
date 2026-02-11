@@ -10,33 +10,33 @@ import { useNavigate } from "react-router-dom";
 const Signin = () => {
   
   const vantaRef = useRef(null);
-  const [vantaEffect, setVantaEffect] = useState(null);
+  const vantaEffectRef = useRef(null);
   
   useEffect(() => {
-    if (!vantaEffect && vantaRef.current) {
-      setVantaEffect(
-        WAVES({
-          el: vantaRef.current,
-          THREE,
-          mouseControls: true,
-          touchControls: true,
-          minHeight: 200.0,
-          minWidth: 200.0,
-          scale: 1.0,
-          scaleMobile: 1.0,
-          color: 0x1a1a2e,
-          shininess: 10,
-          waveHeight: 20,
-          waveSpeed: 0.5,
-          zoom: 1,
-        })
-      );
-    }
+    if (!vantaRef.current || vantaEffectRef.current) return;
+
+    vantaEffectRef.current = WAVES({
+      el: vantaRef.current,
+      THREE,
+      mouseControls: true,
+      touchControls: true,
+      minHeight: 200.0,
+      minWidth: 200.0,
+      scale: 1.0,
+      scaleMobile: 1.0,
+      color: 0x1a1a2e,
+      shininess: 10,
+      waveHeight: 20,
+      waveSpeed: 0.5,
+      zoom: 1,
+    });
+
     return () => {
-      if (vantaEffect) vantaEffect.destroy();
+      if (vantaEffectRef.current) {
+        vantaEffectRef.current.destroy();
+        vantaEffectRef.current = null;
+      }
     };
-        // Only run once on mount/unmount
-    // eslint-disable-next-line
   }, []);
 
     const [form, setForm] = useState({ username: "" ,  email: "", password: "" });

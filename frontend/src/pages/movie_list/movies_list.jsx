@@ -62,6 +62,8 @@ const MovieList = () => {
     const { data, isLoading} = useQuery({
       queryKey: ['popularMovies'],
       queryFn: fetchPopularMovies,
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
     });
    
     
@@ -127,49 +129,42 @@ const MovieList = () => {
     };
 
     const vantaRef = useRef(null);
-    const [vanta_effect, setVantaEffect] = useState(null);
+    const vantaEffectRef = useRef(null);
 
    useEffect(() =>{
-    if(!vanta_effect && vantaRef.current){
-        setVantaEffect(
-            FOG({
-            el: vantaRef.current,
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            highlightColor: 0x0,
-            midtoneColor: 0x655755,
-            lowlightColor: 0x31198b,
-            baseColor: 0x583434, 
-            THREE: THREE,
-            speed: 1.00,
-            })
-            )
-    }
-    
+    if (!vantaRef.current || vantaEffectRef.current) return;
 
-return ()=> {
-        if(vanta_effect) vanta_effect.destroy();
-    }
+    vantaEffectRef.current = FOG({
+      el: vantaRef.current,
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      highlightColor: 0x0,
+      midtoneColor: 0x655755,
+      lowlightColor: 0x31198b,
+      baseColor: 0x583434, 
+      THREE: THREE,
+      speed: 1.00,
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (vantaEffectRef.current?.resize) {
+        vantaEffectRef.current.resize();
+      }
+    });
+
+    resizeObserver.observe(vantaRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      if (vantaEffectRef.current) {
+        vantaEffectRef.current.destroy();
+        vantaEffectRef.current = null;
+      }
+    };
    }, [])
-useEffect(() => {
-  if (!vantaRef.current) return;
-
-  const resizeObserver = new ResizeObserver(() => {
-    if (vanta_effect?.resize) {
-      vanta_effect.resize();
-      console.log("Vanta effect resized");
-    }
-  });
-
-  resizeObserver.observe(vantaRef.current);
-  
-  return () => {
-    resizeObserver.disconnect(); // cleanup on unmount
-  };
-}, [vanta_effect]);
    // Movie data array
 
    return (

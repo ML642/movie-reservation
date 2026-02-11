@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import LoggedIn from "../LoggedIn/LoggedIn.jsx"
@@ -18,11 +18,24 @@ const Header = () => {
 
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isScrolledRef = useRef(false);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    let rafId = null;
+    const handleResize = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        setIsMobile(window.innerWidth < 768);
+        rafId = null;
+      });
+    };
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   const style_login = {
@@ -50,9 +63,14 @@ const Header = () => {
   }, [Location]);
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      const nextScrolled = window.scrollY > 10;
+      if (nextScrolled !== isScrolledRef.current) {
+        isScrolledRef.current = nextScrolled;
+        setIsScrolled(nextScrolled);
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

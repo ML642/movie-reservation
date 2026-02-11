@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './myReservations.module.css';
 import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
@@ -95,48 +95,56 @@ export default function MyReservations() {
   const navigate = useNavigate();
    const [alertQr , setAlertQr] = useState(null);
 
-  useEffect(()=> {  
-      axios.post(`${process.env.REACT_APP_API_URL}/api/reservation/id`, {}, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-    }).catch(error => {
-      console.log("Error fetching reservations:", error);
-    })
-      .then(response => {
+  useEffect(() => {
+    const fetchReservations = async () => {
+      const token = localStorage.getItem('token');
+      if (!isAuthenticated() || !token) {
+        navigate('/login');
+        setLoading(false);
+        return;
+      }
+
+      const userData = getUserFromToken();
+      if (!userData) {
+        navigate('/login');
+        setLoading(false);
+        return;
+      }
+
+      setUser(userData);
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/reservation/id`,
+          {},
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
         if (response.data.success) {
           setReservations(response.data.data);
           console.log("Reservations fetched successfully:", response.data.data);
-        }})
+        }
+      } catch (error) {
+        console.log("Error fetching reservations:", error);
+        if (error.response?.status === 401) {
+          navigate('/login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    }, []);
+    fetchReservations();
+  }, [navigate]);
     console.log(  "Reservations:", reservations);
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [location.key]);
   
-
-
-  useEffect(() => {
-    // Check if user is authenticated
-    if (!isAuthenticated()) {
-      navigate('/login');
-      return;
-    }
-    
-    // Get user data from JWT token
-    const userData = getUserFromToken();
-    if (!userData) {
-      navigate('/login');
-      return;
-    }
-    setReservations(dummyReservations);
-    setUser(userData);
-    
-    setLoading(false);
-  }, [navigate]);
-
   // Filter reservations based on active filter
   const filteredReservations = reservations.filter(reservation => {
     if (activeFilter === 'all') return true;
@@ -168,7 +176,7 @@ export default function MyReservations() {
           axios.delete(`${process.env.REACT_APP_API_URL}/api/reservation/delete/${reservationId}`,{
           headers: {
             'Content-Type': 'application/json',
-            'authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })}
       catch (error) {

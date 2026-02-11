@@ -7,10 +7,11 @@
   position: relative;
   height: 100vh;
   min-height: 80vh;
-  background-attachment: fixed;
+  background-attachment: scroll;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  will-change: background-position;
   display: flex;
   align-items: center;
   justify-content: center;

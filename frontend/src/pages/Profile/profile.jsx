@@ -23,6 +23,13 @@ export default  function Profile() {
   
   useEffect(() => {
   const fetchData = async () => {
+    const token = localStorage.getItem('token');
+    if (!isAuthenticated() || !token || !userData1?.id) {
+      navigate('/login');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Fetch reservations
       const resReservations = await axios.post(
@@ -31,7 +38,7 @@ export default  function Profile() {
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         }
       );
@@ -44,7 +51,7 @@ export default  function Profile() {
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         }
       );
@@ -69,12 +76,15 @@ export default  function Profile() {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching data:", err);
+      if (err.response?.status === 401) {
+        navigate('/login');
+      }
       setLoading(false);
     }
   };
 
   fetchData();
-}, []);
+}, [navigate, userData1?.id]);
     
     console.log(  "Reservations:", reservations);
     

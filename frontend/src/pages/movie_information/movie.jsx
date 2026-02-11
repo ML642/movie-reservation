@@ -116,7 +116,7 @@ const Movie = () => {
      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/reservation` , ReservationData, {
       headers : {
         "Content-Type" : "application/json",
-        authorization: `Bearer ${localStorage.getItem("token")}` ,
+        Authorization: `Bearer ${localStorage.getItem("token")}` ,
       }
      }) ; 
       
@@ -137,14 +137,13 @@ const Movie = () => {
     
 
     catch(error) {
-      
-
-     console.log("Reservation Response:", error.status);
-     if (error.status === 401  ){
+     console.log("Reservation Response:", error.response?.status);
+     if (error.response?.status === 401  ){
       alert("Please log in to make a reservation");
       navigate("/login");
     
      }
+      setIsLoading(false);
       console.log(error);
     }
   }

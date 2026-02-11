@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './NotFound.css';
-import NET from 'vanta/dist/vanta.net.min';
   
 const VantaNotFoundPage = () => {
   const vantaRef = useRef(null);
-  const [vantaEffect, setVantaEffect] = useState(null);
+  const vantaEffectRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   
   useEffect(() => {
@@ -55,7 +54,7 @@ const VantaNotFoundPage = () => {
           });
           
           if (isMounted) {
-            setVantaEffect(effect);
+            vantaEffectRef.current = effect;
             setIsLoaded(true);
           }
         }
@@ -71,8 +70,9 @@ const VantaNotFoundPage = () => {
 
     return () => {
       isMounted = false;
-      if (vantaEffect) {
-        vantaEffect.destroy();
+      if (vantaEffectRef.current) {
+        vantaEffectRef.current.destroy();
+        vantaEffectRef.current = null;
       }
     };
   }, []);

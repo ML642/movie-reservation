@@ -11,21 +11,22 @@ router.use((req, res, next) => {
     console.log(`${req.method} ${req.originalUrl} - Body:`, req.body);
     const authHeader = req.headers["authorization"];
     console.log("Authorization header:", authHeader)
-    const token = authHeader && authHeader.split(" ")[1];
-    
-    
-    
-
-
-    if (authHeader === undefined || authHeader === null || authHeader === "") {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
         console.log("Unauthorized: User not logged in");
         return res.status(401).json({
             success: false,
             message: "Please log in to make a reservation"
         });
     }
+    const token = authHeader.split(" ")[1];
     console.log("Authoritation token:", token);
-    req.user = getUsernameFromToken(token)
+    req.user = getUsernameFromToken(token);
+    if (!req.user) {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid or expired token"
+        });
+    }
     next();
 
 })
@@ -118,7 +119,7 @@ router.get("/all", (req, res) => {
 });
 
 router.post("/id", (req , res) => {
-    const {userId} = req.user  ;
+    const {userId} = req.user || {};
     let userReservations = [] ;
     console.log("POST /reservation/id - User ID:", userId);
     console.log(Reservations)

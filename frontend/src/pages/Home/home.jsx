@@ -32,27 +32,57 @@ export default function Home() {
              /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     };
 
+    // Skip parallax on smaller/touch devices where it hurts smoothness.
+    if (isMobileOrTablet()) return;
+
+    const parallaxElements = document.querySelectorAll('.parallax-section');
+    let rafId = null;
+    let latestScrollY = window.pageYOffset;
+
+    const updateParallax = () => {
+      const rate = latestScrollY * -0.2;
+      parallaxElements.forEach((element) => {
+        element.style.backgroundPosition = `center ${rate}px`;
+      });
+      rafId = null;
+    };
+
     const handleScroll = () => {
-      // Only apply parallax effect on desktop devices
-      if (!isMobileOrTablet()) {
-        const parallaxElements = document.querySelectorAll('.parallax-section');
-        parallaxElements.forEach((element) => {
-          const scrolled = window.pageYOffset;
-          const rate = scrolled * -0.3;
-          element.style.backgroundPositionY = `${rate}px`;
-        });
+      latestScrollY = window.pageYOffset;
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(updateParallax);
       }
     };
 
-    // Only add scroll listener if not on mobile/tablet
-    if (!isMobileOrTablet()) {
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-    }
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Preload background images so the first section paints immediately.
+    const imagePaths = ['/images/cinema-1.jpg', '/images/cinema-2.jpg'];
+    imagePaths.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
   }, []);
 
   return (
     <div className="app">
+      <img
+        src="/images/cinema-1.jpg"
+        alt=""
+        aria-hidden="true"
+        fetchPriority="high"
+        loading="eager"
+        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+      />
       <main className="main-content">
         {/*<Hero />*/}
         
@@ -66,7 +96,7 @@ export default function Home() {
   }
   initial="hidden"
   animate="visible"
-  transition={{ duration: 1.5 , delay: 1.5 }}
+  transition={{ duration: 1.5 , delay: 2 }}
   style={{position : "absolute",}}
 
 >
@@ -85,7 +115,7 @@ export default function Home() {
         }}
         initial =  "hidden"
         animate = "visible"
-        transition={{ duration: 1.5, ease: "easeInOut" , delay: 0.5 }}
+        transition={{ duration: 1.5, ease: "easeInOut" , delay: 1.5 }}
         style = {{ position: 'absolute', top: '50', left: '0', right: '0' , background: 'linear-gradient(to right,rgb(131, 56, 38),rgb(172, 157, 145))', padding: '10px', borderRadius: '50px', color: '#fff', textAlign: 'center', zIndex: 1, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' , width: '80%', height: '30%' }}
         >
             <div style={{fontSize :"20px" , display : "flex" }}><h2 style={{justifyContent:"center", alignItems:"center" , color:"black" ,  paddingRight:"20px"}}> Get Started </h2> </div>

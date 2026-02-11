@@ -9,14 +9,11 @@
 
     const app = express();
 
-
-    // Add a simple logger to see if requests are coming in
     app.use((req, res, next) => {
     console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
     next();
     });
-
-    // More explicit CORS configuration
+   
     const allowedOrigins = [
         'https://movie-reservation-1.onrender.com',
         'http://localhost:3000'
@@ -40,7 +37,6 @@ const corsOptions = {
 
     app.use(cors(corsOptions));
 
-    // Then, parse JSON bodies
     app.use(express.json());
 
 
