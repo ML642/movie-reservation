@@ -16,6 +16,12 @@ export default  function Profile() {
   const [alertQr , setAlertQr] = useState(null);
   
   const userData1 = getUserFromToken();
+  const tokenUserId = userData1?.id;
+  const tokenUserName = userData1?.name;
+  const tokenUserEmail = userData1?.email;
+  const tokenUserAvatar = userData1?.avatar;
+  const tokenUserRole = userData1?.role;
+  const tokenIssuedAt = userData1?.iat;
     
   const navigate = useNavigate();
 
@@ -24,14 +30,27 @@ export default  function Profile() {
   useEffect(() => {
   const fetchData = async () => {
     const token = localStorage.getItem('token');
-    if (!isAuthenticated() || !token || !userData1?.id) {
+    if (!isAuthenticated() || !token || !tokenUserId) {
       navigate('/login');
       setLoading(false);
       return;
     }
 
+    const getFallbackUser = (reservationsData = []) => ({
+      name: tokenUserName || localStorage.getItem('username') || 'User',
+      email: tokenUserEmail || localStorage.getItem('userEmail') || 'No email provided',
+      avatar: tokenUserAvatar || '',
+      memberSince: tokenIssuedAt ? new Date(tokenIssuedAt * 1000).getFullYear() : '2024',
+      totalReservations: reservationsData.length,
+      favoriteGenre: 'Action',
+      reservations: reservationsData,
+      id: tokenUserId,
+      role: tokenUserRole
+    });
+
+    let reservationsData = [];
+
     try {
-      // Fetch reservations
       const resReservations = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/reservation/id`,
         {},
@@ -42,12 +61,22 @@ export default  function Profile() {
           }
         }
       );
-      const reservationsData = resReservations.data.data || [];
+      reservationsData = resReservations.data.data || [];
+    } catch (err) {
+      console.error("Error fetching reservations:", err);
+      if (err.response?.status === 401) {
+        navigate('/login');
+        setLoading(false);
+        return;
+      }
+    }
 
-      // Fetch user data
+    setReservations(reservationsData);
+
+    try {
       const resUser = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/userInfo`,
-        { userId: userData1.id },
+        { userId: tokenUserId },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -57,34 +86,40 @@ export default  function Profile() {
       );
       const userData = resUser.data;
 
-      if (userData) {
-        const formattedUser = {
-          name: userData.name || userData.username || 'User',
-          email: userData.email || 'No email provided',
-          avatar: userData.avatar || userData.picture || '',
-          memberSince: userData.createdAt ? new Date(userData.createdAt).getFullYear() : '2024',
-          totalReservations: reservationsData.length,
-          favoriteGenre: userData.favoriteGenre || 'Action',
-          reservations: reservationsData,
-          id: userData.id,
-          role: userData.role
-        };
-        setUser(formattedUser);
-      }
+      const formattedUser = {
+        name: userData?.name || userData?.username || 'User',
+        email: userData?.email || localStorage.getItem('userEmail') || 'No email provided',
+        avatar: userData?.avatar || userData?.picture || '',
+        memberSince: userData?.createdAt ? new Date(userData.createdAt).getFullYear() : '2024',
+        totalReservations: reservationsData.length,
+        favoriteGenre: userData?.favoriteGenre || 'Action',
+        reservations: reservationsData,
+        id: userData?.id || tokenUserId,
+        role: userData?.role || tokenUserRole
+      };
 
-      setReservations(reservationsData); // still update state if needed
-      setLoading(false);
+      setUser(formattedUser);
     } catch (err) {
-      console.error("Error fetching data:", err);
       if (err.response?.status === 401) {
         navigate('/login');
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      if (err.response?.status === 404) {
+        console.warn('User profile was not found on backend. Falling back to token/local storage data.');
+      } else {
+        console.error("Error fetching user profile:", err);
+      }
+
+      setUser(getFallbackUser(reservationsData));
     }
+
+    setLoading(false);
   };
 
   fetchData();
-}, [navigate, userData1?.id]);
+}, [navigate, tokenIssuedAt, tokenUserAvatar, tokenUserEmail, tokenUserId, tokenUserName, tokenUserRole]);
     
     console.log(  "Reservations:", reservations);
     

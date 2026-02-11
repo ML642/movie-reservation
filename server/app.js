@@ -94,7 +94,7 @@ const corsOptions = {
 
             // Generate token
             const token = jwt.sign(
-                { userId: user.id, username: user.username , userEmail: "some email" },
+                { userId: user.id, username: user.username, userEmail: user.email },
                 process.env.JWT_SECRET || 'secret-key',
                 { expiresIn: '7d' }
             );
@@ -121,22 +121,55 @@ const corsOptions = {
     });
 
     app.post("/api/userInfo" , (req ,res )=> {
-        const id = req.body.userId ; 
-        const user = users.find(user => user.id === id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        const authHeader = req.headers["authorization"];
+        let decodedToken = null;
+
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            const token = authHeader.split(" ")[1];
+            try {
+                decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'secret-key');
+            } catch (error) {
+                return res.status(401).json({ message: "Invalid or expired token" });
+            }
         }
-        res.json({
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            createdAt: user.createdAt
-        });
 
-        console.log("User info requested for ID:", id);
-        console.log("User data:", user);
+        const bodyUserId = req.body.userId;
+        const tokenUserId = decodedToken?.userId;
+        const id = tokenUserId || bodyUserId;
 
+        if (!id) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
 
+        if (tokenUserId && bodyUserId && tokenUserId !== bodyUserId) {
+            return res.status(403).json({ message: "Forbidden: user mismatch" });
+        }
+
+        const user = users.find(user => user.id === id);
+
+        if (user) {
+            console.log("User info requested for ID:", id);
+            console.log("User data:", user);
+            return res.json({
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                createdAt: user.createdAt
+            });
+        }
+
+        // Fallback for restarted servers with in-memory storage:
+        // if token is valid, return claims so profile page can still render.
+        if (decodedToken && decodedToken.userId === id) {
+            return res.json({
+                id: decodedToken.userId,
+                username: decodedToken.username || "User",
+                email: decodedToken.userEmail || null,
+                createdAt: null
+            });
+        }
+
+        return res.status(404).json({ message: "User not found" });
     })
     app.patch("/api/changeInfo" , (req , res) => {
         const { userId, newEmail ,  newName  } = req.body;
@@ -202,7 +235,7 @@ const corsOptions = {
 
             // Generate token
             const token = jwt.sign(
-                { userId: user.id, username: user.username },
+                { userId: user.id, username: user.username, userEmail: user.email },
                 process.env.JWT_SECRET || 'secret-key',
                 { expiresIn: '7d' }
             );

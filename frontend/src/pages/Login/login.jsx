@@ -90,12 +90,13 @@ const Login = () => {
               setIsLoading(false);
               localStorage.setItem('token', data.token);
               localStorage.setItem('username', data.user.username);
+              localStorage.setItem('userEmail', data.user.email || form.email);
               alert("Login successful!");
               // Redirect to home page
               navigate('/');
             } else {
               setIsLoading(false);
-              if(result.status === "401") alert("wrong email or password");
+              if(result.status === 401) alert("wrong email or password");
               setError(data.message || "Login failed");
             }
           } catch (err) {
