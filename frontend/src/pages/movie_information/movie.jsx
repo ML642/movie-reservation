@@ -86,15 +86,25 @@ const Movie = () => {
       return;
     }
 
+    const token = localStorage.getItem('token');
+    const requestConfig = {
+      params: {
+        movieId: id,
+        theaterId: selectedTheater,
+        date: toDateKey(selectedDate),
+        time: selectedTime,
+      },
+      headers: {},
+    };
+    if (token) {
+      requestConfig.headers.Authorization = `Bearer ${token}`;
+    }
+
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservation/seats`, {
-        params: {
-          movieId: id,
-          theaterId: selectedTheater,
-          date: toDateKey(selectedDate),
-          time: selectedTime,
-        },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/reservation/seats`,
+        requestConfig
+      );
 
       const taken = Array.isArray(response.data?.bookedSeats) ? response.data.bookedSeats : [];
       const takenSet = new Set(taken);
@@ -103,6 +113,13 @@ const Movie = () => {
       setSelectedSeats((prev) => prev.filter((seatId) => !takenSet.has(seatId)));
     } catch (seatError) {
       console.error('Error fetching booked seats:', seatError);
+      const status = seatError.response?.status;
+      if (status === 401) {
+        // Avoid false "sync unavailable" warning for auth-only failures.
+        setSeatSyncUnavailable(false);
+        setBookedSeatSet(new Set());
+        return;
+      }
       setSeatSyncUnavailable(true);
     }
   }, [id, selectedTheater, selectedDate, selectedTime]);

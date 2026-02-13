@@ -14,17 +14,19 @@
     next();
     });
    
-    const allowedOrigins = [
+    const allowedOrigins = new Set([
         'https://movie-reservation-1.onrender.com',
+        'https://movie-reservation-z2nv.onrender.com',
         'http://localhost:3000'
-    ]; 
+    ]); 
 
 const corsOptions = {
   origin: function (origin, callback) {
     // allow requests with no origin (like curl, Postman, server-to-server)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+    if (allowedOrigins.has(origin) || isLocalhost) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -258,8 +260,15 @@ const corsOptions = {
     app.post('/api/login', async (req, res) => {
         try {
             const { email, password } = req.body;
+            const loginId = (email || '').trim();
+            if (!loginId || !password) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email/username and password are required'
+                });
+            }
 
-            const user = findUserByEmail(email);
+            const user = findUserByEmail(loginId) || findUserByUsername(loginId);
             if (!user) {
                 return res.status(401).json({
                     success: false,

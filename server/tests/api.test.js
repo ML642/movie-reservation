@@ -208,6 +208,14 @@ test('register/login flow works and duplicate registration is rejected', async (
   assert.equal(loginRes.json?.success, true);
   assert.ok(loginRes.json?.token);
 
+  const usernameLoginRes = await apiRequest('/api/login', {
+    method: 'POST',
+    body: { email: payload.username, password: payload.password },
+  });
+  assert.equal(usernameLoginRes.status, 200);
+  assert.equal(usernameLoginRes.json?.success, true);
+  assert.ok(usernameLoginRes.json?.token);
+
   const badLoginRes = await apiRequest('/api/login', {
     method: 'POST',
     body: { email: payload.email, password: 'wrong-password' },

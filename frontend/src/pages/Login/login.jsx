@@ -119,14 +119,14 @@ const Login = () => {
             <form onSubmit={handleSubmit} class = "form" >
                 <h1 style={{color:"white", textAlign:"center" , }}> Login</h1>
                 <div style={{display:"block" , width : "80%"}}>   
-                <label for="email" className = "label">Email Address   </label>  
+                <label for="email" className = "label">Email or Username</label>  
                 <input
                     
                     className="input"
-                    type="email"
+                    type="text"
                     id = "email"
                     name="email"
-                    placeholder="user@gmail.com"
+                    placeholder="user@gmail.com or user"
                     value={form.email}
                     onChange={handleChange}
                     
