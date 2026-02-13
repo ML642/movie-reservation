@@ -4,6 +4,44 @@ const { getUsernameFromToken } = require("./utils/auth.js");
 
 let LastId = 0;
 let Reservations = [];
+const ShowSeatAvailability = new Map();
+
+const normalizeShowDate = (dateValue) => {
+    const parsed = new Date(dateValue);
+    if (Number.isNaN(parsed.getTime())) {
+        return null;
+    }
+    return parsed.toISOString().slice(0, 10);
+};
+
+const buildShowKey = ({ movieId, theaterId, bookingDate, showtime }) => {
+    const dateKey = normalizeShowDate(bookingDate);
+    if (!movieId || !theaterId || !showtime || !dateKey) {
+        return null;
+    }
+    return `${movieId}::${theaterId}::${dateKey}::${showtime}`;
+};
+
+const getOrCreateSeatSet = (showKey) => {
+    if (!ShowSeatAvailability.has(showKey)) {
+        ShowSeatAvailability.set(showKey, new Set());
+    }
+    return ShowSeatAvailability.get(showKey);
+};
+
+const releaseBookedSeats = (showKey, seats) => {
+    if (!showKey || !Array.isArray(seats)) {
+        return;
+    }
+    const set = ShowSeatAvailability.get(showKey);
+    if (!set) {
+        return;
+    }
+    seats.forEach((seatId) => set.delete(seatId));
+    if (set.size === 0) {
+        ShowSeatAvailability.delete(showKey);
+    }
+};
 
 const getReservationOwnerId = (reservation) => {
     if (reservation.userId) {
@@ -16,65 +54,117 @@ const getReservationOwnerId = (reservation) => {
     return decoded?.userId || null;
 };
 
-//midlleware to log request 
+router.get("/seats", (req, res) => {
+    const { movieId, theaterId, date, time, bookingDate, showtime } = req.query;
+    const showKey = buildShowKey({
+        movieId,
+        theaterId,
+        bookingDate: date || bookingDate,
+        showtime: time || showtime,
+    });
+
+    if (!showKey) {
+        return res.status(400).json({
+            success: false,
+            message: "movieId, theaterId, date and time are required",
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        bookedSeats: Array.from(getOrCreateSeatSet(showKey)),
+    });
+});
 
 router.use((req, res, next) => {
     console.log(`${req.method} ${req.originalUrl} - Body:`, req.body);
     const authHeader = req.headers["authorization"];
-    console.log("Authorization header:", authHeader)
+    console.log("Authorization header:", authHeader);
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         console.log("Unauthorized: User not logged in");
         return res.status(401).json({
             success: false,
-            message: "Please log in to make a reservation"
+            message: "Please log in to make a reservation",
         });
     }
     const token = authHeader.split(" ")[1];
-    console.log("Authoritation token:", token);
     req.user = getUsernameFromToken(token);
     if (!req.user) {
         return res.status(401).json({
             success: false,
-            message: "Invalid or expired token"
+            message: "Invalid or expired token",
         });
     }
     next();
-
-})
-
-
-
-
-
-
+});
 
 router.post("/", (req, res) => {
     console.log("POST /reservation - Request body:", req.body);
-
     const generateId = () => (++LastId).toString();
 
     try {
         const { userId } = req.user || {};
-        const {  movieId, theaterId , seats, totalPrice , movieName ,  moviePoster ,  theaterName ,  movieDuration ,movieGenre ,showtime , bookingDate  } = req.body;
+        const {
+            movieId,
+            theaterId,
+            seats,
+            totalPrice,
+            movieName,
+            moviePoster,
+            theaterName,
+            movieDuration,
+            movieGenre,
+            showtime,
+            bookingDate,
+        } = req.body;
 
         if (!userId) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid or expired token"
+                message: "Invalid or expired token",
             });
         }
-        
-        // Validate required fields
-  
 
-
-        if ( !movieId || !seats || !seats.length || totalPrice === undefined || !showtime || !theaterId || !movieName || !moviePoster || !theaterName || !movieDuration || !movieGenre || !bookingDate) {
-            console.log("Bad request: Missing required fields");
-            return res.status(400).json({ 
-                success: false, 
-                message: "Missing required fields" 
+        if (
+            !movieId ||
+            !seats ||
+            !Array.isArray(seats) ||
+            !seats.length ||
+            totalPrice === undefined ||
+            !showtime ||
+            !theaterId ||
+            !movieName ||
+            !moviePoster ||
+            !theaterName ||
+            !movieDuration ||
+            !movieGenre ||
+            !bookingDate
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required fields",
             });
         }
+
+        const showKey = buildShowKey({ movieId, theaterId, bookingDate, showtime });
+        if (!showKey) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid show date/time",
+            });
+        }
+
+        const bookedSeats = getOrCreateSeatSet(showKey);
+        const conflictingSeats = seats.filter((seatId) => bookedSeats.has(seatId));
+        if (conflictingSeats.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: "Some seats are already taken",
+                conflictingSeats,
+            });
+        }
+
+        seats.forEach((seatId) => bookedSeats.add(seatId));
 
         const reservation = {
             id: generateId(),
@@ -82,126 +172,109 @@ router.post("/", (req, res) => {
             movieId,
             seats,
             totalPrice,
-           
-            createdAt: new Date().toISOString() , 
-            movie: movieName ,
-            poster : moviePoster,
+            createdAt: new Date().toISOString(),
+            movie: movieName,
+            poster: moviePoster,
             date: bookingDate,
             time: showtime,
-            seat : seats.join(", "),
-            status : "upcoming",
-            theater : theaterName , 
-            price : totalPrice,
-            bookingDate, 
+            seat: seats.join(", "),
+            status: "upcoming",
+            theater: theaterName,
+            price: totalPrice,
+            bookingDate,
             genre: movieGenre,
             duration: movieDuration,
-            rating : 0 ,
-
-
+            rating: 0,
             theaterId,
             theaterName,
             movieDuration,
             movieGenre,
             showtime,
-           
-       
-          
+            showKey,
         };
-       
-      
+
         Reservations.push(reservation);
-        console.log("New reservation created:", reservation);
-        
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "Reservation created successfully",
-            data: reservation
+            data: reservation,
         });
-
     } catch (error) {
         console.error("Reservation error:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Error creating reservation" 
+        return res.status(500).json({
+            success: false,
+            message: "Error creating reservation",
         });
     }
 });
-
 
 router.get("/all", (req, res) => {
     const { userId } = req.user || {};
-    console.log("GET /reservation - Returning user reservations");
-    const userReservations = Reservations.filter((reservation) => getReservationOwnerId(reservation) === userId);
-    res.status(200).json({
-        success: true, 
-        data: userReservations
-    });
-    console.log("User reservations:", userReservations);
-});
-
-router.post("/id", (req , res) => {
-    const {userId} = req.user || {};
-    let userReservations = [] ;
-    console.log("POST /reservation/id - User ID:", userId);
-    console.log(Reservations)
-    //  console.log("Checking reservation:", Reservations[0].jwt);
-    //  console.log("Checking reservation:", getUsernameFromToken(Reservations[0].jwt));
-    if (!userId) {
-            console.log("bad request: User ID is required");
-            return res.status(400).json({ 
-                success: false, 
-                message: "User ID is required" 
-            });
-        }
-   
- 
-    
-    for (let i of Reservations) {
-        const reservationId = getReservationOwnerId(i);
-        if (reservationId=== userId) {
-            userReservations.push(i);
-    }
-
-    }
-    console.log("GET /reservation/:id - User reservations:", userReservations);
+    const userReservations = Reservations.filter(
+        (reservation) => getReservationOwnerId(reservation) === userId
+    );
     res.status(200).json({
         success: true,
-        data: userReservations
+        data: userReservations,
     });
-    
-})
+});
 
-router.delete("/delete/:id", (req, res) => {
-    const id = req.params.id
+router.post("/id", (req, res) => {
     const { userId } = req.user || {};
-    console.log(`DELETE /reservation/delete/${id} - Request received`);
-
-    const index = Reservations.findIndex(r => r.id === id);
-    if (index === -1) {
-        console.log(`Reservation with ID ${id} not found`);
-        return res.status(404).json({
+    if (!userId) {
+        return res.status(400).json({
             success: false,
-            message: "Reservation not found"
+            message: "User ID is required",
         });
     }
 
-    const reservationOwnerId = getReservationOwnerId(Reservations[index]);
+    const userReservations = Reservations.filter(
+        (reservation) => getReservationOwnerId(reservation) === userId
+    );
+    return res.status(200).json({
+        success: true,
+        data: userReservations,
+    });
+});
+
+router.delete("/delete/:id", (req, res) => {
+    const id = req.params.id;
+    const { userId } = req.user || {};
+
+    const reservation = Reservations.find((r) => r.id === id);
+    if (!reservation) {
+        return res.status(404).json({
+            success: false,
+            message: "Reservation not found",
+        });
+    }
+
+    const reservationOwnerId = getReservationOwnerId(reservation);
     if (!reservationOwnerId || reservationOwnerId !== userId) {
         return res.status(403).json({
             success: false,
-            message: "Forbidden: not your reservation"
+            message: "Forbidden: not your reservation",
         });
     }
 
-    Reservations[index].status = "cancelled";
-    console.log(`Reservation with ID ${id} cancelled`);
-    
-    res.status(200).json({
+    if (reservation.status !== "cancelled") {
+        const showKey =
+            reservation.showKey ||
+            buildShowKey({
+                movieId: reservation.movieId,
+                theaterId: reservation.theaterId,
+                bookingDate: reservation.bookingDate || reservation.date,
+                showtime: reservation.showtime || reservation.time,
+            });
+        releaseBookedSeats(showKey, reservation.seats);
+    }
+
+    reservation.status = "cancelled";
+    return res.status(200).json({
         success: true,
         message: "Reservation cancelled successfully",
-        data: Reservations[index]
-    })
-}
-)
+        data: reservation,
+    });
+});
 
 module.exports = router;

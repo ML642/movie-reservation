@@ -138,6 +138,16 @@ const createReservation = async (token, overrides = {}) => {
   });
 };
 
+const getBookedSeats = async ({ movieId, theaterId, date, time }) => {
+  const query = new URLSearchParams({
+    movieId: String(movieId),
+    theaterId: String(theaterId),
+    date,
+    time,
+  });
+  return apiRequest(`/api/reservation/seats?${query.toString()}`);
+};
+
 test.before(async () => {
   const port = await getFreePort();
   baseUrl = `http://127.0.0.1:${port}`;
@@ -251,6 +261,16 @@ test('reservation endpoint requires auth token', async () => {
 
 test('authenticated user can create, list, and cancel own reservation', async () => {
   const user = await registerUser();
+  const seatQuery = {
+    movieId: 'm-own-1',
+    theaterId: 1,
+    date: '2026-02-11',
+    time: '7:00 PM',
+  };
+
+  const initialSeatsRes = await getBookedSeats(seatQuery);
+  assert.equal(initialSeatsRes.status, 200);
+  assert.deepEqual(initialSeatsRes.json?.bookedSeats, []);
 
   const createRes = await createReservation(user.token, {
     movieId: 'm-own-1',
@@ -261,6 +281,13 @@ test('authenticated user can create, list, and cancel own reservation', async ()
   assert.ok(createRes.json?.data?.id);
 
   const reservationId = createRes.json.data.id;
+
+  const seatsAfterCreateRes = await getBookedSeats(seatQuery);
+  assert.equal(seatsAfterCreateRes.status, 200);
+  assert.deepEqual(
+    new Set(seatsAfterCreateRes.json?.bookedSeats || []),
+    new Set(['B2', 'B3'])
+  );
 
   const listRes = await apiRequest('/api/reservation/id', {
     method: 'POST',
@@ -279,6 +306,10 @@ test('authenticated user can create, list, and cancel own reservation', async ()
   assert.equal(cancelRes.status, 200);
   assert.equal(cancelRes.json?.success, true);
   assert.equal(cancelRes.json?.data?.status, 'cancelled');
+
+  const seatsAfterCancelRes = await getBookedSeats(seatQuery);
+  assert.equal(seatsAfterCancelRes.status, 200);
+  assert.deepEqual(seatsAfterCancelRes.json?.bookedSeats, []);
 });
 
 test('user cannot cancel another user reservation', async () => {
@@ -300,4 +331,29 @@ test('user cannot cancel another user reservation', async () => {
   assert.equal(forbiddenRes.status, 403);
   assert.equal(forbiddenRes.json?.success, false);
   assert.match(forbiddenRes.json?.message || '', /forbidden/i);
+});
+
+test('reservation booking rejects already-taken seats with 409', async () => {
+  const firstUser = await registerUser();
+  const secondUser = await registerUser();
+
+  const firstBooking = await createReservation(firstUser.token, {
+    movieId: 'm-conflict',
+    theaterId: 2,
+    showtime: '10:00 PM',
+    bookingDate: new Date('2026-03-01T12:00:00.000Z').toISOString(),
+    seats: ['D4', 'D5'],
+  });
+  assert.equal(firstBooking.status, 201);
+
+  const conflictBooking = await createReservation(secondUser.token, {
+    movieId: 'm-conflict',
+    theaterId: 2,
+    showtime: '10:00 PM',
+    bookingDate: new Date('2026-03-01T19:30:00.000Z').toISOString(),
+    seats: ['D5', 'D6'],
+  });
+  assert.equal(conflictBooking.status, 409);
+  assert.equal(conflictBooking.json?.success, false);
+  assert.deepEqual(conflictBooking.json?.conflictingSeats, ['D5']);
 });

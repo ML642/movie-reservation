@@ -126,7 +126,7 @@ const Login = () => {
                     type="email"
                     id = "email"
                     name="email"
-                    placeholder="Email"
+                    placeholder="user@gmail.com"
                     value={form.email}
                     onChange={handleChange}
                     
@@ -139,7 +139,7 @@ const Login = () => {
                     type="password"
                     id = "password"
                     name="password"
-                    placeholder="Password"
+                    placeholder="user"
                     value={form.password}
                     onChange={handleChange}
                 />

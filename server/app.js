@@ -52,8 +52,17 @@ const corsOptions = {
 
 
     // In-memory user storage
-    let users = [];
-    let currentId = 1;
+    // Demo account for quick project review:
+    // email: user@gmail.com, password: user
+    const demoUser = {
+        id: "1",
+        username: "user",
+        email: "user@gmail.com",
+        password: bcrypt.hashSync("user", 12),
+        createdAt: new Date("2026-01-01T00:00:00.000Z")
+    };
+    let users = [demoUser];
+    let currentId = 2;
 
     const findUserByEmail = (email) => users.find(user => user.email === email);
 
