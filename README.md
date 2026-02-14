@@ -9,7 +9,7 @@
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/docs/Web/CSS)
 
-Preview : https://movie-reservation-1-4uao.onrender.com/register
+Preview : https://movie-reservation-1.onrender.com/
 
 A full‑stack app to browse movies and book reservations. Frontend built with React (CRA). Backend built with Express. Auth uses JWT and passwords are hashed with bcrypt. Data is currently stored in‑memory for users and reservations.
 
