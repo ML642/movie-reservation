@@ -5,6 +5,7 @@ import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 import axios from "axios" ;
 import TicketQR from '../Reservation_info/generate_QR';
 import {Link} from 'react-router-dom';
+import { API_BASE_URL } from '../../config/api';
 
 
 export default  function Profile() {
@@ -52,7 +53,7 @@ export default  function Profile() {
 
     try {
       const resReservations = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/reservation/id`,
+        `${API_BASE_URL}/api/reservation/id`,
         {},
         {
           headers: {
@@ -75,7 +76,7 @@ export default  function Profile() {
 
     try {
       const resUser = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/userInfo`,
+        `${API_BASE_URL}/api/userInfo`,
         { userId: tokenUserId },
         {
           headers: {

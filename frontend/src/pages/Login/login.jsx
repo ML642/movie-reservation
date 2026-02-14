@@ -4,6 +4,7 @@ import WAVES from 'vanta/dist/vanta.waves.min';
 import './Login.css';
 import  { Link, useNavigate , useLocation  } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
+import { API_BASE_URL } from "../../config/api";
 
 const Login = () => {
   const vantaRef = useRef(null);
@@ -77,7 +78,7 @@ const Login = () => {
         }
         const Login = async () => { 
           try {
-            const result  =  await fetch (`${process.env.REACT_APP_API_URL}/api/login`,{
+            const result  =  await fetch (`${API_BASE_URL}/api/login`,{
               method : "POST" , 
               headers : { "Content-type":"application/json"},
               body: JSON.stringify({

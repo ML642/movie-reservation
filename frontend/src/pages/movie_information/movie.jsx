@@ -14,6 +14,7 @@ import {
 import styles from './movie.module.css';
 import MorphingSpinner from '../../components/spinner/spinner';
 import CustomAlert from './movie_alert.jsx';
+import { API_BASE_URL } from '../../config/api';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
@@ -82,7 +83,7 @@ const Movie = () => {
   }, [id]);
 
   const fetchBookedSeats = useCallback(async () => {
-    if (!process.env.REACT_APP_API_URL || !id) {
+    if (!API_BASE_URL || !id) {
       return;
     }
 
@@ -102,7 +103,7 @@ const Movie = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/reservation/seats`,
+        `${API_BASE_URL}/api/reservation/seats`,
         requestConfig
       );
 
@@ -169,7 +170,7 @@ const Movie = () => {
       };
 
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/reservation`,
+        `${API_BASE_URL}/api/reservation`,
         reservationData,
         {
           headers: {

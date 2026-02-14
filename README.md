@@ -104,13 +104,15 @@ Variables:
 ```ini
 # frontend/.env
 REACT_APP_TMDB_API_KEY=your_api_key_here
-REACT_APP_API_URL = http://localhost:3000
+REACT_APP_API_URL=http://localhost:5000
 ```
 
 Notes:
 
 - CRA only exposes variables prefixed with `REACT_APP_` to the client.
 - Keep `.env` files out of version control (already handled by `.gitignore`).
+- For Render deploys, set `REACT_APP_API_URL` to your backend service URL
+  (example: `https://movie-reservation-z2nv.onrender.com`) and redeploy frontend.
 
 ## 🔐 Authentication Flow
 

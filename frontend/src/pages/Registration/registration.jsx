@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import  { Link } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api";
 
 const Signin = () => {
   
@@ -74,7 +75,7 @@ const Signin = () => {
             localStorage.removeItem("rememberedEmail");
         }
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/register`, {
+            const response = await fetch(`${API_BASE_URL}/api/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

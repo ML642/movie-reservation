@@ -5,6 +5,7 @@ import { getUserFromToken, isAuthenticated } from '../../utils/jwtDecoder';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import TicketQR from './generate_QR';
+import { API_BASE_URL } from '../../config/api';
 // Dummy reservations data 
 const dummyReservations = [
   {
@@ -114,7 +115,7 @@ export default function MyReservations() {
       setUser(userData);
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/reservation/id`,
+          `${API_BASE_URL}/api/reservation/id`,
           {},
           {
             headers: {
@@ -173,7 +174,7 @@ export default function MyReservations() {
       
        try {
 
-          axios.delete(`${process.env.REACT_APP_API_URL}/api/reservation/delete/${reservationId}`,{
+          axios.delete(`${API_BASE_URL}/api/reservation/delete/${reservationId}`,{
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
