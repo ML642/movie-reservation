@@ -50,6 +50,7 @@ const Movie = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [bookedSeatSet, setBookedSeatSet] = useState(new Set());
   const [seatSyncUnavailable, setSeatSyncUnavailable] = useState(false);
+  const [seatSyncMessage, setSeatSyncMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [alertData, setAlertData] = useState(null);
 
@@ -110,18 +111,27 @@ const Movie = () => {
       const taken = Array.isArray(response.data?.bookedSeats) ? response.data.bookedSeats : [];
       const takenSet = new Set(taken);
       setSeatSyncUnavailable(false);
+      setSeatSyncMessage('');
       setBookedSeatSet(takenSet);
       setSelectedSeats((prev) => prev.filter((seatId) => !takenSet.has(seatId)));
     } catch (seatError) {
-      console.error('Error fetching booked seats:', seatError);
       const status = seatError.response?.status;
       if (status === 401) {
-        // Avoid false "sync unavailable" warning for auth-only failures.
+        // Avoid false warning for auth-only failures on older deployments.
         setSeatSyncUnavailable(false);
+        setSeatSyncMessage('');
         setBookedSeatSet(new Set());
         return;
       }
+      if (status === 404) {
+        setSeatSyncUnavailable(true);
+        setSeatSyncMessage('Live seat sync unavailable: backend deployment is missing /api/reservation/seats.');
+        setBookedSeatSet(new Set());
+        return;
+      }
+      console.error('Error fetching booked seats:', seatError);
       setSeatSyncUnavailable(true);
+      setSeatSyncMessage('Live seat sync unavailable. Please try again later.');
     }
   }, [id, selectedTheater, selectedDate, selectedTime]);
 
@@ -425,7 +435,7 @@ const Movie = () => {
             </div>
             {seatSyncUnavailable && (
               <div className={styles.seatSyncWarning}>
-                Live seat sync unavailable. Restart backend to sync all users.
+                {seatSyncMessage || 'Live seat sync unavailable.'}
               </div>
             )}
             <div className={styles.screen}>🎬 SCREEN 🎬</div>
