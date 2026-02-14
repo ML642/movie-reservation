@@ -6,6 +6,7 @@ import MovieSlider from '../../components/movies-slider/movie-slider';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
+import MovieListMobile from './MovieListMobile';
 
   const API_KEY = process.env.REACT_APP_TMDB_API_KEY; 
 
@@ -73,6 +74,16 @@ const MovieList = () => {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [isMobile, setIsMobile] = useState(() =>
+      typeof window !== 'undefined' ? window.innerWidth <= 768 : false
+    );
+
+    useEffect(() => {
+      const onResize = () => setIsMobile(window.innerWidth <= 768);
+      onResize();
+      window.addEventListener('resize', onResize);
+      return () => window.removeEventListener('resize', onResize);
+    }, []);
     
     useEffect(() => {
         let initialMovies = (data ?? movies_1)
@@ -90,6 +101,7 @@ const MovieList = () => {
     }, [data]);
 
     const loadMoreMovies = async () => {
+        if (loading || !hasMore) return;
         setLoading(true);
         const nextPage = page + 1;
         try {
@@ -132,6 +144,7 @@ const MovieList = () => {
     const vantaEffectRef = useRef(null);
 
    useEffect(() =>{
+    if (isMobile) return;
     if (!vantaRef.current || vantaEffectRef.current) return;
 
     vantaEffectRef.current = FOG({
@@ -164,14 +177,29 @@ const MovieList = () => {
         vantaEffectRef.current = null;
       }
     };
-   }, [])
+   }, [isMobile])
    // Movie data array
+
+   if (isMobile) {
+    return (
+      <div className="mlm-page-bg">
+        <div style={{ height: "88px" }}></div>
+        <MovieListMobile
+          movies={movies}
+          loading={isLoading}
+          hasMore={hasMore}
+          loadingMore={loading}
+          onLoadMore={loadMoreMovies}
+        />
+      </div>
+    );
+   }
 
    return (
         <div> 
             <div ref={vantaRef} style={{ width: '100%', minHeight: '100vh' , overflow:"hidden"}} >  
                 <div style={{height:"100px"}}></div>
-                <MovieSelection movies={movies} loading={isLoading || loading} />
+                <MovieSelection movies={movies} loading={isLoading} />
                 
                 <div style={{ textAlign: 'center', margin: '20px' , display:"flex" , justifyContent:"center"  }}>
                     {hasMore && (
