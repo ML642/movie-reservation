@@ -17,7 +17,9 @@
     const allowedOrigins = new Set([
         'https://movie-reservation-1.onrender.com',
         'https://movie-reservation-z2nv.onrender.com',
-        'http://localhost:3000'
+        'http://localhost:3000',
+        'https://movie-reservation-1-4uao.onrender.com'
+
     ]); 
 
 const corsOptions = {
