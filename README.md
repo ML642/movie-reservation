@@ -177,6 +177,3 @@ Adjust `allowedOrigins` in `server/app.js` as needed.
 - Add validation & rate limiting for production readiness
 - Add .env handling in frontend for API base URL if needed
 
-##  License
-
-MIT
