@@ -116,11 +116,11 @@ const Login = () => {
     return (
         <div>  
         
-        <div ref={vantaRef} class ="container" >
-            <form onSubmit={handleSubmit} class = "form" >
+        <div ref={vantaRef} className="container" >
+            <form onSubmit={handleSubmit} className="form" >
                 <h1 style={{color:"white", textAlign:"center" , }}> Login</h1>
                 <div style={{display:"block" , width : "80%"}}>   
-                <label for="email" className = "label">Email or Username</label>  
+                <label htmlFor="email" className = "label">Email or Username</label>  
                 <input
                     
                     className="input"
@@ -134,7 +134,7 @@ const Login = () => {
                 />
                 </div>
                 <div style={{display:"block" , width : "80%"}}> 
-                <label for="password" className= "label">Password      </label>
+                <label htmlFor="password" className= "label">Password      </label>
                 <input
                     className="input"
                     type="password"
@@ -146,7 +146,7 @@ const Login = () => {
                 />
                 </div>
                 <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" , color:"white",width:"80%"}}>
-                  <div class="liquid-checkbox">
+                  <div className="liquid-checkbox">
                         <input type="checkbox" id="remember" name="remember" checked={rememberMe}
                     onChange={e => setRememberMe(e.target.checked)}
                     style ={ { width: "20px", height: "20px" } }/>

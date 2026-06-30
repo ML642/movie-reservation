@@ -1,0 +1,22 @@
+// Keep route styles in the initial CSS bundle even when page components are lazy-loaded.
+import './components/footer/Footer.css';
+import './components/header/header.css';
+import './components/Hero_Section/HeroSection.css';
+import './components/LoggedIn/LoggedIn.css';
+import './components/movies-selection/movie-selection.css';
+import './components/movies-selection/SkeletonCard.css';
+import './components/movies-slider/movie-slider.css';
+import './components/spinner/spinner.css';
+import './pages/Home/home.css';
+import './pages/Login/Login.css';
+import './pages/movie_information/movie.css';
+import './pages/movie_information/movie.module.css';
+import './pages/movie_information/movie_alert.module.css';
+import './pages/movie_list/MovieListMobile.css';
+import './pages/NotFound/NotFound.css';
+import './pages/pricing/pricing.module.css';
+import './pages/Profile/profile.module.css';
+import './pages/Registration/registration.css';
+import './pages/Reservation_info/generate_QR.css';
+import './pages/Reservation_info/myReservations.module.css';
+import './pages/terms_and_privacy/terms.css';

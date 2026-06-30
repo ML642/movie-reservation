@@ -1,37 +1,46 @@
 // index.js (updated)
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './appStyles';
 
 import reportWebVitals from './reportWebVitals';
-import Login from './pages/Login/login';
-import Signin from './pages/Registration/registration';
 import {  createBrowserRouter, RouterProvider } from 'react-router-dom';
-import MovieList from "./pages/movie_list/movies_list";
 import Header from './components/header/header';
 import Footer from './components/footer/Footer';
 import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
-import Movie from './pages/movie_information/movie';
-import Terms from './pages/terms_and_privacy/terms';
-import NotFound from './pages/NotFound/notFound';
-import Pricing from './pages/pricing/pricing';
-import Profile from './pages/Profile/profile';
-import MyReservations from './pages/Reservation_info/myReservations';
-import Home from './pages/Home/home';  
 const queryClient = new QueryClient();
 
-const Layout = (Children) => {
-  if (Children.element.type === NotFound) {
-    return (<NotFound/>)}
-    else {
+const Home = lazy(() => import('./pages/Home/home'));
+const Login = lazy(() => import('./pages/Login/login'));
+const Signin = lazy(() => import('./pages/Registration/registration'));
+const MovieList = lazy(() => import('./pages/movie_list/movies_list'));
+const Movie = lazy(() => import('./pages/movie_information/movie'));
+const Terms = lazy(() => import('./pages/terms_and_privacy/terms'));
+const NotFound = lazy(() => import('./pages/NotFound/notFound'));
+const Pricing = lazy(() => import('./pages/pricing/pricing'));
+const Profile = lazy(() => import('./pages/Profile/profile'));
+const MyReservations = lazy(() => import('./pages/Reservation_info/myReservations'));
+
+const PageFallback = () => (
+  <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', color: '#fff' }}>
+    Loading...
+  </div>
+);
+
+const Layout = ({ element, fullPage = false }) => {
+  if (fullPage) {
+    return <Suspense fallback={<PageFallback />}>{element}</Suspense>;
+  }
+
   return (
     <div>
       <Header />
-      {Children.element}
+      <Suspense fallback={<PageFallback />}>{element}</Suspense>
       <Footer />
 
     </div>
-  );}
+  );
 }
 
 const router = createBrowserRouter([
@@ -45,7 +54,7 @@ const router = createBrowserRouter([
  {path: '/pricing' , element : <Layout element={ <Pricing/> } />},
  {path: '/profile' , element : <Layout element={ <Profile/> } />},
  {path: '/my-reservations' , element : <Layout element={ <MyReservations/> } />},
- {path: '*', element : <Layout element={ <NotFound/> } />}, 
+ {path: '*', element : <Layout element={ <NotFound/> } fullPage />}, 
 ])
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

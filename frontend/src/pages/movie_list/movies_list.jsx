@@ -203,7 +203,23 @@ const MovieList = () => {
                 
                 <div style={{ textAlign: 'center', margin: '20px' , display:"flex" , justifyContent:"center"  }}>
                     {hasMore && (
-                        <button onClick={loadMoreMovies} disabled={loading} style={{ padding: '10px 20px', fontSize: '30px', width:"15rem" , height:"5rem" }}>
+                        <button
+                          onClick={loadMoreMovies}
+                          disabled={loading}
+                          style={{
+                            padding: '0.75rem 1.4rem',
+                            fontSize: '1rem',
+                            minWidth: '9rem',
+                            height: '2.75rem',
+                            borderRadius: '999px',
+                            border: '1px solid rgba(111, 125, 240, 0.45)',
+                            background: 'rgba(31, 35, 56, 0.95)',
+                            color: '#f5f6ff',
+                            fontWeight: 600,
+                            boxShadow: '0 6px 16px rgba(16, 19, 42, 0.24)',
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                          }}
+                        >
                             {loading ? 'Loading...' : 'See More'}
                         </button>
                     )}

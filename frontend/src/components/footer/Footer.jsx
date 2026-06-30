@@ -33,9 +33,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">
-        <p>© 2023 Cineplex. All rights reserved.</p>
-      </div>
+    
     </footer>
   );
 }

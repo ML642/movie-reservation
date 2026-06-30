@@ -41,10 +41,15 @@ const Header = () => {
   const style_login = {
     color: "white",
     fontWeight: "bold",
-    fontSize: isMobile ? "0.8rem" : "1.5rem",
-    width: isMobile ? "50px" : "150px",
-    height: "2rem",
+    fontSize: isMobile ? "0.9rem" : "1.05rem",
+    minWidth: isMobile ? "4.25rem" : "5rem",
+    height: "2.1rem",
     padding: "0",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textDecoration: "none",
+    whiteSpace: "nowrap",
   };
  
 
@@ -200,7 +205,7 @@ const Header = () => {
       </motion.div>
 
      
-      <div style={{ display: "flex", alignItems: "center" , gap: "0.5 rem" }}>
+      <div style={{ display: "flex", alignItems: "center" , gap: "0.75rem" }}>
         {isLoggedIn  ? (<LoggedIn onLogout={handleLogout}/>) : 
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -209,8 +214,11 @@ const Header = () => {
             background: "#ef4444",
             color: "white",
             border: "none",
-            borderRadius: "0.5rem",
-            
+            borderRadius: "999px",
+            padding: "0 0.15rem",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             fontWeight: "bold",
             cursor: "pointer",
           }}
@@ -229,6 +237,12 @@ const Header = () => {
             color: "white",
             fontSize: "1.5rem",
             cursor: "pointer",
+            width: "2.4rem",
+            height: "2.4rem",
+            padding: 0,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           {isMenuOpen ? <FaTimes /> : <FaBars />}

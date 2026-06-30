@@ -1,4 +1,4 @@
-# 🎬 Movie Reservation System
+#  Movie Reservation System
 
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
@@ -13,14 +13,14 @@ Preview : https://movie-reservation-1-4uao.onrender.com
 
 A full‑stack app to browse movies and book reservations. Frontend built with React (CRA). Backend built with Express. Auth uses JWT and passwords are hashed with bcrypt. Data is currently stored in‑memory for users and reservations.
 
-## ✨ Highlights
+##  Highlights
 
 - __Auth__: Register, Login, JWT issuance, basic profile update
 - __Reservations__: Create, list, cancel, and get reservations for the logged‑in user
 - __CORS__: Locked to `http://localhost:3000` and deployed origin (configurable)
 - __DX__: Clear project structure with `frontend/` and `server/`
 
-## 🗂️ Project Structure
+##  Project Structure
 
 ```
 movie-reservation project/
@@ -35,7 +35,7 @@ movie-reservation project/
    └─ utils/auth.js            # JWT helper
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1) Backend
 
@@ -60,7 +60,7 @@ npm start
 # App at http://localhost:3000
 ```
 
-## 🔧 Environment Variables
+##  Environment Variables
 
 Set up the required environment variables for both backend and frontend.
 
@@ -114,7 +114,7 @@ Notes:
 - For Render deploys, set `REACT_APP_API_URL` to your backend service URL
   (example: `https://movie-reservation-z2nv.onrender.com`) and redeploy frontend.
 
-## 🔐 Authentication Flow
+##  Authentication Flow
 
 - Register or login to receive a JWT
 - Include the token when calling protected endpoints:
@@ -124,7 +124,7 @@ Authorization: Bearer <your_jwt>
 Content-Type: application/json
 ```
 
-## 🧭 API Reference (current implementation)
+##  API Reference (current implementation)
 
 Base URL: `http://localhost:5000`
 
@@ -148,7 +148,7 @@ Base URL: `http://localhost:5000`
   - `POST /api/reservation/id` → returns reservations for current user
   - `DELETE /api/reservation/delete/:id` → cancels reservation (sets status to `cancelled`)
 
-## ⚙️ Scripts
+##  Scripts
 
 - __Backend (`server/package.json`)__
   - `npm start` → `node app.js`
@@ -159,7 +159,7 @@ Base URL: `http://localhost:5000`
   - `npm test` → run tests
   - `npm run eject` → eject CRA
 
-## 🌐 CORS
+##  CORS
 
 Allowed origins in `server/app.js`:
 
@@ -170,13 +170,13 @@ http://localhost:3000
 
 Adjust `allowedOrigins` in `server/app.js` as needed.
 
-## 🧩 Notes & Next Steps
+##  Notes & Next Steps
 
 - Current storage is in‑memory. Restarting the server clears users and reservations.
 - Add persistent storage (MongoDB/Mongoose) and move auth to DB
 - Add validation & rate limiting for production readiness
 - Add .env handling in frontend for API base URL if needed
 
-## 📄 License
+##  License
 
 MIT
