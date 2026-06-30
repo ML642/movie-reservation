@@ -45,7 +45,7 @@ const Login = () => {
     };
   }, []);
 
-    const [form, setForm] = useState({ email: "", password: "" });
+    const [form, setForm] = useState({ email: "user@gmail.com", password: "user" });
     const [error, setError] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     

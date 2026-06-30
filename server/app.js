@@ -19,12 +19,16 @@
         'https://movie-reservation-z2nv.onrender.com',
         'http://localhost:3000',
         'https://movie-reservation-1-4uao.onrender.com'
-
     ]); 
+
+
+const reservationRoutes = require('./routes/reservations'); // this thing includes all split files
+
+app.use('/api/reservation', reservationRoutes);
+
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin (like curl, Postman, server-to-server)
     if (!origin) return callback(null, true);
 
     const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
@@ -55,9 +59,7 @@ const corsOptions = {
     });
 
 
-    // In-memory user storage
-    // Demo account for quick project review:
-    // email: user@gmail.com, password: user
+    
     const demoUser = {
         id: "1",
         username: "user",
@@ -72,7 +74,6 @@ const corsOptions = {
 
     const findUserByUsername = (username) => users.find(user => user.username === username);
 
-    // Helper function to generate user ID
     const generateId = () => (currentId++).toString();
 
 
@@ -91,10 +92,8 @@ const corsOptions = {
                 });
             }
 
-            // Hash password
             const hashedPassword = await bcrypt.hash(password, 12);
             
-            // Create new user
             const user = {
                 id: generateId(),
                 username,
@@ -105,7 +104,6 @@ const corsOptions = {
             
             users.push(user);
 
-            // Generate token
             const token = jwt.sign(
                 { userId: user.id, username: user.username, userEmail: user.email },
                 process.env.JWT_SECRET || 'secret-key',
@@ -171,8 +169,7 @@ const corsOptions = {
             });
         }
 
-        // Fallback for restarted servers with in-memory storage:
-        // if token is valid, return claims so profile page can still render.
+        
         if (decodedToken && decodedToken.userId === id) {
             return res.json({
                 id: decodedToken.userId,
@@ -315,7 +312,7 @@ const corsOptions = {
 
 
     const PORT = process.env.PORT || 5000;
-    const HOST = '0.0.0.0'; // Listen on all network interfaces
+    const HOST = '0.0.0.0'; 
 
 
     
