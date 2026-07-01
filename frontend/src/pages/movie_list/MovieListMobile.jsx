@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import CustomSelect from "../../components/custom-select/CustomSelect";
+import { useLikedMovies } from "../../hooks/useLikedMovies";
 import "./MovieListMobile.css";
 
 const MOBILE_GENRE_OPTIONS = [
@@ -14,6 +16,20 @@ const MOBILE_GENRE_OPTIONS = [
   "Horror",
   "Science Fiction",
   "Thriller",
+];
+
+const mobileGenreOptions = MOBILE_GENRE_OPTIONS.map((option) => ({
+  value: option,
+  label: option === "all" ? "All Genres" : option,
+}));
+
+const mobileSortOptions = [
+  { value: "date-desc", label: "Newest" },
+  { value: "date-asc", label: "Oldest" },
+  { value: "rating-desc", label: "Rating High" },
+  { value: "rating-asc", label: "Rating Low" },
+  { value: "title-az", label: "Title A-Z" },
+  { value: "title-za", label: "Title Z-A" },
 ];
 
 const normalizeDate = (value) => {
@@ -46,6 +62,7 @@ const MovieListMobile = ({ movies, loading, hasMore, loadingMore, onLoadMore }) 
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("all");
   const [sort, setSort] = useState("date-desc");
+  const { isLiked, notice, toggleLike } = useLikedMovies();
 
   const visibleMovies = useMemo(() => {
     const filtered = movies
@@ -71,6 +88,13 @@ const MovieListMobile = ({ movies, loading, hasMore, loadingMore, onLoadMore }) 
         <p className="mlm-subtitle">{visibleMovies.length} available on this view</p>
       </header>
 
+      {notice && (
+        <div className="like-notice" role="status" aria-live="polite">
+          <strong>{notice.message}</strong>
+          <span>{notice.title}</span>
+        </div>
+      )}
+
       <div className="mlm-filters">
         <input
           type="text"
@@ -81,30 +105,21 @@ const MovieListMobile = ({ movies, loading, hasMore, loadingMore, onLoadMore }) 
         />
 
         <div className="mlm-row">
-          <select
-            className="mlm-select"
+          <CustomSelect
+            className="mlm-select-wrap"
+            ariaLabel="Genre"
             value={genre}
-            onChange={(event) => setGenre(event.target.value)}
-          >
-            {MOBILE_GENRE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option === "all" ? "All Genres" : option}
-              </option>
-            ))}
-          </select>
+            onChange={setGenre}
+            options={mobileGenreOptions}
+          />
 
-          <select
-            className="mlm-select"
+          <CustomSelect
+            className="mlm-select-wrap"
+            ariaLabel="Sort movies"
             value={sort}
-            onChange={(event) => setSort(event.target.value)}
-          >
-            <option value="date-desc">Newest</option>
-            <option value="date-asc">Oldest</option>
-            <option value="rating-desc">Rating High</option>
-            <option value="rating-asc">Rating Low</option>
-            <option value="title-az">Title A-Z</option>
-            <option value="title-za">Title Z-A</option>
-          </select>
+            onChange={setSort}
+            options={mobileSortOptions}
+          />
         </div>
       </div>
 
@@ -122,6 +137,15 @@ const MovieListMobile = ({ movies, loading, hasMore, loadingMore, onLoadMore }) 
         ) : (
           visibleMovies.map((movie) => (
             <article key={movie?.id || movie?.title} className="mlm-card">
+              <button
+                type="button"
+                className={`mlm-like-btn${isLiked(movie) ? " liked" : ""}`}
+                onClick={() => toggleLike(movie)}
+                title={isLiked(movie) ? "Unlike" : "Like"}
+                aria-label={isLiked(movie) ? `Unlike ${movie?.title}` : `Like ${movie?.title}`}
+              >
+                {isLiked(movie) ? "â¤ï¸" : "ðŸ¤"}
+              </button>
               <img
                 className="mlm-poster"
                 src={movie?.poster || "https://via.placeholder.com/500x750?text=No+Poster"}

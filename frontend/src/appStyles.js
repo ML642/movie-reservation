@@ -3,6 +3,7 @@ import './components/footer/Footer.css';
 import './components/header/header.css';
 import './components/Hero_Section/HeroSection.css';
 import './components/LoggedIn/LoggedIn.css';
+import './components/custom-select/CustomSelect.css';
 import './components/movies-selection/movie-selection.css';
 import './components/movies-selection/SkeletonCard.css';
 import './components/movies-slider/movie-slider.css';

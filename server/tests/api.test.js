@@ -267,6 +267,49 @@ test('reservation endpoint requires auth token', async () => {
   assert.equal(res.json?.success, false);
 });
 
+test('authenticated user can save, list, and remove liked movies', async () => {
+  const user = await registerUser();
+  const movie = {
+    id: `liked-${Date.now()}`,
+    title: `Liked Movie ${Date.now()}`,
+    poster: 'https://example.com/liked-poster.jpg',
+    rating: 8.4,
+    date: '2026-07-01',
+    genre: 'Drama',
+  };
+
+  const createRes = await apiRequest('/api/likes', {
+    method: 'POST',
+    token: user.token,
+    body: { movie },
+  });
+  assert.equal(createRes.status, 201);
+  assert.equal(createRes.json?.success, true);
+  assert.equal(createRes.json?.data?.title, movie.title);
+
+  const listRes = await apiRequest('/api/likes', {
+    token: user.token,
+  });
+  assert.equal(listRes.status, 200);
+  assert.equal(listRes.json?.success, true);
+  assert.ok(Array.isArray(listRes.json?.data));
+  assert.ok(listRes.json.data.some((item) => item.title === movie.title));
+
+  const deleteRes = await apiRequest('/api/likes', {
+    method: 'DELETE',
+    token: user.token,
+    body: { movieKey: movie.title },
+  });
+  assert.equal(deleteRes.status, 200);
+  assert.equal(deleteRes.json?.success, true);
+
+  const listAfterDeleteRes = await apiRequest('/api/likes', {
+    token: user.token,
+  });
+  assert.equal(listAfterDeleteRes.status, 200);
+  assert.ok(!listAfterDeleteRes.json.data.some((item) => item.title === movie.title));
+});
+
 test('authenticated user can create, list, and cancel own reservation', async () => {
   const user = await registerUser();
   const seatQuery = {

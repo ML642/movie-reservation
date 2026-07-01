@@ -2,6 +2,8 @@ import React, { useState, useMemo } from "react" ;
 import "./movie-selection.css";
 import SkeletonCard from './SkeletonCard';
 import { Link } from "react-router-dom";
+import CustomSelect from "../custom-select/CustomSelect";
+import { useLikedMovies } from "../../hooks/useLikedMovies";
 
 const genresMap = {
   28: "Action",
@@ -25,6 +27,26 @@ const genresMap = {
   37: "Western"
 };
 
+const genreOptions = [
+  { value: "all", label: "All" },
+  { value: "Action", label: "Action" },
+  { value: "Comedy", label: "Comedy" },
+  { value: "Science Fiction", label: "Science Fiction" },
+  { value: "Animation", label: "Animation" },
+  { value: "Adventure", label: "Adventure" },
+  { value: "Drama", label: "Drama" },
+  { value: "Family", label: "Family" },
+];
+
+const sortOptions = [
+  { value: "date-desc", label: "Newest" },
+  { value: "date-asc", label: "Oldest" },
+  { value: "rating-desc", label: "Rating (High to Low)" },
+  { value: "rating-asc", label: "Rating (Low to High)" },
+  { value: "title-az", label: "Title (A-Z)" },
+  { value: "title-za", label: "Title (Z-A)" },
+];
+
 function GenreFilter (movie,genre){
   if (genre === "all")return movie  ; 
   let flag  = false  ; 
@@ -39,15 +61,8 @@ function GenreFilter (movie,genre){
 }
 const MovieSelection = (props) => {
      const { movies, loading } = props; 
-     const [liked, setLiked] = useState([]); // array of liked movie titles
+     const { liked, notice, toggleLike } = useLikedMovies();
        const [showLikedOnly, setShowLikedOnly] = useState(false); // toggle for showing only liked
-       const toggleLike = (title) => {
-         setLiked((prev) =>
-           prev.includes(title)
-             ? prev.filter((t) => t !== title)
-             : [...prev, title]
-         );
-       };
        const toggleShowLiked = () => setShowLikedOnly((prev) => !prev);
     
        // Search and sort state
@@ -72,6 +87,12 @@ const MovieSelection = (props) => {
       }, [movies, search, sort, genre]);
 
     return (  <> 
+    {notice && (
+      <div className="like-notice" role="status" aria-live="polite">
+        <strong>{notice.message}</strong>
+        <span>{notice.title}</span>
+      </div>
+    )}
     <div className="movie-filter-bar">
         <div className="filter-group search-group">
           <span className="search-icon">🔍</span>
@@ -92,30 +113,22 @@ const MovieSelection = (props) => {
             {showLikedOnly ? "\u2665" : "\u2661"}
           </button>
         </div>
-        <div className="filter-group">
-          <label htmlFor="genre-select" className="sort-label">Genre:</label>
-          <select id="genre-select" value={genre} onChange={e => setGenre(e.target.value)} className="sort-dropdown">
-            <option value="all">All</option>
-            <option value="Action">Action</option>
-            <option value="Comedy">Comedy</option>
-            <option value="Science Fiction">Science Fiction</option>
-            <option value="Animation">Animation</option>
-            <option value="Adventure">Adventure</option>
-            <option value="Drama">Drama</option>
-            <option value="Family">Family</option>
-          </select>
-        </div>
-        <div className="filter-group">
-          <label htmlFor="sort-select" className="sort-label">Sort by:</label>
-          <select id="sort-select" value={sort} onChange={e => setSort(e.target.value)} className="sort-dropdown">
-            <option value="date-desc">Newest</option>
-            <option value="date-asc">Oldest</option>
-            <option value="rating-desc">Rating (High to Low)</option>
-            <option value="rating-asc">Rating (Low to High)</option>
-            <option value="title-az">Title (A-Z)</option>
-            <option value="title-za">Title (Z-A)</option>
-          </select>
-        </div>
+        <CustomSelect
+          id="genre-select"
+          className="filter-group"
+          label="Genre:"
+          value={genre}
+          onChange={setGenre}
+          options={genreOptions}
+        />
+        <CustomSelect
+          id="sort-select"
+          className="filter-group"
+          label="Sort by:"
+          value={sort}
+          onChange={setSort}
+          options={sortOptions}
+        />
       </div>
       {/* Movie Grid Section */}
       <div className="movie-grid">

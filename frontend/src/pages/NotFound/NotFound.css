@@ -8,6 +8,16 @@
     overflow: hidden;
     font-family: 'Arial', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
+
+  .not-found-container > .main-content {
+    position: relative;
+    z-index: 1;
+    width: min(90vw, 960px);
+    padding: clamp(1.5rem, 4vw, 3rem);
+    background: transparent;
+    overflow: visible;
+    text-align: center;
+  }
   
   .fallback-bg {
     background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
@@ -63,10 +73,12 @@
   
   /* Title */
   .error-title {
-    font-size: 3rem;
+    font-size: clamp(2.4rem, 7vw, 5rem);
     font-weight: bold;
     margin-bottom: 1.5rem;
     color: white;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
   }
   
   .gradient-text {

@@ -3,12 +3,15 @@ const express = require('express');
 const cors = require('cors');
 const listEndpoints = require('express-list-routes');
 
+const { connectMongo, getMongoReadyStateLabel } = require('./config/mongo');
 const userService = require('./services/userService');
 
+connectMongo();
 userService.initDemoUser();
 
 const authRoutes = require('./routes/auth');
 const reservationRoutes = require('./routes/reservations'); // keep your split reservations router
+const likedMovieRoutes = require('./routes/likedMovies');
 
 const app = express();
 
@@ -45,6 +48,7 @@ app.use(express.json());
 
 app.use('/api', authRoutes); // register/login/userInfo/changeInfo -> /api/register, etc.
 app.use('/api/reservation', reservationRoutes);
+app.use('/api/likes', likedMovieRoutes);
 
 
 app.get('/', (req, res) => res.json({ message: 'Movie Reservation API is running!' }));
@@ -53,4 +57,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(listEndpoints(app));
   console.log(`Server listening on port ${PORT}`);
+  console.log(`MongoDB startup state: ${getMongoReadyStateLabel()}`);
 });

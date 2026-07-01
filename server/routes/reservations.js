@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleWare/authMiddleware');
 const controller = require('../controllers/reservationController');
 
 router.get('/seats', controller.getSeats);
