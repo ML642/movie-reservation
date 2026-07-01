@@ -66,6 +66,57 @@ a {
     animation: moveGradient 4s alternate infinite;
   }
 }
+
+.register-submit.gradient-border {
+  min-height: 3rem;
+  height: auto;
+  font-size: 1rem;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: 10px;
+  border: 1px solid rgba(126, 116, 255, 0.48);
+  background: #6357d9;
+  box-shadow: 0 8px 18px rgba(45, 38, 116, 0.28);
+}
+
+.register-submit.gradient-border::after {
+  content: none;
+}
+
+.register-submit.gradient-border:hover {
+  background: #7165e4;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(45, 38, 116, 0.34);
+}
+
+.register-submit.gradient-border:disabled {
+  opacity: 0.82;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.register-submit-text {
+  font-size: 1rem;
+  padding-right: 0.8rem;
+}
+
+.register-switch {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.98rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.register-switch-link {
+  color: #c8c3ff;
+  font-weight: 700;
+}
+
+.register-switch-link:hover {
+  color: #ffffff;
+}
+
 @keyframes moveGradient {
   50% {
     background-position: 100% 50%;

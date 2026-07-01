@@ -41,17 +41,42 @@ const genresMap = {
   37: "Western"
 };
 
-   let movies_1 = [
-     { title: 'Barbie', poster: '/assets/barbie-banner.jpg', rating: 7.2, date: '2025-07-01', genre: 'Comedy' },
-     { title: 'Dune', poster: '/assets/dune-banner.jpg', rating: 8.4, date: '2025-07-10', genre: 'Science Fiction' },
-     { title: 'Elemental', poster: '/assets/elemental-banner.jpg', rating: 6.9, date: '2025-07-05', genre: 'Animation' },
-     { title: 'Indiana Jones', poster: '/assets/indiana-jones-banner.jpg', rating: 7.0, date: '2025-07-03', genre: 'Adventure' },
-     { title: 'The Marvels', poster: '/assets/marvels-banner.jpg', rating: 6.5, date: '2025-07-12', genre: 'Action' },
-     { title: 'Mission Impossible 7', poster: '/assets/mi7-banner.jpg', rating: 8.1, date: '2025-07-15', genre: 'Action' },
-     { title: 'Oppenheimer', poster: '/assets/oppenheimer-banner.jpg', rating: 9.0, date: '2025-07-08', genre: 'Drama' },
-     { title: 'Spiderman', poster: '/assets/spiderman-banner.jpg', rating: 7.8, date: '2025-07-02', genre: 'Action' },
-     { title: 'Wonka', poster: '/assets/wonka-banner.jpg', rating: 7.3, date: '2025-07-20', genre: 'Family' }
-   ];
+const localMoviePages = [
+  [
+    { id: 346698, title: 'Barbie', poster: '/assets/barbie-banner.jpg', rating: 7.2, date: '2025-07-01', genre: 'Comedy' },
+    { id: 693134, title: 'Dune', poster: '/assets/dune-banner.jpg', rating: 8.4, date: '2025-07-10', genre: 'Science Fiction' },
+    { id: 976573, title: 'Elemental', poster: '/assets/elemental-banner.jpg', rating: 6.9, date: '2025-07-05', genre: 'Animation' },
+    { id: 335977, title: 'Indiana Jones', poster: '/assets/indiana-jones-banner.jpg', rating: 7.0, date: '2025-07-03', genre: 'Adventure' },
+    { id: 609681, title: 'The Marvels', poster: '/assets/marvels-banner.jpg', rating: 6.5, date: '2025-07-12', genre: 'Action' },
+    { id: 575264, title: 'Mission Impossible 7', poster: '/assets/mi7-banner.jpg', rating: 8.1, date: '2025-07-15', genre: 'Action' },
+    { id: 872585, title: 'Oppenheimer', poster: '/assets/oppenheimer-banner.jpg', rating: 9.0, date: '2025-07-08', genre: 'Drama' },
+    { id: 569094, title: 'Spiderman', poster: '/assets/spiderman-banner.jpg', rating: 7.8, date: '2025-07-02', genre: 'Action' },
+    { id: 787699, title: 'Wonka', poster: '/assets/wonka-banner.jpg', rating: 7.3, date: '2025-07-20', genre: 'Family' },
+  ],
+  [
+    { id: 414906, title: 'The Batman', poster: '/assets/OIP.webp', rating: 7.7, date: '2025-07-22', genre: 'Action' },
+    { id: 299536, title: 'Avengers: Infinity War', poster: '/assets/marvels-banner.jpg', rating: 8.3, date: '2025-07-24', genre: 'Action' },
+    { id: 361743, title: 'Top Gun: Maverick', poster: '/assets/mi7-banner.jpg', rating: 8.2, date: '2025-07-26', genre: 'Action' },
+    { id: 447365, title: 'Guardians of the Galaxy Vol. 3', poster: '/assets/marvels-banner.jpg', rating: 7.9, date: '2025-07-28', genre: 'Adventure' },
+    { id: 475557, title: 'Joker', poster: '/assets/oppenheimer-banner.jpg', rating: 8.1, date: '2025-07-30', genre: 'Drama' },
+    { id: 1022789, title: 'Inside Out 2', poster: '/assets/elemental-banner.jpg', rating: 7.6, date: '2025-08-01', genre: 'Animation' },
+    { id: 577922, title: 'Tenet', poster: '/assets/dune-banner.jpg', rating: 7.2, date: '2025-08-03', genre: 'Science Fiction' },
+    { id: 634649, title: 'Spider-Man: No Way Home', poster: '/assets/spiderman-banner.jpg', rating: 8.0, date: '2025-08-05', genre: 'Action' },
+    { id: 76600, title: 'Avatar: The Way of Water', poster: '/assets/wonka-banner.jpg', rating: 7.6, date: '2025-08-07', genre: 'Adventure' },
+  ],
+];
+
+const normalizeMovie = (movie) => ({
+  ...movie,
+  poster: movie.poster_path
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : movie.poster || null,
+  rating: movie.vote_average ?? movie.rating,
+  date: movie.release_date ?? movie.date,
+  genre: genresMap[movie.genre_ids?.[0]] || movie.genre || 'Unknown',
+});
+
+const getLocalMoviePage = (pageNumber) => localMoviePages[pageNumber - 1] ?? [];
 
  
 const MovieList = () => { 
@@ -86,17 +111,9 @@ const MovieList = () => {
     }, []);
     
     useEffect(() => {
-        let initialMovies = (data ?? movies_1)
-            .filter(movie => !movie.adult) // Explicitly filter out adult movies
-            .map(movie => ({
-            ...movie,
-            poster: movie.poster_path 
-                ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                : null,
-            rating: movie.vote_average,
-            date: movie.release_date,
-            genre: genresMap[movie.genre_ids?.[0]] || 'Unknown'
-        }));
+        let initialMovies = (data ?? getLocalMoviePage(1))
+            .filter(movie => !movie.adult)
+            .map(normalizeMovie);
         setMovies(initialMovies);
     }, [data]);
 
@@ -104,9 +121,28 @@ const MovieList = () => {
         if (loading || !hasMore) return;
         setLoading(true);
         const nextPage = page + 1;
+        const appendMovies = (newMovies) => {
+            if (newMovies.length > 0) {
+                setMovies(prevMovies => {
+                    const existingIds = new Set(prevMovies.map(movie => String(movie.id)));
+                    const uniqueMovies = newMovies.filter(movie => !existingIds.has(String(movie.id)));
+                    return [...prevMovies, ...uniqueMovies];
+                });
+                setPage(nextPage);
+                return true;
+            }
+            setHasMore(false);
+            return false;
+        };
+
         try {
+            if (!API_KEY) {
+                appendMovies(getLocalMoviePage(nextPage).map(normalizeMovie));
+                return;
+            }
+
             const { data: nextData } = await axios.get(
-`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&page=${nextPage}&include_adult=false`,
+`https://api.themoviedb.org/3/discover/movie`,
 { params: {
   api_key: API_KEY,
   sort_by: 'popularity.desc',
@@ -117,27 +153,13 @@ const MovieList = () => {
   with_original_language: 'en'
 } }           );
             const filteredResults = nextData.results.filter(movie => !movie.adult && movie.title !=="Intimacy");
-            const newMovies = filteredResults.map(movie => ({
-                ...movie,
-                poster: movie.poster_path 
-                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                    : null,
-                rating: movie.vote_average,
-                date: movie.release_date,
-                genre: genresMap[movie.genre_ids?.[0]] || 'Unknown'
-            }));
-
-            if (newMovies.length > 0) {
-                setMovies(prevMovies => [...prevMovies, ...newMovies]);
-                setPage(nextPage);
-            } else {
-                setHasMore(false);
-            }
+            appendMovies(filteredResults.map(normalizeMovie));
         } catch (error) {
             console.error("Failed to fetch more movies:", error);
-            setHasMore(false);
+            appendMovies(getLocalMoviePage(nextPage).map(normalizeMovie));
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const vantaRef = useRef(null);

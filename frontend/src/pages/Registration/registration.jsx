@@ -160,13 +160,13 @@ const Signin = () => {
                     </div>
                   Remember Me
                 </label>
-                <button type="submit" disabled={isLoading} className="gradient-border" style={{width:"80%"}}>
-                   {isLoading ? <h1 style={{fontSize: "1.5rem", paddingRight: "1rem"}}> loading...  </h1>  : "RegIn"} 
+                <button type="submit" disabled={isLoading} className="gradient-border register-submit" style={{width:"80%"}}>
+                   {isLoading ? <span className="register-submit-text">Creating...</span>  : "Create account"} 
                     {isLoading ? <MorphingSpinner /> : null }
                 </button>
-                <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
-                  Already have an account ?{' '}
-                  <Link to ="/login"  >
+                <div className="register-switch">
+                  Already have an account?{' '}
+                  <Link to ="/login" className="register-switch-link" >
                     Login
                   </Link>
                 </div>

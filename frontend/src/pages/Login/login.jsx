@@ -101,6 +101,7 @@ const Login = () => {
               setError(data.message || "Login failed");
             }
           } catch (err) {
+            setIsLoading(false);
             setError("Network error");
           }
         }
@@ -157,13 +158,13 @@ const Login = () => {
                     </div>
                    Remember Me
                 </label>
-                <button type="submit" disabled = {isLoading}  className="gradient-border" style={{width:"80%"}}>
-                    {isLoading ? <h1 style={{fontSize: "1.5rem", paddingRight: "1rem"}}> Logging in...  </h1>  : "Login"} 
+                <button type="submit" disabled = {isLoading}  className="gradient-border login-submit" style={{width:"80%"}}>
+                    {isLoading ? <span className="login-submit-text">Signing in...</span>  : "Sign in"} 
                     {isLoading ? <MorphingSpinner /> : null }
                 </button>
-                <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1rem' }}>
+                <div className="login-switch">
                   Don't have an account yet?{' '}
-                  <Link to ="/register"  >
+                  <Link to ="/register" className="login-switch-link" >
                     Register
                   </Link>
                 </div>

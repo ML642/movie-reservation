@@ -67,12 +67,6 @@ const VantaNotFoundPage = () => {
       {/* Main Content */}
       <div className="main-content">
         
-        
-        {/* 404 Text */}
-        <div className="error-number-container">
-          <h1 className="error-number">404</h1>
-        </div>
-
         {/* Title */}
         <h2 className="error-title">
           Lost in the{' '}
