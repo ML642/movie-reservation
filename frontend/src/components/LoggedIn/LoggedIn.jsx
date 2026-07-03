@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { FaCrown, FaFilm, FaStar, FaTicketAlt, FaUser, FaVideo } from "react-icons/fa";
+import { getStoredUserIcon, USER_ICON_CHANGE_EVENT } from "../../utils/userIcon";
 
 import "./LoggedIn.css";
 
@@ -20,6 +22,7 @@ const useOutsideClick = (ref, callback) => {
 
 const LoggedIn = (props) => {
   const [username, setUsername] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState(getStoredUserIcon);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
 
@@ -33,6 +36,17 @@ const LoggedIn = (props) => {
     if (storedUsername) {
       setUsername(storedUsername);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleIconChange = () => setSelectedIcon(getStoredUserIcon());
+    window.addEventListener('storage', handleIconChange);
+    window.addEventListener(USER_ICON_CHANGE_EVENT, handleIconChange);
+
+    return () => {
+      window.removeEventListener('storage', handleIconChange);
+      window.removeEventListener(USER_ICON_CHANGE_EVENT, handleIconChange);
+    };
   }, []);
 
   const handleToggleMenu = () => {
@@ -50,6 +64,14 @@ const LoggedIn = (props) => {
     return name ? name.charAt(0).toUpperCase() : '';
   };
 
+  const renderIcon = () => {
+    if (selectedIcon === 'film') return <FaFilm />;
+    if (selectedIcon === 'ticket') return <FaTicketAlt />;
+    if (selectedIcon === 'star') return <FaStar />;
+    if (selectedIcon === 'video') return <FaVideo />;
+    if (selectedIcon === 'crown') return <FaCrown />;
+    return getInitial(username) || <FaUser />;
+  };
 
   return (
     <div ref={dropdownRef}>
@@ -59,7 +81,7 @@ const LoggedIn = (props) => {
         ref={profileRef}
         onClick={handleToggleMenu}
       >
-        <div className="user-icon">{getInitial(username)}</div>
+        <div className="user-icon">{renderIcon()}</div>
         <span className="header-username">{username}</span>
       </div>
 
@@ -74,7 +96,7 @@ const LoggedIn = (props) => {
             exit={{ opacity: 0, y: -10, transition: { duration: 0.2 } }}
           >
             <div className="dropdown-header">
-              <div className="dropdown-user-icon">{getInitial(username)}</div>
+              <div className="dropdown-user-icon">{renderIcon()}</div>
               <span className="dropdown-username">{username}</span>
             </div>
             <div className="dropdown-separator" />

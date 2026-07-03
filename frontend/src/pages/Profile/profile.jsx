@@ -6,6 +6,8 @@ import axios from "axios" ;
 import TicketQR from '../Reservation_info/generate_QR';
 import {Link} from 'react-router-dom';
 import { API_BASE_URL } from '../../config/api';
+import { FaCrown, FaFilm, FaStar, FaTicketAlt, FaUser, FaVideo } from 'react-icons/fa';
+import { getStoredUserIcon, setStoredUserIcon, USER_ICON_OPTIONS } from '../../utils/userIcon';
 
 
 export default  function Profile() {
@@ -15,6 +17,8 @@ export default  function Profile() {
   const location = useLocation();
   const [reservations, setReservations] = useState([]);
   const [alertQr , setAlertQr] = useState(null);
+  const [selectedIcon, setSelectedIcon] = useState(getStoredUserIcon);
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   
   const userData1 = getUserFromToken();
   const tokenUserId = userData1?.id;
@@ -161,6 +165,22 @@ export default  function Profile() {
 
   const upcomingReservations = user.reservations.filter(r => r.status === 'upcoming');
   const pastReservations = user.reservations.filter(r => r.status === 'completed');
+  const userInitials = user.name.split(' ').map(n => n[0]).join('');
+
+  const renderUserIcon = (iconId = selectedIcon) => {
+    if (iconId === 'film') return <FaFilm />;
+    if (iconId === 'ticket') return <FaTicketAlt />;
+    if (iconId === 'star') return <FaStar />;
+    if (iconId === 'video') return <FaVideo />;
+    if (iconId === 'crown') return <FaCrown />;
+    return userInitials || <FaUser />;
+  };
+
+  const handleIconSelect = (iconId) => {
+    setSelectedIcon(iconId);
+    setStoredUserIcon(iconId);
+    setIsIconPickerOpen(false);
+  };
 
   return (
     <div className={styles.container}>
@@ -175,17 +195,40 @@ export default  function Profile() {
         {/* Profile Header */}
         <div className={styles.profileHeader}>
           <div className={styles.avatarSection}>
-            <div className={styles.avatarWrapper}>
+            <button
+              type="button"
+              className={styles.avatarWrapper}
+              onClick={() => setIsIconPickerOpen((isOpen) => !isOpen)}
+              aria-label="Change profile icon"
+              title="Change profile icon"
+            >
               {user.avatar ? (
                 <img src={user.avatar} alt="Avatar" className={styles.avatar} />
               ) : (
                 <div className={styles.avatarFallback}>
-                  {user.name.split(' ').map(n => n[0]).join('')}
+                  {renderUserIcon()}
                 </div>
               )}
               <div className={styles.avatarBadge}>👑</div>
-            </div>
-        
+            </button>
+
+            {isIconPickerOpen && (
+              <div className={styles.iconPicker}>
+                {USER_ICON_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`${styles.iconChoice} ${selectedIcon === option.id ? styles.selectedIcon : ''}`}
+                    onClick={() => handleIconSelect(option.id)}
+                    aria-label={`Use ${option.label} profile icon`}
+                  >
+                    <span>{renderUserIcon(option.id)}</span>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
           </div>
           
           <div className={styles.userInfo}>
