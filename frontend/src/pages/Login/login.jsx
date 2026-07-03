@@ -47,7 +47,6 @@ const Login = () => {
   }, []);
 
     const [form, setForm] = useState({ email: "user@gmail.com", password: "user" });
-    const [error, setError] = useState("");
     const [notice, setNotice] = useState(null);
     const [rememberMe, setRememberMe] = useState(false);
 
@@ -68,17 +67,14 @@ const Login = () => {
     
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
-        setError("");
         setNotice(null);
     };
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
         setNotice(null);
         if (!form.email || !form.password) {
             const message = "Please fill in all fields.";
-            setError(message);
             setNotice({ type: "error", title: "Missing details", message });
             return;
         }
@@ -109,12 +105,10 @@ const Login = () => {
             const message = result.status === 401
               ? "Wrong email, username, or password."
               : data.message || "Login failed. Please try again.";
-            setError(message);
             setNotice({ type: "error", title: "Sign in failed", message });
           }
         } catch (err) {
           const message = err.message || "Could not reach the server. Please try again.";
-          setError(message);
           setNotice({ type: "error", title: "Network error", message });
         } finally {
           setIsLoading(false);
@@ -160,9 +154,9 @@ const Login = () => {
                         <input type="checkbox" id="remember" name="remember" checked={rememberMe}
                     onChange={e => setRememberMe(e.target.checked)}
                     style ={ { width: "20px", height: "20px" } }/>
-                        <div class="liquid-container">
-                            <div class="liquid-fill"></div>
-                            <div class="checkmark-float">✓</div>
+                        <div className="liquid-container">
+                            <div className="liquid-fill"></div>
+                            <div className="checkmark-float">✓</div>
                         </div>
                     </div>
                    Remember Me

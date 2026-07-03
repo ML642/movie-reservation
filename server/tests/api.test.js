@@ -6,6 +6,7 @@ const path = require('node:path');
 
 let serverProcess;
 let baseUrl;
+const testRunId = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -312,8 +313,9 @@ test('authenticated user can save, list, and remove liked movies', async () => {
 
 test('authenticated user can create, list, and cancel own reservation', async () => {
   const user = await registerUser();
+  const movieId = `m-own-${testRunId}`;
   const seatQuery = {
-    movieId: 'm-own-1',
+    movieId,
     theaterId: 1,
     date: '2026-02-11',
     time: '7:00 PM',
@@ -324,7 +326,7 @@ test('authenticated user can create, list, and cancel own reservation', async ()
   assert.deepEqual(initialSeatsRes.json?.bookedSeats, []);
 
   const createRes = await createReservation(user.token, {
-    movieId: 'm-own-1',
+    movieId,
     seats: ['B2', 'B3'],
   });
   assert.equal(createRes.status, 201);
@@ -366,9 +368,10 @@ test('authenticated user can create, list, and cancel own reservation', async ()
 test('user cannot cancel another user reservation', async () => {
   const owner = await registerUser();
   const attacker = await registerUser();
+  const movieId = `m-owner-only-${testRunId}`;
 
   const createRes = await createReservation(owner.token, {
-    movieId: 'm-owner-only',
+    movieId,
     seats: ['C1'],
   });
   assert.equal(createRes.status, 201);
@@ -387,9 +390,10 @@ test('user cannot cancel another user reservation', async () => {
 test('reservation booking rejects already-taken seats with 409', async () => {
   const firstUser = await registerUser();
   const secondUser = await registerUser();
+  const movieId = `m-conflict-${testRunId}`;
 
   const firstBooking = await createReservation(firstUser.token, {
-    movieId: 'm-conflict',
+    movieId,
     theaterId: 2,
     showtime: '10:00 PM',
     bookingDate: new Date('2026-03-01T12:00:00.000Z').toISOString(),
@@ -398,7 +402,7 @@ test('reservation booking rejects already-taken seats with 409', async () => {
   assert.equal(firstBooking.status, 201);
 
   const conflictBooking = await createReservation(secondUser.token, {
-    movieId: 'm-conflict',
+    movieId,
     theaterId: 2,
     showtime: '10:00 PM',
     bookingDate: new Date('2026-03-01T19:30:00.000Z').toISOString(),
@@ -407,4 +411,35 @@ test('reservation booking rejects already-taken seats with 409', async () => {
   assert.equal(conflictBooking.status, 409);
   assert.equal(conflictBooking.json?.success, false);
   assert.deepEqual(conflictBooking.json?.conflictingSeats, ['D5']);
+});
+
+test('concurrent reservation requests cannot book the same seat twice', async () => {
+  const firstUser = await registerUser();
+  const secondUser = await registerUser();
+  const movieId = `m-concurrent-${testRunId}`;
+  const bookingDate = new Date('2026-04-01T18:00:00.000Z').toISOString();
+
+  const [firstBooking, secondBooking] = await Promise.all([
+    createReservation(firstUser.token, {
+      movieId,
+      theaterId: 3,
+      showtime: '8:00 PM',
+      bookingDate,
+      seats: ['E1'],
+    }),
+    createReservation(secondUser.token, {
+      movieId,
+      theaterId: 3,
+      showtime: '8:00 PM',
+      bookingDate,
+      seats: ['E1'],
+    }),
+  ]);
+
+  const statuses = [firstBooking.status, secondBooking.status].sort();
+  assert.deepEqual(statuses, [201, 409]);
+
+  const conflictResponse = firstBooking.status === 409 ? firstBooking : secondBooking;
+  assert.equal(conflictResponse.json?.success, false);
+  assert.deepEqual(conflictResponse.json?.conflictingSeats, ['E1']);
 });
