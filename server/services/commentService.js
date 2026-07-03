@@ -6,7 +6,7 @@ const MAX_COMMENT_LENGTH = 1000;
 const memoryComments = [];
 
 const createCommentError = (message, code, extra = {}) => Object.assign(new Error(message), { code, ...extra });
-
+/*  */
 const waitForMongoReady = async (timeoutMs = 3000) => {
   if (isMongoReady()) return true;
 

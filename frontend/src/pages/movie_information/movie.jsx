@@ -2,20 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
-  FaArrowLeft,
   FaClock,
   FaCalendarAlt,
   FaMapMarkerAlt,
   FaStar,
   FaPlay,
   FaTicketAlt,
-  FaUsers
+  FaUsers,
+  FaHeart,
+  FaRegHeart
 } from 'react-icons/fa';
 import styles from './movie.module.css';
 import MorphingSpinner from '../../components/spinner/spinner';
 import CustomAlert from './movie_alert.jsx';
 import { API_BASE_URL } from '../../config/api';
 import CommentsSection from '../../components/comments/CommentsSection';
+import { useLikedMovies } from '../../hooks/useLikedMovies';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
@@ -54,6 +56,7 @@ const Movie = () => {
   const [seatSyncMessage, setSeatSyncMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [alertData, setAlertData] = useState(null);
+  const { isLiked, notice, toggleLike } = useLikedMovies();
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
@@ -260,6 +263,22 @@ const Movie = () => {
     return dates;
   };
 
+  const likedMovieData = movie
+    ? {
+        id: movie.id,
+        movieId: String(movie.id),
+        movieKey: movie.title,
+        title: movie.title,
+        poster: movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : undefined,
+        rating: movie.vote_average,
+        date: movie.release_date,
+        genre: movie.genres?.[0]?.name,
+      }
+    : null;
+  const movieIsLiked = likedMovieData ? isLiked(likedMovieData) : false;
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -281,6 +300,13 @@ const Movie = () => {
 
   return (
     <div className={styles.moviePage}>
+      {notice && (
+        <div className={styles.likeNotice} role="status" aria-live="polite">
+          <strong>{notice.message}</strong>
+          <span>{notice.title}</span>
+        </div>
+      )}
+
       <div
         className={styles.movieHero}
         style={{
@@ -290,11 +316,19 @@ const Movie = () => {
         }}
       >
         <div className={styles.heroContent}>
-          <button className={styles.backButton} onClick={() => navigate(-1)}>
-            <FaArrowLeft /> Back to Movies
-          </button>
+          <div style={{height:'50px'}}></div>
 
           <div className={styles.movieHeader}>
+            <button
+              type="button"
+              className={`${styles.favoriteButton} ${movieIsLiked ? styles.liked : ''}`}
+              onClick={() => toggleLike(likedMovieData)}
+              aria-label={movieIsLiked ? `Remove ${movie.title} from favorites` : `Add ${movie.title} to favorites`}
+              title={movieIsLiked ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              {movieIsLiked ? <FaHeart /> : <FaRegHeart />}
+            </button>
+
             <div className={styles.moviePoster}>
               {movie.poster_path ? (
                 <img

@@ -21,6 +21,7 @@ const NotFound = lazy(() => import('./pages/NotFound/notFound'));
 const Pricing = lazy(() => import('./pages/pricing/pricing'));
 const Profile = lazy(() => import('./pages/Profile/profile'));
 const MyReservations = lazy(() => import('./pages/Reservation_info/myReservations'));
+const Favorites = lazy(() => import('./pages/Favorites/Favorites'));
 
 const PageFallback = () => (
   <div className="page-fallback">
@@ -54,6 +55,7 @@ const router = createBrowserRouter([
  {path: '/pricing' , element : <Layout element={ <Pricing/> } />},
  {path: '/profile' , element : <Layout element={ <Profile/> } />},
  {path: '/my-reservations' , element : <Layout element={ <MyReservations/> } />},
+ {path: '/favorites' , element : <Layout element={ <Favorites/> } />},
  {path: '*', element : <Layout element={ <NotFound/> } fullPage />}, 
 ])
 

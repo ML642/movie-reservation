@@ -7,6 +7,9 @@ import LoggedIn from "../LoggedIn/LoggedIn.jsx"
 import ResponsiveLogo from "./cineReserve.jsx";
 import "./header.css"
 
+const MotionLink = motion(Link);
+const HEADER_TEXT_COLOR = "rgb(255, 255, 255)";
+const HEADER_ACCENT_COLOR = "rgb(239, 68, 68)";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,21 +40,6 @@ const Header = () => {
       }
     };
   }, []);
-
-  const style_login = {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: isMobile ? "0.9rem" : "1.05rem",
-    minWidth: isMobile ? "4.25rem" : "5rem",
-    height: "2.1rem",
-    padding: "0",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    textDecoration: "none",
-    whiteSpace: "nowrap",
-  };
- 
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -91,6 +79,8 @@ const Header = () => {
       transition: { duration: 1.5 }
     },
     scrolled: {
+      opacity: 1,
+      y: 0,
       backgroundColor: "rgba(17, 24, 39, 0.95)",
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
     }
@@ -118,7 +108,7 @@ const Header = () => {
   return (
     <motion.header
       initial="hidden"
-      animate={["visible", isScrolled ? "scrolled" : ""]}
+      animate={isScrolled ? "scrolled" : "visible"}
       variants={headerVariants}
       style={{
         position: "fixed",
@@ -131,7 +121,7 @@ const Header = () => {
         alignItems: "center",
         zIndex: 1000,
         backgroundColor: "#111827",
-        color: "white",
+        color: HEADER_TEXT_COLOR,
       }}
     >
       {/* Logo */}
@@ -150,11 +140,11 @@ const Header = () => {
       {/* Desktop Navigation */}
       <nav style={{ display: "none", gap: "2rem", alignItems: "center" }}>
         {navLinks.map((link) => (
-          <motion.a
+          <MotionLink
             key={link.name}
-            href={link.href}
+            to={link.href}
             whileHover={{ 
-              color: "#ef4444",
+              color: HEADER_ACCENT_COLOR,
               y: -2
             }}
             whileTap={{ scale: 0.95 }}
@@ -164,12 +154,12 @@ const Header = () => {
               gap: "0.5rem",
               fontWeight: 500,
               textDecoration: "none",
-              color: "white",
+              color: HEADER_TEXT_COLOR,
             }}
           >
             {link.icon}
             {link.name}
-          </motion.a>
+          </MotionLink>
         ))}
       </nav>
 
@@ -204,24 +194,29 @@ const Header = () => {
      
       <div style={{ display: "flex", alignItems: "center" , gap: "0.75rem" }}>
         {isLoggedIn  ? (<LoggedIn onLogout={handleLogout}/>) : 
-        <motion.button
+        <MotionLink
+          to="/login"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           style={{
             background: "#ef4444",
-            color: "white",
-            border: "none",
+            color: HEADER_TEXT_COLOR,
             borderRadius: "999px",
             padding: "0 0.15rem",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
             fontWeight: "bold",
+            fontSize: isMobile ? "0.9rem" : "1.05rem",
+            minWidth: isMobile ? "4.25rem" : "5rem",
+            height: "2.1rem",
             cursor: "pointer",
+            textDecoration: "none",
+            whiteSpace: "nowrap",
           }}
         >
-          <Link to="/login" style={style_login}>Sign In</Link>
-        </motion.button>
+          Sign In
+        </MotionLink>
           }
         {/* Mobile Menu Toggle */}
         <motion.button
@@ -231,7 +226,7 @@ const Header = () => {
           style={{
             background: "none",
             border: "none",
-            color: "white",
+            color: HEADER_TEXT_COLOR,
             fontSize: "1.5rem",
             cursor: "pointer",
             width: "2.4rem",
@@ -269,17 +264,16 @@ const Header = () => {
 
               {/* Mobile Nav Links */}
               {navLinks.map((link) => (
-               <Link to={link.href}>
-               <motion.a
+                <MotionLink
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   variants={navItemVariants}
-                  whileHover={{ color: "#ef4444" }}
+                  whileHover={{ color: HEADER_ACCENT_COLOR }}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: "0.5rem",
-                    color: "white",
+                    color: HEADER_TEXT_COLOR,
                     textDecoration: "none",
                     padding: "0.5rem 0",
                     fontWeight: 500,
@@ -288,8 +282,7 @@ const Header = () => {
                 >
                   {link.icon}
                   {link.name}
-                </motion.a> 
-                </Link>
+                </MotionLink>
               ))}
             </div>
           </motion.div>

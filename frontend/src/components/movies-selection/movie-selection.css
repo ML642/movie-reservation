@@ -379,8 +379,9 @@
 
 .like-notice {
   position: fixed;
-  top: 5.7rem;
-  right: 1.2rem;
+  right: 50%;
+  bottom: 1.5rem;
+  transform: translateX(50%);
   z-index: 1000;
   min-width: 14rem;
   max-width: min(22rem, calc(100vw - 2rem));
@@ -452,10 +453,10 @@
 
 @media (max-width: 650px) {
   .like-notice {
-    top: 5.2rem;
-    right: 0.75rem;
-    left: 0.75rem;
-    max-width: none;
+    right: 50%;
+    bottom: 1rem;
+    left: auto;
+    width: min(22rem, calc(100vw - 1.5rem));
   }
 
   .movie-filter-bar {

@@ -84,6 +84,9 @@ const LoggedIn = (props) => {
             <Link to = "/my-reservations" className="dropdown-item" >
               My Reservations
             </Link>
+            <Link to = "/favorites" className="dropdown-item" >
+              Favorites
+            </Link>
             <div className="dropdown-separator" />
             <button className="dropdown-item" onClick={props.onLogout}>
               Logout
