@@ -23,7 +23,7 @@ const Profile = lazy(() => import('./pages/Profile/profile'));
 const MyReservations = lazy(() => import('./pages/Reservation_info/myReservations'));
 
 const PageFallback = () => (
-  <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', color: '#fff' }}>
+  <div className="page-fallback">
     Loading...
   </div>
 );
@@ -34,7 +34,7 @@ const Layout = ({ element, fullPage = false }) => {
   }
 
   return (
-    <div>
+    <div className="app-shell">
       <Header />
       <Suspense fallback={<PageFallback />}>{element}</Suspense>
       <Footer />

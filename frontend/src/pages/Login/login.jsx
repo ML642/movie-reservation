@@ -5,6 +5,7 @@ import './Login.css';
 import  { Link, useNavigate , useLocation  } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
 import { API_BASE_URL } from "../../config/api";
+import AuthNotice from "../../components/notification/AuthNotice";
 
 const Login = () => {
   const vantaRef = useRef(null);
@@ -47,12 +48,16 @@ const Login = () => {
 
     const [form, setForm] = useState({ email: "user@gmail.com", password: "user" });
     const [error, setError] = useState("");
+    const [notice, setNotice] = useState(null);
     const [rememberMe, setRememberMe] = useState(false);
-    
-    let errorMessage = error ? <p className="error-message">{error}</p> : null;
-    if (error) {
-      console.log(errorMessage)
-    }
+
+    useEffect(() => {
+      if (Location.state?.notice) {
+        setNotice(Location.state.notice);
+        navigate(Location.pathname, { replace: true, state: {} });
+      }
+    }, [Location.pathname, Location.state, navigate]);
+
     useEffect(() => {
         const remembered = localStorage.getItem("rememberedEmail");
         if (remembered) {
@@ -64,58 +69,62 @@ const Login = () => {
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
         setError("");
+        setNotice(null);
     };
     
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Dummy validation
-        setIsLoading(true);
+        setError("");
+        setNotice(null);
         if (!form.email || !form.password) {
-            alert("Please fill in all fields.");
-            setIsLoading(false);
-            setError("Please fill in all fields.");
+            const message = "Please fill in all fields.";
+            setError(message);
+            setNotice({ type: "error", title: "Missing details", message });
             return;
         }
-        const Login = async () => { 
-          try {
-            const result  =  await fetch (`${API_BASE_URL}/api/login`,{
-              method : "POST" , 
-              headers : { "Content-type":"application/json"},
-              body: JSON.stringify({
-                email: form.email,
-                password: form.password
-              })
-            })
-            const data = await result.json();
-            if (result.ok) {
-              setIsLoading(false);
-              localStorage.setItem('token', data.token);
-              localStorage.setItem('username', data.user.username);
-              localStorage.setItem('userEmail', data.user.email || form.email);
-              alert("Login successful!");
-              // Redirect to home page
-              navigate('/');
-            } else {
-              setIsLoading(false);
-              if(result.status === 401) alert("wrong email or password");
-              setError(data.message || "Login failed");
-            }
-          } catch (err) {
-            setIsLoading(false);
-            setError("Network error");
-          }
-        }
-        Login();
+
+        setIsLoading(true);
         if (rememberMe) {
             localStorage.setItem("rememberedEmail", form.email);
         } else {
             localStorage.removeItem("rememberedEmail");
+        }
+
+        try {
+          const result  =  await fetch (`${API_BASE_URL}/api/login`,{
+            method : "POST" , 
+            headers : { "Content-type":"application/json"},
+            body: JSON.stringify({
+              email: form.email,
+              password: form.password
+            })
+          })
+          const data = await result.json();
+          if (result.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('username', data.user.username);
+            localStorage.setItem('userEmail', data.user.email || form.email);
+            navigate('/');
+          } else {
+            const message = result.status === 401
+              ? "Wrong email, username, or password."
+              : data.message || "Login failed. Please try again.";
+            setError(message);
+            setNotice({ type: "error", title: "Sign in failed", message });
+          }
+        } catch (err) {
+          const message = err.message || "Could not reach the server. Please try again.";
+          setError(message);
+          setNotice({ type: "error", title: "Network error", message });
+        } finally {
+          setIsLoading(false);
         }
         
     };
 
     return (
         <div>  
+        <AuthNotice notice={notice} onClose={() => setNotice(null)} />
         
         <div ref={vantaRef} className="container" >
             <form onSubmit={handleSubmit} className="form" >

@@ -127,10 +127,14 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: #1a1a2e;
+  overflow: hidden;
+  position: relative;
 }
 
 .form {
+  position: relative;
+  z-index: 1;
   background: rgba(96, 86, 160, 0.2); /* semi-transparent white */
   backdrop-filter: blur(1px);           /* blur background behind the form */
   border-radius: 8px;

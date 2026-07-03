@@ -7,6 +7,7 @@ import './components/custom-select/CustomSelect.css';
 import './components/movies-selection/movie-selection.css';
 import './components/movies-selection/SkeletonCard.css';
 import './components/movies-slider/movie-slider.css';
+import './components/notification/AuthNotice.css';
 import './components/spinner/spinner.css';
 import './pages/Home/home.css';
 import './pages/Login/Login.css';

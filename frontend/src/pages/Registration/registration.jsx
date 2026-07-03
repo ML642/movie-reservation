@@ -7,6 +7,7 @@ import  { Link } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
+import AuthNotice from "../../components/notification/AuthNotice";
 
 const Signin = () => {
   
@@ -42,6 +43,7 @@ const Signin = () => {
 
     const [form, setForm] = useState({ username: "" ,  email: "", password: "" });
     const [error, setError] = useState("");
+    const [notice, setNotice] = useState(null);
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading ] =  useState(false) ; 
     const navigate =  useNavigate() ;
@@ -57,18 +59,21 @@ const Signin = () => {
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
         setError("");
+        setNotice(null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-        setIsLoading(true);
+        setNotice(null);
         if (!form.username || !form.email || !form.password) {
-            setError("Please fill in all fields.");
-            alert("Please fill in all fields.");
-            setIsLoading(false);
+            const message = "Please fill in all fields.";
+            setError(message);
+            setNotice({ type: "error", title: "Missing details", message });
             return;
         }
+
+        setIsLoading(true);
         if (rememberMe) {
             localStorage.setItem("rememberedEmail", form.email);
         } else {
@@ -86,24 +91,36 @@ const Signin = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                alert("Registration successful! You can now log in.");
-                // Redirect to login page
-                navigate('/login');
+                navigate('/login', {
+                    state: {
+                        notice: {
+                            type: "success",
+                            title: "Account created",
+                            message: "Your account is ready. Sign in to continue.",
+                        },
+                    },
+                });
             } else {
-              if (response.status === 400)   alert("Bad request: " + data.message); 
-              else if (!response.ok){alert("reservation error") ;}
+              const message = data.message || "Registration failed. Please try again.";
+              setError(message);
+              setNotice({
+                type: "error",
+                title: response.status === 400 ? "Registration blocked" : "Registration failed",
+                message,
+              });
             }
         } catch (err) {
-
-            alert(error.message)
-            
+            const message = err.message || "Could not reach the server. Please try again.";
+            setError(message);
+            setNotice({ type: "error", title: "Network error", message });
+        } finally {
+            setIsLoading(false);
         }
-       
-        setIsLoading(false);
     };
 
     return (
         <div>  
+        <AuthNotice notice={notice} onClose={() => setNotice(null)} />
        
         <div ref={vantaRef} className="container" >
             <form onSubmit={handleSubmit} className="form" >

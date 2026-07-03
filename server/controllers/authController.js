@@ -10,7 +10,9 @@ const register = async (req, res) => {
     if (!username || !email || !password) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
-    if (userService.findUserByEmail(email) || userService.findUserByUsername(username)) {
+    const existingUser =
+      (await userService.findUserByEmail(email)) || (await userService.findUserByUsername(username));
+    if (existingUser) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
     const user = await userService.createUser({ username, email, password });
@@ -27,6 +29,9 @@ const register = async (req, res) => {
     });
   } catch (err) {
     console.error('Registration error:', err);
+    if (err.code === 'USER_EXISTS') {
+      return res.status(400).json({ success: false, message: 'User already exists' });
+    }
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -38,7 +43,7 @@ const login = async (req, res) => {
     if (!loginId || !password) {
       return res.status(400).json({ success: false, message: 'Email/username and password are required' });
     }
-    const user = userService.findUserByEmail(loginId) || userService.findUserByUsername(loginId);
+    const user = (await userService.findUserByEmail(loginId)) || (await userService.findUserByUsername(loginId));
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
@@ -63,7 +68,7 @@ const login = async (req, res) => {
   }
 };
 
-const userInfo = (req, res) => {
+const userInfo = async (req, res) => {
   // This endpoint mirrors previous behavior: allow token-based or body userId
   const authHeader = req.headers['authorization'];
   let decodedToken = null;
@@ -87,7 +92,7 @@ const userInfo = (req, res) => {
     return res.status(403).json({ message: 'Forbidden: user mismatch' });
   }
 
-  const user = userService.findUserById(id);
+  const user = await userService.findUserById(id);
   if (user) {
     return res.json({
       id: user.id,
@@ -109,7 +114,7 @@ const userInfo = (req, res) => {
   return res.status(404).json({ message: 'User not found' });
 };
 
-const changeInfo = (req, res) => {
+const changeInfo = async (req, res) => {
 const tokenUser = req.user;
   if (!tokenUser || !tokenUser.userId) {
     return res.status(401).json({ success: false, message: 'Invalid or expired token' });
@@ -125,9 +130,18 @@ const tokenUser = req.user;
     return res.status(400).json({ success: false, message: 'Nothing to update' });
   }
 
-  const updated = userService.updateUser(tokenUserId, { newEmail, newName });
-  if (!updated) {
-    return res.status(404).json({ success: false, message: 'User not found' });
+  let updated;
+  try {
+    updated = await userService.updateUser(tokenUserId, { newEmail, newName });
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+  } catch (err) {
+    if (err.code === 'USER_EXISTS') {
+      return res.status(400).json({ success: false, message: 'User already exists' });
+    }
+    console.error('Change info error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 
   return res.json({
