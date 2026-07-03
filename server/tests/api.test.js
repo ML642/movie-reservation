@@ -21,7 +21,7 @@ const getFreePort = () =>
   });
 
 const apiRequest = async (pathname, options = {}) => {
-  const { method = 'GET', body, token } = options;
+  const { method = 'GET', body, token, redirect } = options;
   const headers = {};
   if (body !== undefined) {
     headers['Content-Type'] = 'application/json';
@@ -34,6 +34,7 @@ const apiRequest = async (pathname, options = {}) => {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    redirect,
   });
 
   const text = await response.text();
@@ -46,6 +47,7 @@ const apiRequest = async (pathname, options = {}) => {
 
   return {
     status: response.status,
+    headers: Object.fromEntries(response.headers.entries()),
     json,
     text,
   };
@@ -223,6 +225,16 @@ test('register/login flow works and duplicate registration is rejected', async (
   });
   assert.equal(badLoginRes.status, 401);
   assert.equal(badLoginRes.json?.success, false);
+});
+
+test('oauth routes report configuration errors when provider env is missing', async () => {
+  const googleRes = await apiRequest('/api/oauth/google', { redirect: 'manual' });
+  assert.equal(googleRes.status, 302);
+  assert.match(googleRes.headers?.location || '', /oauth\/callback\?error=Google\+OAuth\+is\+not\+configured/);
+
+  const githubRes = await apiRequest('/api/oauth/github', { redirect: 'manual' });
+  assert.equal(githubRes.status, 302);
+  assert.match(githubRes.headers?.location || '', /oauth\/callback\?error=GitHub\+OAuth\+is\+not\+configured/);
 });
 
 test('POST /api/userInfo enforces token identity and supports token-only lookup', async () => {

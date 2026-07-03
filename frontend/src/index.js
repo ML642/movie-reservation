@@ -22,6 +22,7 @@ const Pricing = lazy(() => import('./pages/pricing/pricing'));
 const Profile = lazy(() => import('./pages/Profile/profile'));
 const MyReservations = lazy(() => import('./pages/Reservation_info/myReservations'));
 const Favorites = lazy(() => import('./pages/Favorites/Favorites'));
+const OAuthCallback = lazy(() => import('./pages/OAuthCallback/OAuthCallback'));
 
 const PageFallback = () => (
   <div className="page-fallback">
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
  {path: '/', element: <Layout element={ <Home/> } />},
  {path: '/home', element: <Layout element={ <Home/> } />},
  {path: '/login', element: <Layout element={ <Login/> } />},
+ {path: '/oauth/callback', element: <Layout element={ <OAuthCallback/> } />},
  {path: '/register', element:<Layout element={ <Signin/> } />},
  {path: '/movie_list' , element : <Layout element={ <MovieList/> } />}, 
  {path: '/movie/:id' , element : <Layout element={ <Movie/> } />}, 

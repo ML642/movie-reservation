@@ -3,6 +3,36 @@ const userService = require('../services/userService');
 const bcrypt = require('bcryptjs');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '');
+
+const signUserToken = (user) =>
+  jwt.sign(
+    { userId: user.id, username: user.username, userEmail: user.email },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+const buildApiBaseUrl = (req) =>
+  (process.env.API_PUBLIC_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+
+const buildOAuthRedirectUri = (req, provider) =>
+  `${buildApiBaseUrl(req)}/api/oauth/${provider}/callback`;
+
+const redirectOAuthError = (res, message) => {
+  const params = new URLSearchParams({ error: message });
+  return res.redirect(`${FRONTEND_URL}/oauth/callback?${params.toString()}`);
+};
+
+const redirectOAuthSuccess = (res, user) => {
+  const token = signUserToken(user);
+  const params = new URLSearchParams({
+    token,
+    username: user.username,
+    email: user.email,
+  });
+
+  return res.redirect(`${FRONTEND_URL}/oauth/callback?${params.toString()}`);
+};
 
 const register = async (req, res) => {
   try {
@@ -16,11 +46,7 @@ const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
     const user = await userService.createUser({ username, email, password });
-    const token = jwt.sign(
-      { userId: user.id, username: user.username, userEmail: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = signUserToken(user);
     return res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -51,11 +77,7 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    const token = jwt.sign(
-      { userId: user.id, username: user.username, userEmail: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = signUserToken(user);
     return res.json({
       success: true,
       message: 'Login successful',
@@ -154,10 +176,162 @@ const tokenUser = req.user;
 const testGet = (req, res) =>
   res.json({ success: true, message: 'test' });
 
+const startGoogleOAuth = (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    return redirectOAuthError(res, 'Google OAuth is not configured');
+  }
+
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    redirect_uri: buildOAuthRedirectUri(req, 'google'),
+    response_type: 'code',
+    scope: 'openid email profile',
+    access_type: 'offline',
+    prompt: 'select_account',
+  });
+
+  return res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+};
+
+const handleGoogleOAuthCallback = async (req, res) => {
+  const { code } = req.query;
+
+  if (!code) {
+    return redirectOAuthError(res, 'Missing Google OAuth code');
+  }
+
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return redirectOAuthError(res, 'Google OAuth is not configured');
+  }
+
+  try {
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: buildOAuthRedirectUri(req, 'google'),
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokenPayload = await tokenResponse.json();
+    if (!tokenResponse.ok || !tokenPayload.access_token) {
+      return redirectOAuthError(res, 'Google OAuth token exchange failed');
+    }
+
+    const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenPayload.access_token}` },
+    });
+    const profile = await profileResponse.json();
+
+    if (!profileResponse.ok || !profile.sub) {
+      return redirectOAuthError(res, 'Google profile lookup failed');
+    }
+
+    const user = await userService.findOrCreateOAuthUser({
+      provider: 'google',
+      providerId: profile.sub,
+      email: profile.email,
+      name: profile.name,
+    });
+
+    return redirectOAuthSuccess(res, user);
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    return redirectOAuthError(res, 'Google OAuth failed');
+  }
+};
+
+const startGithubOAuth = (req, res) => {
+  if (!process.env.GITHUB_CLIENT_ID) {
+    return redirectOAuthError(res, 'GitHub OAuth is not configured');
+  }
+
+  const params = new URLSearchParams({
+    client_id: process.env.GITHUB_CLIENT_ID,
+    redirect_uri: buildOAuthRedirectUri(req, 'github'),
+    scope: 'read:user user:email',
+  });
+
+  return res.redirect(`https://github.com/login/oauth/authorize?${params.toString()}`);
+};
+
+const handleGithubOAuthCallback = async (req, res) => {
+  const { code } = req.query;
+
+  if (!code) {
+    return redirectOAuthError(res, 'Missing GitHub OAuth code');
+  }
+
+  if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+    return redirectOAuthError(res, 'GitHub OAuth is not configured');
+  }
+
+  try {
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        redirect_uri: buildOAuthRedirectUri(req, 'github'),
+      }),
+    });
+    const tokenPayload = await tokenResponse.json();
+
+    if (!tokenResponse.ok || !tokenPayload.access_token) {
+      return redirectOAuthError(res, 'GitHub OAuth token exchange failed');
+    }
+
+    const authHeaders = {
+      Authorization: `Bearer ${tokenPayload.access_token}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'movie-reservation-app',
+    };
+    const profileResponse = await fetch('https://api.github.com/user', { headers: authHeaders });
+    const profile = await profileResponse.json();
+
+    if (!profileResponse.ok || !profile.id) {
+      return redirectOAuthError(res, 'GitHub profile lookup failed');
+    }
+
+    let email = profile.email;
+    if (!email) {
+      const emailsResponse = await fetch('https://api.github.com/user/emails', { headers: authHeaders });
+      const emails = emailsResponse.ok ? await emailsResponse.json() : [];
+      email = emails.find((entry) => entry.primary && entry.verified)?.email || emails.find((entry) => entry.verified)?.email;
+    }
+
+    const user = await userService.findOrCreateOAuthUser({
+      provider: 'github',
+      providerId: profile.id,
+      email,
+      name: profile.name,
+      username: profile.login,
+    });
+
+    return redirectOAuthSuccess(res, user);
+  } catch (error) {
+    console.error('GitHub OAuth error:', error);
+    return redirectOAuthError(res, 'GitHub OAuth failed');
+  }
+};
+
 module.exports = {
   register,
   login,
   userInfo,
   changeInfo,
   testGet,
+  startGoogleOAuth,
+  handleGoogleOAuthCallback,
+  startGithubOAuth,
+  handleGithubOAuthCallback,
 };

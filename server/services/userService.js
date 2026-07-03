@@ -16,6 +16,14 @@ const buildDemoUser = () => ({
 
 const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 const normalizeUsername = (username) => String(username || '').trim();
+const buildSafeUsername = (value) => {
+  const normalized = normalizeUsername(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  return normalized || 'oauth_user';
+};
 
 const normalizeMongoUser = (user) => {
   if (!user) return null;
@@ -187,6 +195,38 @@ const createUser = async ({ username, email, password }) => {
   return user;
 };
 
+const createUniqueOAuthUser = async ({ username, email }) => {
+  const baseUsername = buildSafeUsername(username || email.split('@')[0]);
+  let nextUsername = baseUsername;
+  let attempt = 0;
+
+  while (await findUserByUsername(nextUsername)) {
+    attempt += 1;
+    nextUsername = `${baseUsername}_${attempt}`;
+  }
+
+  return createUser({
+    username: nextUsername,
+    email,
+    password: `oauth-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  });
+};
+
+const findOrCreateOAuthUser = async ({ provider, providerId, email, name, username }) => {
+  const fallbackEmail = `${provider}-${providerId}@oauth.local`;
+  const normalizedEmail = normalizeEmail(email || fallbackEmail);
+  const existingUser = await findUserByEmail(normalizedEmail);
+
+  if (existingUser) {
+    return existingUser;
+  }
+
+  return createUniqueOAuthUser({
+    username: username || name || normalizedEmail.split('@')[0],
+    email: normalizedEmail,
+  });
+};
+
 const updateUser = async (id, { newEmail, newName }) => {
   const user = await findUserById(id);
   if (!user) return null;
@@ -228,6 +268,7 @@ module.exports = {
   findUserByUsername,
   findUserById,
   createUser,
+  findOrCreateOAuthUser,
   updateUser,
   // export users for debugging/tests:
   _internal: { users, syncMemoryUsersToMongo },

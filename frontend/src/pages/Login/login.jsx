@@ -6,6 +6,7 @@ import  { Link, useNavigate , useLocation  } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
 import { API_BASE_URL } from "../../config/api";
 import AuthNotice from "../../components/notification/AuthNotice";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 
 const Login = () => {
   const vantaRef = useRef(null);
@@ -49,6 +50,8 @@ const Login = () => {
     const [form, setForm] = useState({ email: "user@gmail.com", password: "user" });
     const [notice, setNotice] = useState(null);
     const [rememberMe, setRememberMe] = useState(false);
+    const googleOAuthUrl = `${API_BASE_URL}/api/oauth/google`;
+    const githubOAuthUrl = `${API_BASE_URL}/api/oauth/github`;
 
     useEffect(() => {
       if (Location.state?.notice) {
@@ -165,6 +168,19 @@ const Login = () => {
                     {isLoading ? <span className="login-submit-text">Signing in...</span>  : "Sign in"} 
                     {isLoading ? <MorphingSpinner /> : null }
                 </button>
+                <div className="login-separator">
+                  <span>or continue with</span>
+                </div>
+                <div className="oauth-button-group">
+                  <a href={googleOAuthUrl} className="oauth-provider-button google">
+                    <FaGoogle />
+                    Continue with Google
+                  </a>
+                  <a href={githubOAuthUrl} className="oauth-provider-button github">
+                    <FaGithub />
+                    Continue with GitHub
+                  </a>
+                </div>
                 <div className="login-switch">
                   Don't have an account yet?{' '}
                   <Link to ="/register" className="login-switch-link" >
