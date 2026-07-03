@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaCheck, FaComments, FaPaperPlane, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaComments, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 import { API_BASE_URL } from '../../config/api';
 import { getUserFromToken } from '../../utils/jwtDecoder';
 import './CommentsSection.css';
@@ -159,7 +159,6 @@ const CommentsSection = ({ movieId }) => {
           <div className="comment-form-footer">
             <span>{MAX_COMMENT_LENGTH - text.length} characters left</span>
             <button type="submit" disabled={isSubmitting || !text.trim()}>
-              <FaPaperPlane />
               Post
             </button>
           </div>

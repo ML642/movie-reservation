@@ -1,179 +1,331 @@
-#  Movie Reservation System
+# Movie Reservation System
 
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-3C873A?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
-[![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white)](https://reactrouter.com/)
-[![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/)
-[![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/docs/Web/CSS)
+A full-stack movie reservation application built with React, Express, JWT authentication, and MongoDB. Users can browse movies, register or sign in, reserve seats, manage reservations, like movies, and comment on movie detail pages.
 
-Preview : https://movie-reservation-1-4uao.onrender.com
+Preview: https://movie-reservation-1-4uao.onrender.com
 
-A full‑stack app to browse movies and book reservations. Frontend built with React (CRA). Backend built with Express. Auth uses JWT and passwords are hashed with bcrypt. Data is currently stored in‑memory for users and reservations.
+## Core Architecture
 
-##  Highlights
+The application is split into two deployable parts:
 
-- __Auth__: Register, Login, JWT issuance, basic profile update
-- __Reservations__: Create, list, cancel, and get reservations for the logged‑in user
-- __CORS__: Locked to `http://localhost:3000` and deployed origin (configurable)
-- __DX__: Clear project structure with `frontend/` and `server/`
+- `frontend/`: React application created with Create React App.
+- `server/`: Express API backed by MongoDB through Mongoose.
 
-##  Project Structure
+The frontend talks to the backend through `REACT_APP_API_URL` or, when that is not set, through the current browser origin. The backend exposes REST endpoints under `/api/*` and protects user-specific actions with JWT bearer tokens.
 
+## Runtime Flow
+
+1. A user registers or signs in through the React UI.
+2. The server validates credentials, hashes passwords with bcrypt, and returns a JWT.
+3. The client stores the JWT and user profile data in `localStorage`.
+4. Protected API calls send `Authorization: Bearer <token>`.
+5. MongoDB persists users, reservations, seat locks, liked movies, and comments.
+
+## Data Model
+
+### Users
+
+Stored in MongoDB through `server/models/User.js`.
+
+Primary responsibilities:
+
+- Store username, email, password hash, and stable app user id.
+- Support registration, login, user info, and profile updates.
+- Keep the demo user with id `1` for local/demo compatibility.
+
+### Reservations
+
+Stored in MongoDB through `server/models/Reservation.js`.
+
+Reservations contain the user id, movie id, theater id, selected seats, show date/time, movie metadata, status, and pricing data.
+
+### Seat Locks
+
+Stored in MongoDB through `server/models/BookedSeat.js`.
+
+Seat availability is enforced with a unique index:
+
+```js
+{ showKey: 1, seatId: 1 }
 ```
-movie-reservation project/
-├─ frontend/
-│  ├─ public/
-│  └─ src/
-│     ├─ components/           # UI components (hero section, header, sliders, etc.)
-│     └─ pages/                # Pages (Home, Login, Registration, Profile, etc.)
-└─ server/
-   ├─ app.js                   # Express app, auth routes, CORS, router mounting
-   ├─ reservation.js           # Reservation API routes
-   └─ utils/auth.js            # JWT helper
+
+This is the key consistency mechanism. A seat can only be inserted once for the same movie, theater, date, and showtime. If two users try to book the same seat at the same time, MongoDB allows one insert and rejects the other, and the API returns `409 Conflict`.
+
+### Liked Movies
+
+Stored in MongoDB through `server/models/LikedMovie.js`.
+
+Each liked movie is keyed by `userId` and `movieKey`, with a unique index to prevent duplicates.
+
+### Comments
+
+Stored in MongoDB through `server/models/Comment.js`.
+
+Comments are attached to a `movieId`, include the author id and username, and support owner-only edit/delete behavior.
+
+## Backend Structure
+
+```text
+server/
+  app.js
+  config/
+    mongo.js
+  controllers/
+    authController.js
+    commentController.js
+    likedMovieController.js
+    reservationController.js
+  middleWare/
+    authMiddleware.js
+  models/
+    BookedSeat.js
+    Comment.js
+    LikedMovie.js
+    Reservation.js
+    User.js
+  routes/
+    auth.js
+    comments.js
+    likedMovies.js
+    reservations.js
+  services/
+    commentService.js
+    likedMovieService.js
+    reservationService.js
+    userService.js
+  tests/
+    api.test.js
+  utils/
+    auth.js
 ```
 
-##  Quick Start
+Backend layers:
 
-### 1) Backend
+- Routes map HTTP paths to controller functions.
+- Controllers validate request shape and translate errors into HTTP responses.
+- Services contain business logic and persistence behavior.
+- Models define MongoDB schemas and indexes.
+- Middleware validates JWTs and attaches `req.user`.
+
+## Frontend Structure
+
+```text
+frontend/src/
+  components/
+    comments/
+    custom-select/
+    footer/
+    header/
+    Hero_Section/
+    LoggedIn/
+    movies-selection/
+    movies-slider/
+    notification/
+    spinner/
+  config/
+    api.js
+  hooks/
+    useLikedMovies.js
+  pages/
+    Home/
+    Login/
+    movie_information/
+    movie_list/
+    NotFound/
+    pricing/
+    Profile/
+    Registration/
+    Reservation_info/
+    terms_and_privacy/
+  utils/
+    jwtDecoder.js
+```
+
+Frontend responsibilities:
+
+- Route-level pages live under `src/pages`.
+- Reusable UI lives under `src/components`.
+- `src/config/api.js` resolves the backend base URL.
+- JWT decoding and auth helpers live under `src/utils`.
+- Movie data is loaded from TMDB on the client.
+- App-specific data is loaded from the Express API.
+
+## Main API Endpoints
+
+Base URL in local development:
+
+```text
+http://localhost:5000
+```
+
+### Health
+
+```text
+GET /api/test
+GET /
+```
+
+### Auth and User
+
+```text
+POST  /api/register
+POST  /api/login
+POST  /api/userInfo
+PATCH /api/changeInfo
+```
+
+### Reservations
+
+```text
+GET    /api/reservation/seats
+POST   /api/reservation
+GET    /api/reservation/all
+POST   /api/reservation/id
+DELETE /api/reservation/delete/:id
+```
+
+Important behavior:
+
+- `GET /api/reservation/seats` returns currently booked seats for a show.
+- `POST /api/reservation` creates a reservation and writes seat locks.
+- If seats are already locked, the API returns `409` with `conflictingSeats`.
+- Cancelling a reservation removes its seat locks, making those seats available again.
+
+### Likes
+
+```text
+GET    /api/likes
+POST   /api/likes
+DELETE /api/likes
+DELETE /api/likes/:movieKey
+```
+
+### Comments
+
+```text
+GET    /api/comments/:movieId
+POST   /api/comments/:movieId
+PATCH  /api/comments/:commentId
+DELETE /api/comments/:commentId
+```
+
+Important behavior:
+
+- Anyone can read comments.
+- Only authenticated users can create comments.
+- Only the comment owner can edit or delete a comment.
+
+## Environment Variables
+
+### Backend
+
+Create `server/.env`:
+
+```ini
+JWT_SECRET=your_secret_here
+PORT=5000
+MONGO_DB=mongodb+srv://...
+MONGO_DB_PASSWD=your_mongo_password
+```
+
+Supported Mongo URI variable names:
+
+```text
+MONGODB_URI
+MONGO_URI
+MONGO_DB
+MoNGO_DB
+```
+
+Supported Mongo password variable names:
+
+```text
+MONGO_DB_PASSWORD
+MONGO_DB_PASSWD
+MONGODB_PASSWORD
+```
+
+The Mongo config supports password placeholders like `<db_password>` or `<password>` in the URI.
+
+### Frontend
+
+Create `frontend/.env`:
+
+```ini
+REACT_APP_TMDB_API_KEY=your_tmdb_api_key
+REACT_APP_API_URL=http://localhost:5000
+```
+
+For deployed environments, set `REACT_APP_API_URL` to the backend service URL.
+
+## Local Development
+
+Install and start the backend:
 
 ```bash
 cd server
 npm install
-
-# .env (create in ./server)
-# JWT_SECRET=your_secret_here
-# PORT=5000  # optional (defaults to 5000)
-
 npm start
-# API available at http://localhost:5000
 ```
 
-### 2) Frontend
+Install and start the frontend:
 
 ```bash
 cd frontend
 npm install
 npm start
-# App at http://localhost:3000
 ```
 
-##  Environment Variables
+Default local URLs:
 
-Set up the required environment variables for both backend and frontend.
-
-### Backend (`server/.env`)
-
-Create a `.env` file inside the `server/` directory:
-
-```ini
-# server/.env
-JWT_SECRET=your_secret_here
-PORT=5000
+```text
+Frontend: http://localhost:3000
+Backend:  http://localhost:5000
 ```
 
-Windows (PowerShell) quick setup:
+## Tests
 
-```powershell
-Set-Location server
-"JWT_SECRET=change_me`nPORT=5000" | Out-File -Encoding ascii -NoNewline .env
-Get-Content .env
+Backend integration tests:
+
+```bash
+cd server
+npm test
 ```
 
-Notes:
+Frontend build verification:
 
-- `JWT_SECRET` is used to sign JSON Web Tokens.
-- `PORT` is optional; defaults to 5000 if not provided.
-
-### Frontend (`frontend/.env`)
-
-You already have an example at `frontend/.env_example`.
-
-Create `.env` using the example:
-
-```powershell
-Set-Location ../frontend
-Copy-Item .env_example .env
-Get-Content .env
+```bash
+cd frontend
+npm run build
 ```
 
-Variables:
+The backend tests cover authentication, liked movies, comments, reservations, cancellation, seat conflict handling, and concurrent seat booking protection.
 
-```ini
-# frontend/.env
-REACT_APP_TMDB_API_KEY=your_api_key_here
-REACT_APP_API_URL=http://localhost:5000
-```
+## CORS
 
-Notes:
+Allowed origins are configured in `server/app.js`.
 
-- CRA only exposes variables prefixed with `REACT_APP_` to the client.
-- Keep `.env` files out of version control (already handled by `.gitignore`).
-- For Render deploys, set `REACT_APP_API_URL` to your backend service URL
-  (example: `https://movie-reservation-z2nv.onrender.com`) and redeploy frontend.
+Current allowed origins include:
 
-##  Authentication Flow
-
-- Register or login to receive a JWT
-- Include the token when calling protected endpoints:
-
-```
-Authorization: Bearer <your_jwt>
-Content-Type: application/json
-```
-
-##  API Reference (current implementation)
-
-Base URL: `http://localhost:5000`
-
-- __Health__
-  - `GET /` → `{ message: 'Movie Reservation API is running!' }`
-  - `GET /api/test` → quick test response
-
-- __Auth & User__ (in‑memory)
-  - `POST /api/register` → body: `{ username, email, password }`
-    - returns: `{ token, user }`
-  - `POST /api/login` → body: `{ email, password }`
-    - returns: `{ token, user }`
-  - `POST /api/userInfo` → body: `{ userId }` (requires valid token in `Authorization` header)
-  - `PATCH /api/changeInfo` → body: `{ userId, newEmail, newName }` (requires token)
-
-- __Reservations__ (mounted at `/api/reservation`, requires token)
-  - `POST /api/reservation/`
-    - body: `{ movieId, theaterId, seats[], totalPrice, isLoggedIN, movieName, moviePoster, theaterName, movieDuration, movieGenre, showtime, bookingDate }`
-    - creates reservation
-  - `GET /api/reservation/all` → returns all reservations (debug)
-  - `POST /api/reservation/id` → returns reservations for current user
-  - `DELETE /api/reservation/delete/:id` → cancels reservation (sets status to `cancelled`)
-
-##  Scripts
-
-- __Backend (`server/package.json`)__
-  - `npm start` → `node app.js`
-
-- __Frontend (`frontend/package.json`)__
-  - `npm start` → start CRA dev server
-  - `npm run build` → production build
-  - `npm test` → run tests
-  - `npm run eject` → eject CRA
-
-##  CORS
-
-Allowed origins in `server/app.js`:
-
-```
+```text
 https://movie-reservation-1.onrender.com
+https://movie-reservation-z2nv.onrender.com
+https://movie-reservation-1-4uao.onrender.com
 http://localhost:3000
 ```
 
-Adjust `allowedOrigins` in `server/app.js` as needed.
+Localhost origins are also allowed through a regex for local development.
 
-##  Notes & Next Steps
+## Consistency and Failure Behavior
 
-- Current storage is in‑memory. Restarting the server clears users and reservations.
-- Add persistent storage (MongoDB/Mongoose) and move auth to DB
-- Add validation & rate limiting for production readiness
-- Add .env handling in frontend for API base URL if needed
+Reservations require MongoDB for production-safe seat booking. The important invariant is that `BookedSeat` documents cannot duplicate the same `{ showKey, seatId }`.
 
+If MongoDB is unavailable, reservation endpoints return an error instead of silently creating unsafe in-memory reservations. This prevents multiple app instances from selling the same seat.
+
+Likes and comments have lightweight in-memory fallbacks for local resilience, but MongoDB is the intended persistent store.
+
+## Notes
+
+- `server/reservation.js` is a legacy standalone reservation implementation and is not mounted by `server/app.js`.
+- The active reservation API is `server/routes/reservations.js` plus `server/controllers/reservationController.js`.
+- The active persistence logic is in `server/services/*Service.js` and `server/models/*.js`.

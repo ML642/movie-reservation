@@ -87,15 +87,10 @@ const Signin = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                navigate('/login', {
-                    state: {
-                        notice: {
-                            type: "success",
-                            title: "Account created",
-                            message: "Your account is ready. Sign in to continue.",
-                        },
-                    },
-                });
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('username', data.user.username);
+                localStorage.setItem('userEmail', data.user.email || form.email);
+                navigate('/movie_list');
             } else {
               const message = data.message || "Registration failed. Please try again.";
               setNotice({

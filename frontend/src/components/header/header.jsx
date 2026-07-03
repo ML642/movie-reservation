@@ -61,10 +61,7 @@ const Header = () => {
   
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      SetIsLoggedIn(true);
-      console.log("token",token);
-    }
+    SetIsLoggedIn(Boolean(token));
   }, [Location]);
   useEffect(() => {
     const handleScroll = () => {
