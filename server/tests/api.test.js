@@ -311,6 +311,89 @@ test('authenticated user can save, list, and remove liked movies', async () => {
   assert.ok(!listAfterDeleteRes.json.data.some((item) => item.title === movie.title));
 });
 
+test('movie comments can be created, edited, listed, and deleted by the owner', async () => {
+  const user = await registerUser();
+  const movieId = `comments-${testRunId}`;
+
+  const emptyListRes = await apiRequest(`/api/comments/${movieId}`);
+  assert.equal(emptyListRes.status, 200);
+  assert.equal(emptyListRes.json?.success, true);
+  assert.deepEqual(emptyListRes.json?.data, []);
+
+  const unauthCreateRes = await apiRequest(`/api/comments/${movieId}`, {
+    method: 'POST',
+    body: { text: 'This should not save.' },
+  });
+  assert.equal(unauthCreateRes.status, 401);
+
+  const createRes = await apiRequest(`/api/comments/${movieId}`, {
+    method: 'POST',
+    token: user.token,
+    body: { text: 'Great pacing and a proper theater movie.' },
+  });
+  assert.equal(createRes.status, 201);
+  assert.equal(createRes.json?.success, true);
+  assert.equal(createRes.json?.data?.movieId, movieId);
+  assert.equal(createRes.json?.data?.userId, user.userId);
+
+  const commentId = createRes.json.data.id || createRes.json.data._id;
+  assert.ok(commentId);
+
+  const listRes = await apiRequest(`/api/comments/${movieId}`);
+  assert.equal(listRes.status, 200);
+  assert.ok(listRes.json.data.some((comment) => (comment.id || comment._id) === commentId));
+
+  const updateRes = await apiRequest(`/api/comments/${commentId}`, {
+    method: 'PATCH',
+    token: user.token,
+    body: { text: 'Updated: still a proper theater movie.' },
+  });
+  assert.equal(updateRes.status, 200);
+  assert.equal(updateRes.json?.data?.text, 'Updated: still a proper theater movie.');
+
+  const deleteRes = await apiRequest(`/api/comments/${commentId}`, {
+    method: 'DELETE',
+    token: user.token,
+  });
+  assert.equal(deleteRes.status, 200);
+  assert.equal(deleteRes.json?.success, true);
+
+  const listAfterDeleteRes = await apiRequest(`/api/comments/${movieId}`);
+  assert.equal(listAfterDeleteRes.status, 200);
+  assert.ok(!listAfterDeleteRes.json.data.some((comment) => (comment.id || comment._id) === commentId));
+});
+
+test('users cannot edit or delete another user comment', async () => {
+  const owner = await registerUser();
+  const attacker = await registerUser();
+  const movieId = `comments-forbidden-${testRunId}`;
+
+  const createRes = await apiRequest(`/api/comments/${movieId}`, {
+    method: 'POST',
+    token: owner.token,
+    body: { text: 'Owner-only comment.' },
+  });
+  assert.equal(createRes.status, 201);
+
+  const commentId = createRes.json.data.id || createRes.json.data._id;
+  const forbiddenUpdateRes = await apiRequest(`/api/comments/${commentId}`, {
+    method: 'PATCH',
+    token: attacker.token,
+    body: { text: 'Trying to overwrite this.' },
+  });
+  assert.equal(forbiddenUpdateRes.status, 403);
+
+  const forbiddenDeleteRes = await apiRequest(`/api/comments/${commentId}`, {
+    method: 'DELETE',
+    token: attacker.token,
+  });
+  assert.equal(forbiddenDeleteRes.status, 403);
+
+  const listRes = await apiRequest(`/api/comments/${movieId}`);
+  assert.equal(listRes.status, 200);
+  assert.ok(listRes.json.data.some((comment) => (comment.id || comment._id) === commentId));
+});
+
 test('authenticated user can create, list, and cancel own reservation', async () => {
   const user = await registerUser();
   const movieId = `m-own-${testRunId}`;

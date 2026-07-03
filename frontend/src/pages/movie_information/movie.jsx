@@ -15,6 +15,7 @@ import styles from './movie.module.css';
 import MorphingSpinner from '../../components/spinner/spinner';
 import CustomAlert from './movie_alert.jsx';
 import { API_BASE_URL } from '../../config/api';
+import CommentsSection from '../../components/comments/CommentsSection';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
@@ -533,6 +534,7 @@ const Movie = () => {
             </button>
           </div>
         </div>
+        <CommentsSection movieId={id} />
       </div>
     </div>
   );

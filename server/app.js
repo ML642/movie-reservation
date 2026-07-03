@@ -12,6 +12,7 @@ userService.initDemoUser();
 const authRoutes = require('./routes/auth');
 const reservationRoutes = require('./routes/reservations'); // keep your split reservations router
 const likedMovieRoutes = require('./routes/likedMovies');
+const commentRoutes = require('./routes/comments');
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use(express.json());
 app.use('/api', authRoutes); // register/login/userInfo/changeInfo -> /api/register, etc.
 app.use('/api/reservation', reservationRoutes);
 app.use('/api/likes', likedMovieRoutes);
+app.use('/api/comments', commentRoutes);
 
 
 app.get('/', (req, res) => res.json({ message: 'Movie Reservation API is running!' }));
