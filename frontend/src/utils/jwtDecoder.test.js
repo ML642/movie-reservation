@@ -24,6 +24,11 @@ describe('jwtDecoder utils', () => {
     );
   });
 
+  test('decodeJWT returns null for missing input', () => {
+    expect(decodeJWT('')).toBeNull();
+    expect(decodeJWT(null)).toBeNull();
+  });
+
   test('getUserFromToken returns mapped user data for valid token', () => {
     const token = makeToken({
       userId: 'u-1',
