@@ -1,13 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const listEndpoints = require('express-list-routes');
-
-const { connectMongo, getMongoReadyStateLabel } = require('./config/mongo');
-const userService = require('./services/userService');
-
-connectMongo();
-userService.initDemoUser();
 
 const authRoutes = require('./routes/auth');
 const reservationRoutes = require('./routes/reservations'); // keep your split reservations router
@@ -16,16 +9,19 @@ const commentRoutes = require('./routes/comments');
 
 const app = express();
 
-app.use((req, res, next) => {
-  console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
-  next();
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
+    next();
+  });
+}
 
 const allowedOrigins = new Set([
   'https://movie-reservation-1.onrender.com',
   'https://movie-reservation-z2nv.onrender.com',
   'http://localhost:3000',
   'https://movie-reservation-1-4uao.onrender.com',
+  ...(process.env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean),
 ]);
 
 const corsOptions = {
@@ -55,9 +51,18 @@ app.use('/api/comments', commentRoutes);
 
 app.get('/', (req, res) => res.json({ message: 'Movie Reservation API is running!' }));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(listEndpoints(app));
-  console.log(`Server listening on port ${PORT}`);
-  console.log(`MongoDB startup state: ${getMongoReadyStateLabel()}`);
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
 });
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status = err.message === 'Not allowed by CORS' ? 403 : err.status || err.statusCode || 500;
+  if (status >= 500) console.error(err);
+  return res.status(status).json({
+    success: false,
+    message: status >= 500 ? 'Internal server error' : err.message,
+  });
+});
+
+module.exports = app;

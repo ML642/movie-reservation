@@ -224,6 +224,7 @@ Create `server/.env`:
 ```ini
 JWT_SECRET=your_secret_here
 PORT=5000
+CORS_ORIGINS=https://your-frontend.example.com
 MONGO_DB=mongodb+srv://...
 MONGO_DB_PASSWD=your_mongo_password
 ```
@@ -315,6 +316,7 @@ http://localhost:3000
 ```
 
 Localhost origins are also allowed through a regex for local development.
+Additional origins can be supplied as a comma-separated `CORS_ORIGINS` value.
 
 ## Consistency and Failure Behavior
 

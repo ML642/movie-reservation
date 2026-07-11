@@ -153,7 +153,7 @@ test.before(async () => {
   const port = await getFreePort();
   baseUrl = `http://127.0.0.1:${port}`;
 
-  serverProcess = spawn(process.execPath, ['app.js'], {
+  serverProcess = spawn(process.execPath, ['server.js'], {
     cwd: path.resolve(__dirname, '..'),
     env: {
       ...process.env,
