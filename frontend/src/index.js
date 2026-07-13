@@ -36,8 +36,11 @@ const Layout = ({ element, fullPage = false }) => {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <Header />
-      <Suspense fallback={<PageFallback />}>{element}</Suspense>
+      <div id="main-content" tabIndex="-1">
+        <Suspense fallback={<PageFallback />}>{element}</Suspense>
+      </div>
       <Footer />
 
     </div>

@@ -3,6 +3,8 @@ import { FaFilm, FaGlasses, FaTicketAlt, FaVideo } from 'react-icons/fa';
 import { motion, useInView } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import Hero from '../../components/Hero_Section/HeroSection.jsx';
+import cinemaOne from '../../assets/cinema-1.jpg';
+import cinemaTwo from '../../assets/cinema-2.jpg';
 import './home.css';
 
 const fadeUp = {
@@ -71,7 +73,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    ['/images/cinema-1.jpg', '/images/cinema-2.jpg'].forEach((src) => {
+    [cinemaOne, cinemaTwo].forEach((src) => {
       const img = new Image();
       img.src = src;
     });
@@ -80,7 +82,7 @@ export default function Home() {
   return (
     <div className="app home-page">
       <img
-        src="/images/cinema-1.jpg"
+        src={cinemaOne}
         alt=""
         aria-hidden="true"
         fetchPriority="high"
@@ -88,7 +90,10 @@ export default function Home() {
         style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
       />
       <main className="main-content">
-        <section className="parallax-section now-showing home-hero-section">
+        <section
+          className="parallax-section now-showing home-hero-section"
+          style={{ '--section-background': `url(${cinemaOne})` }}
+        >
           <motion.div
             className="home-content home-hero-content"
             variants={fadeUp}
@@ -120,7 +125,10 @@ export default function Home() {
           </motion.div>
         </section>
 
-        <section className="parallax-section coming-soon home-coming-section">
+        <section
+          className="parallax-section coming-soon home-coming-section"
+          style={{ '--section-background': `url(${cinemaTwo})` }}
+        >
           <div className="home-content home-coming-content">
             <h2>Coming Soon</h2>
             <div className="home-slider-wrap">

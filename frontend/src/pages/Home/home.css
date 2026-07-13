@@ -34,12 +34,12 @@
 
 .now-showing {
   background-image: linear-gradient(rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.72)),
-    url('/images/cinema-1.jpg');
+    var(--section-background);
 }
 
 .coming-soon {
   background-image: linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.76)),
-    url('/images/cinema-2.jpg');
+    var(--section-background);
 }
 
 .home-hero-section {
