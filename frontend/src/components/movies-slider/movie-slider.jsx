@@ -51,28 +51,28 @@ const MovieSlider = (props)=> {
         <div className="movie-card-title"> Now Showing </div>
         <div className="carousel-row">
        {/* Previous Movie */}
-       <div className="movie-card-side">
-          <img src={getMovie(current-1)?.poster} alt={getMovie(current-1)?.title} className="movie-card-img-side" width="500" height="750" loading="lazy" decoding="async" />
-         <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>{getMovie(current-1)?.title}</div>
+        <div className="movie-card-side">
+           <img src={getMovie(current-1)?.poster} alt={getMovie(current-1)?.title} className="movie-card-img-side" width="500" height="750" loading="lazy" decoding="async" />
+          <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>{getMovie(current-1)?.title}</div>
        </div>
        {/* Current Movie */}
-       <div className={`movie-card-current${animating ? (direction === 'right' ? ' animating-right' : ' animating-left') : ''}`}>
+        <div className={`movie-card-current${animating ? (direction === 'right' ? ' animating-right' : ' animating-left') : ''}`}>
         
           <img src={getMovie(current)?.poster} alt={getMovie(current)?.title} className="movie-card-img" width="500" height="750" loading="lazy" decoding="async" />
-         <h2 className="movie-card-h2">{getMovie(current)?.title}</h2>
-         <div className="movie-card-controls">
-           <button onClick={prevMovie} className="carousel-arrow" style={{ position: 'static' }}>&lt;</button>
-           <Link to={`/movie/${getMovie(current)?.id}`} className="movie-selection">Book Now</Link>
-           <button onClick={nextMovie} className="carousel-arrow" style={{ position: 'static' }}>&gt;</button>
+          <h2 className="movie-card-h2">{getMovie(current)?.title}</h2>
+          <div className="movie-card-controls">
+            <button onClick={prevMovie} className="carousel-arrow" style={{ position: 'static' }} aria-label="Previous movie">&lt;</button>
+            <Link to={`/movie/${getMovie(current)?.id}`} className="movie-selection">Book Now</Link>
+            <button onClick={nextMovie} className="carousel-arrow" style={{ position: 'static' }} aria-label="Next movie">&gt;</button>
          </div>
        </div>
 
-       <div className="movie-card-side">
-          <img src={getMovie(current+1)?.poster} alt={getMovie(current+1)?.title} className="movie-card-img-side" width="500" height="750" loading="lazy" decoding="async" />
-         <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>{getMovie(current+1)?.title}</div>
-       </div>
-     </div>
-     </div>
+        <div className="movie-card-side">
+           <img src={getMovie(current+1)?.poster} alt={getMovie(current+1)?.title} className="movie-card-img-side" width="500" height="750" loading="lazy" decoding="async" />
+          <div style={{ color: '#fff', fontWeight: 500, fontSize: '1rem' }}>{getMovie(current+1)?.title}</div>
+        </div>
+      </div>
+      </div>
     )
 }
 

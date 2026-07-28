@@ -5,6 +5,13 @@ import MorphingSpinner from "../../components/spinner/spinner";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
 import AuthNotice from "../../components/notification/AuthNotice";
+import { z } from "zod";
+
+const registrationSchema = z.object({
+  username: z.string().trim().min(3, "Username must contain at least 3 characters.").max(50, "Username is too long."),
+  email: z.string().trim().email("Enter a valid email address."),
+  password: z.string().min(8, "Password must contain at least 8 characters."),
+});
 
 const canRunVanta = () => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
@@ -105,6 +112,7 @@ const Signin = () => {
   }, [vantaEnabled]);
 
     const [form, setForm] = useState({ username: "" ,  email: "", password: "" });
+    const [fieldErrors, setFieldErrors] = useState({});
     const [notice, setNotice] = useState(null);
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading ] =  useState(false) ; 
@@ -120,17 +128,23 @@ const Signin = () => {
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
+        setFieldErrors((errors) => ({ ...errors, [e.target.name]: undefined }));
         setNotice(null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setNotice(null);
-        if (!form.username || !form.email || !form.password) {
-            const message = "Please fill in all fields.";
-            setNotice({ type: "error", title: "Missing details", message });
+        const validation = registrationSchema.safeParse(form);
+        if (!validation.success) {
+            const errors = Object.fromEntries(
+                validation.error.issues.map((issue) => [issue.path[0], issue.message])
+            );
+            setFieldErrors(errors);
             return;
         }
+
+        setFieldErrors({});
 
         setIsLoading(true);
         if (rememberMe) {
@@ -143,9 +157,9 @@ const Signin = () => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    username: form.username,
-                    email: form.email,
-                    password: form.password
+                    username: validation.data.username,
+                    email: validation.data.email,
+                    password: validation.data.password
                 })
             });
             const data = await response.json();
@@ -187,7 +201,10 @@ const Signin = () => {
                     placeholder="Username"
                     value={form.username}
                     onChange={handleChange}
+                    aria-invalid={Boolean(fieldErrors.username)}
+                    aria-describedby={fieldErrors.username ? "username-error" : undefined}
                 />
+                {fieldErrors.username && <p id="username-error" className="field-error">{fieldErrors.username}</p>}
                 </div>
 
 
@@ -202,8 +219,11 @@ const Signin = () => {
                     placeholder="Email"
                     value={form.email}
                     onChange={handleChange}
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    aria-describedby={fieldErrors.email ? "email-error" : undefined}
                     
                 />
+                {fieldErrors.email && <p id="email-error" className="field-error">{fieldErrors.email}</p>}
                 </div>
                 <div style={{display:"block" , width : "80%"}}> 
                 <label htmlFor="password" className= "label">Password     </label>
@@ -215,7 +235,10 @@ const Signin = () => {
                     placeholder="Password"
                     value={form.password}
                     onChange={handleChange}
+                    aria-invalid={Boolean(fieldErrors.password)}
+                    aria-describedby={fieldErrors.password ? "password-error" : undefined}
                 />
+                {fieldErrors.password && <p id="password-error" className="field-error">{fieldErrors.password}</p>}
                 </div>
                 <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.55rem" , color:"white",width:"80%"}}>
                   <div className="liquid-checkbox">

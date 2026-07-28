@@ -135,10 +135,10 @@ a {
 .form {
   position: relative;
   z-index: 1;
-  background: rgba(38, 35, 71, 0.94);
+  background: rgba(38, 35, 71, 0.25);
   border-radius: 8px;
   padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: none;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -258,6 +258,19 @@ a {
 /* Checked state - liquid fills up */
 .liquid-checkbox input:checked ~ .liquid-container .liquid-fill {
   bottom: 0; /* Liquid rises to fill */
+}
+
+/* Each field wrapper is 80% wide, so inputs should fill that same width. */
+.form .input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.field-error {
+  margin: 0.4rem 0 0;
+  color: #fecaca;
+  font-size: 0.85rem;
 }
 
 .liquid-checkbox input:checked ~ .liquid-container .liquid-fill::before {

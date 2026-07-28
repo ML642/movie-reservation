@@ -18,9 +18,8 @@ img {
   max-width: 100%;
 }
 
-:focus-visible {
-  outline: 3px solid #fbbf24;
-  outline-offset: 3px;
+a {
+  text-decoration: none;
 }
 
 .skip-link {

@@ -164,9 +164,11 @@ const MovieSelection = (props) => {
                   loading="lazy"
                   decoding="async"
                 />
-                <h3 className="movie-card-h2" style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>{movie?.title}</h3>
-                <div style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>Rating: {movie?.rating} | {movie?.date}</div>
-                <Link to={`/movie/${movie?.id}`}>   <div className="movie-selection">Book Now</div></Link>
+                <h3 className="movie-grid-title">{movie?.title}</h3>
+                <div className="movie-grid-meta">Rating: {movie?.rating} | {movie?.date}</div>
+                <Link to={`/movie/${movie?.id}`} className="movie-grid-book-link">
+                  <span className="movie-selection">Book Now</span>
+                </Link>
               </div>
             ))
           )

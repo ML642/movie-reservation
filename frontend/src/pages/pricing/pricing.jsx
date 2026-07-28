@@ -127,11 +127,8 @@ export default function MovieTheaterPricing() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerContainer}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.mainTitle}>🎬 CINEMA DELUXE 🍿</h1>
-            <p className={styles.subtitle}>
-              Premium Movie Experience • Fresh Snacks • Great Prices
-            </p>
+          
+            
             <div className={styles.headerInfo}>
               <div className={styles.infoItem}>
                 
@@ -144,8 +141,7 @@ export default function MovieTheaterPricing() {
               <div className={styles.infoItem}>
                
                 <span>5-Star Experience</span>
-              </div>
-            </div>
+                 </div>
           </div>
         </div>
       </header>
