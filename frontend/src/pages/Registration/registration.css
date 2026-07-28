@@ -127,7 +127,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1a1a2e;
+  background: radial-gradient(circle at top, #34315c 0%, #1a1a2e 52%, #11111f 100%);
   overflow: hidden;
   position: relative;
 }
@@ -135,8 +135,7 @@ a {
 .form {
   position: relative;
   z-index: 1;
-  background: rgba(96, 86, 160, 0.2); /* semi-transparent white */
-  backdrop-filter: blur(1px);           /* blur background behind the form */
+  background: rgba(38, 35, 71, 0.94);
   border-radius: 8px;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -191,8 +190,7 @@ a {
     padding: 1rem 1.25rem;
     color: white;
     font-size: 1rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
    margin-top: 0.5rem;
 }
 .label {
@@ -223,7 +221,7 @@ a {
   border-radius: 50%;
   position: relative;
   overflow: hidden;
-  transition: all 0.5s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   background: rgba(255, 255, 255, 0.05);
 }
 
@@ -248,7 +246,7 @@ a {
   height: 4px;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 50px;
-  animation: wave 2s infinite ease-in-out;
+  animation: none;
 }
 
 /* Wave animation */
@@ -260,6 +258,10 @@ a {
 /* Checked state - liquid fills up */
 .liquid-checkbox input:checked ~ .liquid-container .liquid-fill {
   bottom: 0; /* Liquid rises to fill */
+}
+
+.liquid-checkbox input:checked ~ .liquid-container .liquid-fill::before {
+  animation: wave 2s infinite ease-in-out;
 }
 
 .liquid-checkbox input:checked ~ .liquid-container {
@@ -289,4 +291,15 @@ a {
   color: rgba(255, 255, 255, 0.8);
   font-size: 0.95rem;
   user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .container *,
+  .container *::before,
+  .container *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

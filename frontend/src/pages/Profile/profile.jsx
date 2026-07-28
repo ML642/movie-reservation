@@ -33,100 +33,101 @@ export default  function Profile() {
 
   
   useEffect(() => {
-  const fetchData = async () => {
-    const token = localStorage.getItem('token');
-    if (!isAuthenticated() || !token || !tokenUserId) {
-      navigate('/login');
-      setLoading(false);
-      return;
-    }
+    const requestController = new AbortController();
+    let isActive = true;
 
-    const getFallbackUser = (reservationsData = []) => ({
-      name: tokenUserName || localStorage.getItem('username') || 'User',
-      email: tokenUserEmail || localStorage.getItem('userEmail') || 'No email provided',
-      avatar: tokenUserAvatar || '',
-      memberSince: tokenIssuedAt ? new Date(tokenIssuedAt * 1000).getFullYear() : '2024',
-      totalReservations: reservationsData.length,
-      favoriteGenre: 'Action',
-      reservations: reservationsData,
-      id: tokenUserId,
-      role: tokenUserRole
-    });
+    const fetchData = async () => {
+      setLoading(true);
 
-    let reservationsData = [];
-
-    try {
-      const resReservations = await axios.post(
-        `${API_BASE_URL}/api/reservation/id`,
-        {},
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      reservationsData = resReservations.data.data || [];
-    } catch (err) {
-      console.error("Error fetching reservations:", err);
-      if (err.response?.status === 401) {
+      const token = localStorage.getItem('token');
+      if (!isAuthenticated() || !token || !tokenUserId) {
         navigate('/login');
-        setLoading(false);
+        if (isActive) setLoading(false);
         return;
       }
-    }
 
-    setReservations(reservationsData);
-
-    try {
-      const resUser = await axios.post(
-        `${API_BASE_URL}/api/userInfo`,
-        { userId: tokenUserId },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      const userData = resUser.data;
-
-      const formattedUser = {
-        name: userData?.name || userData?.username || 'User',
-        email: userData?.email || localStorage.getItem('userEmail') || 'No email provided',
-        avatar: userData?.avatar || userData?.picture || '',
-        memberSince: userData?.createdAt ? new Date(userData.createdAt).getFullYear() : '2024',
+      const getFallbackUser = (reservationsData = []) => ({
+        name: tokenUserName || localStorage.getItem('username') || 'User',
+        email: tokenUserEmail || localStorage.getItem('userEmail') || 'No email provided',
+        avatar: tokenUserAvatar || '',
+        memberSince: tokenIssuedAt ? new Date(tokenIssuedAt * 1000).getFullYear() : '2024',
         totalReservations: reservationsData.length,
-        favoriteGenre: userData?.favoriteGenre || 'Action',
+        favoriteGenre: 'Action',
         reservations: reservationsData,
-        id: userData?.id || tokenUserId,
-        role: userData?.role || tokenUserRole
+        id: tokenUserId,
+        role: tokenUserRole
+      });
+
+      const requestConfig = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        signal: requestController.signal,
       };
 
-      setUser(formattedUser);
-    } catch (err) {
-      if (err.response?.status === 401) {
+      // These requests are independent. Running them together removes one
+      // backend round trip from the profile's loading path.
+      const [reservationsResult, userResult] = await Promise.allSettled([
+        axios.post(`${API_BASE_URL}/api/reservation/id`, {}, requestConfig),
+        axios.post(`${API_BASE_URL}/api/userInfo`, { userId: tokenUserId }, requestConfig),
+      ]);
+
+      if (!isActive) return;
+
+      const requestErrors = [reservationsResult, userResult]
+        .filter((result) => result.status === 'rejected')
+        .map((result) => result.reason);
+
+      if (requestErrors.some((error) => error?.response?.status === 401)) {
         navigate('/login');
         setLoading(false);
         return;
       }
 
-      if (err.response?.status === 404) {
-        console.warn('User profile was not found on backend. Falling back to token/local storage data.');
-      } else {
-        console.error("Error fetching user profile:", err);
+      const reservationsData = reservationsResult.status === 'fulfilled'
+        ? reservationsResult.value.data?.data || []
+        : [];
+
+      if (reservationsResult.status === 'rejected') {
+        console.error('Error fetching reservations:', reservationsResult.reason);
       }
 
-      setUser(getFallbackUser(reservationsData));
-    }
+      setReservations(reservationsData);
 
-    setLoading(false);
-  };
+      if (userResult.status === 'fulfilled') {
+        const userData = userResult.value.data;
+        setUser({
+          name: userData?.name || userData?.username || 'User',
+          email: userData?.email || localStorage.getItem('userEmail') || 'No email provided',
+          avatar: userData?.avatar || userData?.picture || '',
+          memberSince: userData?.createdAt ? new Date(userData.createdAt).getFullYear() : '2024',
+          totalReservations: reservationsData.length,
+          favoriteGenre: userData?.favoriteGenre || 'Action',
+          reservations: reservationsData,
+          id: userData?.id || tokenUserId,
+          role: userData?.role || tokenUserRole
+        });
+      } else {
+        const error = userResult.reason;
+        if (error?.response?.status === 404) {
+          console.warn('User profile was not found on backend. Falling back to token/local storage data.');
+        } else {
+          console.error('Error fetching user profile:', error);
+        }
+        setUser(getFallbackUser(reservationsData));
+      }
 
-  fetchData();
-}, [navigate, tokenIssuedAt, tokenUserAvatar, tokenUserEmail, tokenUserId, tokenUserName, tokenUserRole]);
-    
-    console.log(  "Reservations:", reservations);
+      setLoading(false);
+    };
+
+    fetchData();
+
+    return () => {
+      isActive = false;
+      requestController.abort();
+    };
+  }, [navigate, tokenIssuedAt, tokenUserAvatar, tokenUserEmail, tokenUserId, tokenUserName, tokenUserRole]);
     
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });

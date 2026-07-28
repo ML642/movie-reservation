@@ -177,6 +177,8 @@
   transition: transform 0.2s, box-shadow 0.2s;
   height : 25rem ;
   position: relative;
+  content-visibility: auto;
+  contain-intrinsic-size: 25rem;
 }
 .movie-grid-card:hover {
   transform: translateY(-8px) scale(1.03);

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const dns = require('node:dns').promises;
 
 let listenersAttached = false;
+let connectPromise = null;
 
 const URI_ENV_NAMES = ['MONGODB_URI', 'MONGO_URI', 'MONGO_DB', 'MoNGO_DB'];
 const PASSWORD_ENV_NAMES = ['MONGO_DB_PASSWORD', 'MONGO_DB_PASSWD', 'MONGODB_PASSWORD'];
@@ -180,31 +181,40 @@ const attachMongoLogs = () => {
   });
 };
 
-const connectMongo = async () => {
+const connectMongo = () => {
   attachMongoLogs();
+
+  if (isMongoReady()) {
+    return Promise.resolve(mongoose.connection);
+  }
+
+  if (connectPromise) {
+    return connectPromise;
+  }
+
   const { uri, canConnect } = buildMongoUri();
 
   if (!canConnect) {
     console.warn(`MongoDB startup: skipped. Current state is ${getMongoReadyStateLabel()}.`);
-    return null;
+    return Promise.resolve(null);
   }
 
-  console.log(`MongoDB startup: connecting. Current state is ${getMongoReadyStateLabel()}.`);
+  connectPromise = (async () => {
+    console.log(`MongoDB startup: connecting. Current state is ${getMongoReadyStateLabel()}.`);
 
-  const dnsReady = await runMongoDnsPreflight(uri);
-  if (!dnsReady) {
-    console.warn('MongoDB startup: skipped because DNS preflight failed. Using in-memory fallback.');
-    return null;
-  }
+    const dnsReady = await runMongoDnsPreflight(uri);
+    if (!dnsReady) {
+      console.warn('MongoDB startup: skipped because DNS preflight failed. Using in-memory fallback.');
+      return null;
+    }
 
-  mongoose
-    .connect(uri, {
-      serverSelectionTimeoutMS: 5000,
-    })
-    .then(() => {
+    try {
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000,
+      });
       console.log(`MongoDB startup: ready. Current state is ${getMongoReadyStateLabel()}.`);
-    })
-    .catch((error) => {
+      return mongoose.connection;
+    } catch (error) {
       console.warn(
         'MongoDB startup: connection failed. Using in-memory fallback.',
         {
@@ -212,9 +222,13 @@ const connectMongo = async () => {
           hint: explainMongoError(error),
         }
       );
-    });
+      return null;
+    }
+  })().finally(() => {
+    connectPromise = null;
+  });
 
-  return mongoose.connection;
+  return connectPromise;
 };
 
 const isMongoReady = () => mongoose.connection.readyState === 1;

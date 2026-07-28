@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaPlay, FaInfoCircle } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import './HeroSection.css';
 
 import { Link } from 'react-router-dom';
@@ -64,15 +64,23 @@ const featuredMovies = [
 
 export default function HeroSection({variant}) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
   useEffect(() => {
+    if (prefersReducedMotion) return undefined;
+
+    const advanceSlide = () => {
+      if (!document.hidden) {
+        setCurrentSlide((prev) => (prev + 1) % featuredMovies[variant-1].length);
+      }
+    };
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % featuredMovies[variant-1].length);
+      advanceSlide();
     }, 18000);
     return () => clearInterval(interval);
-  }, [variant]);
+  }, [variant, prefersReducedMotion]);
 
   return (
-    <section className="hero-section">
+    <section className="hero-section" aria-roledescription="carousel" aria-label="Featured movies">
       <div className="hero-slider">
         <AnimatePresence mode="wait">
           {featuredMovies[variant-1].map((movie, idx) => (
@@ -84,14 +92,14 @@ export default function HeroSection({variant}) {
                 initial={{ opacity: 0, x: 100 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.7 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.7 }}
                 aria-hidden={idx !== currentSlide}
               >
                 <div className="hero-content">
                   <motion.div
                     initial={{ y: 30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.7, delay: 0.3 }}
+                    transition={{ duration: prefersReducedMotion ? 0 : 0.7, delay: 0.3 }}
                     className="hero-text-content"
                   >
                     <h1>{movie?.title}</h1>
@@ -117,7 +125,8 @@ export default function HeroSection({variant}) {
             key={idx}
             className={idx === currentSlide ? 'active' : ''}
             onClick={() => setCurrentSlide(idx)}
-            aria-label={`Go to slide ${idx + 1}`}
+            aria-label={`Show ${featuredMovies[variant - 1][idx].title}`}
+            aria-current={idx === currentSlide ? 'true' : undefined}
           />
         ))}
       </div>

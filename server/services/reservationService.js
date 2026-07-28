@@ -8,6 +8,8 @@ let LastId = 0;
 const Reservations = [];
 const ShowSeatAvailability = new Map();
 let indexesReadyPromise = null;
+let transactionsSupported = null;
+let transactionSupportPromise = null;
 
 const createServiceError = (message, code, extra = {}) => Object.assign(new Error(message), { code, ...extra });
 
@@ -59,21 +61,8 @@ const getReservationOwnerId = (reservation) => {
 const generateMemoryId = () => (++LastId).toString();
 const generateMongoId = () => new mongoose.Types.ObjectId().toString();
 
-const waitForMongoReady = async (timeoutMs = 5000) => {
-  if (isMongoReady()) return true;
-
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    if (isMongoReady()) return true;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  return isMongoReady();
-};
-
 const ensureMongoReady = async () => {
-  const ready = await waitForMongoReady();
-  if (!ready) {
+  if (!isMongoReady()) {
     throw createServiceError(
       'Reservation storage is temporarily unavailable. Please try again in a moment.',
       'STORAGE_UNAVAILABLE'
@@ -88,6 +77,33 @@ const ensureMongoReady = async () => {
   }
 
   await indexesReadyPromise;
+};
+
+const getTransactionSupport = async () => {
+  if (transactionsSupported !== null) return transactionsSupported;
+  if (transactionSupportPromise) return transactionSupportPromise;
+
+  transactionSupportPromise = mongoose.connection.db
+    .admin()
+    .command({ hello: 1 })
+    .then((serverInfo) => {
+      // Transactions require a replica set or mongos. The Docker development
+      // database is standalone, so skip a failed transaction attempt there.
+      transactionsSupported = Boolean(serverInfo.setName || serverInfo.msg === 'isdbgrid');
+      return transactionsSupported;
+    })
+    .catch((error) => {
+      // Preserve the existing transactional path when topology detection is
+      // unavailable; an unsupported-transaction error still falls back safely.
+      console.warn('Could not determine MongoDB transaction support.', { message: error.message });
+      transactionsSupported = true;
+      return transactionsSupported;
+    })
+    .finally(() => {
+      transactionSupportPromise = null;
+    });
+
+  return transactionSupportPromise;
 };
 
 const normalizeReservation = (reservation) => {
@@ -225,6 +241,10 @@ const createMongoReservation = async (payload, userId) => {
     userId,
   }));
 
+  if (!(await getTransactionSupport())) {
+    return createReservationWithoutTransaction(reservation);
+  }
+
   const session = await mongoose.startSession();
   try {
     let createdReservation = null;
@@ -241,6 +261,7 @@ const createMongoReservation = async (payload, userId) => {
     }
 
     if (isTransactionUnsupportedError(error)) {
+      transactionsSupported = false;
       return createReservationWithoutTransaction(reservation);
     }
 
@@ -266,6 +287,10 @@ const createMemoryReservation = (payload, userId) => {
 };
 
 const getBookedSeats = async (showKey) => {
+  if (process.env.RESERVATION_MEMORY_FALLBACK === 'true') {
+    return Array.from(ShowSeatAvailability.get(showKey) || []).sort();
+  }
+
   await ensureMongoReady();
   const seatLocks = await BookedSeat.find({ showKey }).select('seatId').sort({ seatId: 1 }).lean();
   return seatLocks.map((seatLock) => seatLock.seatId);
@@ -298,6 +323,16 @@ const findReservationById = async (id) => {
   return normalizeReservation(await Reservation.findOne({ id }).lean());
 };
 
+const cancelReservationWithoutTransaction = async (reservation) => {
+  if (reservation.status !== 'cancelled') {
+    await BookedSeat.deleteMany({ reservationId: reservation.id });
+  }
+
+  return normalizeReservation(
+    await Reservation.findOneAndUpdate({ id: reservation.id }, { $set: { status: 'cancelled' } }, { new: true }).lean()
+  );
+};
+
 const cancelMongoReservation = async (reservation, userId) => {
   const reservationOwnerId = getReservationOwnerId(reservation);
   if (!reservationOwnerId || reservationOwnerId !== userId) {
@@ -305,6 +340,11 @@ const cancelMongoReservation = async (reservation, userId) => {
   }
 
   await ensureMongoReady();
+
+  if (!(await getTransactionSupport())) {
+    return cancelReservationWithoutTransaction(reservation);
+  }
+
   const session = await mongoose.startSession();
   try {
     let cancelledReservation = reservation;
@@ -326,13 +366,8 @@ const cancelMongoReservation = async (reservation, userId) => {
       throw error;
     }
 
-    if (reservation.status !== 'cancelled') {
-      await BookedSeat.deleteMany({ reservationId: reservation.id });
-    }
-
-    return normalizeReservation(
-      await Reservation.findOneAndUpdate({ id: reservation.id }, { $set: { status: 'cancelled' } }, { new: true }).lean()
-    );
+    transactionsSupported = false;
+    return cancelReservationWithoutTransaction(reservation);
   } finally {
     await session.endSession();
   }

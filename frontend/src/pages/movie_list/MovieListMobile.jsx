@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useDeferredValue, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CustomSelect from "../../components/custom-select/CustomSelect";
 import { useLikedMovies } from "../../hooks/useLikedMovies";
@@ -63,10 +63,12 @@ const MovieListMobile = ({ movies, loading, hasMore, loadingMore, onLoadMore }) 
   const [genre, setGenre] = useState("all");
   const [sort, setSort] = useState("date-desc");
   const { isLiked, notice, toggleLike } = useLikedMovies();
+  const deferredSearch = useDeferredValue(search);
 
   const visibleMovies = useMemo(() => {
+    const normalizedSearch = deferredSearch.trim().toLowerCase();
     const filtered = movies
-      .filter((movie) => movie?.title?.toLowerCase().includes(search.toLowerCase()))
+      .filter((movie) => movie?.title?.toLowerCase().includes(normalizedSearch))
       .filter((movie) => (genre === "all" ? true : movie?.genre === genre));
 
     return filtered.sort((a, b) => {
@@ -79,7 +81,7 @@ const MovieListMobile = ({ movies, loading, hasMore, loadingMore, onLoadMore }) 
       const dateB = normalizeDate(b?.date)?.getTime() || 0;
       return sort === "date-asc" ? dateA - dateB : dateB - dateA;
     });
-  }, [movies, search, genre, sort]);
+  }, [movies, deferredSearch, genre, sort]);
 
   return (
     <section className="mlm-shell">
@@ -151,6 +153,7 @@ const MovieListMobile = ({ movies, loading, hasMore, loadingMore, onLoadMore }) 
                 src={movie?.poster || "https://via.placeholder.com/500x750?text=No+Poster"}
                 alt={movie?.title || "Movie poster"}
                 loading="lazy"
+                decoding="async"
               />
               <div className="mlm-body">
                 <h2 className="mlm-movie-title">{movie?.title || "Untitled"}</h2>

@@ -1,6 +1,4 @@
-import { useState, useRef, useEffect } from "react"
-import * as THREE from 'three';
-import FOG from 'vanta/dist/vanta.fog.min';
+import { useState, useRef, useEffect, useLayoutEffect } from "react"
 import MovieSelection  from '../../components/movies-selection/movie-selection';
 import MovieSlider from '../../components/movies-slider/movie-slider';
 import { useQuery } from '@tanstack/react-query';
@@ -78,16 +76,63 @@ const normalizeMovie = (movie) => ({
 
 const getLocalMoviePage = (pageNumber) => localMoviePages[pageNumber - 1] ?? [];
 
+const normalizeMovieList = (movieList) =>
+  movieList
+    .filter(movie => !movie.adult)
+    .map(normalizeMovie);
+
+const canRunVanta = () => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  const lowPowerDevice =
+    connection?.saveData ||
+    (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4) ||
+    (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4);
+
+  return (
+    !reducedMotion &&
+    !lowPowerDevice &&
+    window.innerWidth > 1024 &&
+    (typeof document === 'undefined' || document.visibilityState === 'visible')
+  );
+};
+
+const useVantaEnabled = () => {
+  const [enabled, setEnabled] = useState(canRunVanta);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    const updateEnabledState = () => setEnabled(canRunVanta());
+
+    window.addEventListener('resize', updateEnabledState, { passive: true });
+    document.addEventListener('visibilitychange', updateEnabledState);
+    motionQuery?.addEventListener?.('change', updateEnabledState);
+
+    return () => {
+      window.removeEventListener('resize', updateEnabledState);
+      document.removeEventListener('visibilitychange', updateEnabledState);
+      motionQuery?.removeEventListener?.('change', updateEnabledState);
+    };
+  }, []);
+
+  return enabled;
+};
+
  
-const MovieList = () => { 
+  const MovieList = () => {
   const Location =  useLocation() ;
   useEffect(() => {
-      window.scrollTo({top:0, left:0, behavior: "smooth"});
+      window.scrollTo({top:0, left:0, behavior: "auto"});
   }, [Location.key] );
     
     const { data, isLoading} = useQuery({
       queryKey: ['popularMovies'],
       queryFn: fetchPopularMovies,
+      enabled: Boolean(API_KEY),
       staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
     });
@@ -95,10 +140,13 @@ const MovieList = () => {
     
    
    
-    let [movies, setMovies] = useState([]);
+    let [movies, setMovies] = useState(() =>
+      normalizeMovieList(data ?? getLocalMoviePage(1))
+    );
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const showCatalogSkeleton = isLoading && movies.length === 0;
     const [isMobile, setIsMobile] = useState(() =>
       typeof window !== 'undefined' ? window.innerWidth <= 768 : false
     );
@@ -110,11 +158,10 @@ const MovieList = () => {
       return () => window.removeEventListener('resize', onResize);
     }, []);
     
-    useEffect(() => {
-        let initialMovies = (data ?? getLocalMoviePage(1))
-            .filter(movie => !movie.adult)
-            .map(normalizeMovie);
-        setMovies(initialMovies);
+    useLayoutEffect(() => {
+        if (!data) return;
+
+        setMovies(normalizeMovieList(data));
     }, [data]);
 
     const loadMoreMovies = async () => {
@@ -164,42 +211,65 @@ const MovieList = () => {
 
     const vantaRef = useRef(null);
     const vantaEffectRef = useRef(null);
+    const vantaEnabled = useVantaEnabled();
 
    useEffect(() =>{
-    if (isMobile) return;
-    if (!vantaRef.current || vantaEffectRef.current) return;
+    if (!vantaEnabled || !vantaRef.current) return undefined;
 
-    vantaEffectRef.current = FOG({
-      el: vantaRef.current,
-      mouseControls: true,
-      touchControls: true,
-      gyroControls: false,
-      minHeight: 200.00,
-      minWidth: 200.00,
-      highlightColor: 0x0,
-      midtoneColor: 0x655755,
-      lowlightColor: 0x31198b,
-      baseColor: 0x583434, 
-      THREE: THREE,
-      speed: 1.00,
-    });
+    let disposed = false;
+    let effect;
+    let resizeObserver;
 
-    const resizeObserver = new ResizeObserver(() => {
-      if (vantaEffectRef.current?.resize) {
-        vantaEffectRef.current.resize();
+    const createVantaEffect = async () => {
+      try {
+        const [fogModule, threeModule] = await Promise.all([
+          import('vanta/dist/vanta.fog.min'),
+          import('three'),
+        ]);
+
+        if (disposed || !vantaRef.current) return;
+
+        const FOG = fogModule.default ?? fogModule;
+        effect = FOG({
+          el: vantaRef.current,
+          mouseControls: false,
+          touchControls: false,
+          gyroControls: false,
+          minHeight: 200.00,
+          minWidth: 200.00,
+          highlightColor: 0x0,
+          midtoneColor: 0x655755,
+          lowlightColor: 0x31198b,
+          baseColor: 0x583434,
+          THREE: threeModule,
+          speed: 0.35,
+        });
+        vantaEffectRef.current = effect;
+
+        if ('ResizeObserver' in window) {
+          resizeObserver = new ResizeObserver(() => effect?.resize?.());
+          resizeObserver.observe(vantaRef.current);
+        }
+
+        if (disposed) effect?.destroy?.();
+      } catch {
+        // The CSS background remains visible when WebGL is unavailable.
       }
-    });
+    };
 
-    resizeObserver.observe(vantaRef.current);
+    createVantaEffect();
 
     return () => {
-      resizeObserver.disconnect();
-      if (vantaEffectRef.current) {
-        vantaEffectRef.current.destroy();
+      disposed = true;
+      resizeObserver?.disconnect();
+      if (effect) {
+        effect.destroy();
+      }
+      if (vantaEffectRef.current === effect) {
         vantaEffectRef.current = null;
       }
     };
-   }, [isMobile])
+   }, [vantaEnabled])
    // Movie data array
 
    if (isMobile) {
@@ -208,7 +278,7 @@ const MovieList = () => {
         <div style={{ height: "88px" }}></div>
         <MovieListMobile
           movies={movies}
-          loading={isLoading}
+          loading={showCatalogSkeleton}
           hasMore={hasMore}
           loadingMore={loading}
           onLoadMore={loadMoreMovies}
@@ -219,9 +289,9 @@ const MovieList = () => {
 
    return (
         <div> 
-            <div ref={vantaRef} style={{ width: '100%', minHeight: '100vh' , overflow:"hidden"}} >  
+            <div ref={vantaRef} style={{ width: '100%', minHeight: '100vh', overflow:"hidden", background: '#201b30' }}>
                 <div style={{height:"100px"}}></div>
-                <MovieSelection movies={movies} loading={isLoading} />
+                <MovieSelection movies={movies} loading={showCatalogSkeleton} />
                 
                 <div style={{ textAlign: 'center', margin: '20px' , display:"flex" , justifyContent:"center"  }}>
                     {hasMore && (

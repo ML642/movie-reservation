@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react" ;
+import React, { useDeferredValue, useMemo, useState } from "react" ;
 import "./movie-selection.css";
 import SkeletonCard from './SkeletonCard';
 import { Link } from "react-router-dom";
@@ -47,18 +47,14 @@ const sortOptions = [
   { value: "title-za", label: "Title (Z-A)" },
 ];
 
-function GenreFilter (movie,genre){
-  if (genre === "all")return movie  ; 
-  let flag  = false  ; 
-  
-  movie.genre_ids.forEach((g) => {
-    if (genresMap[g] === genre) {
-      flag = true;
-    }
+const getMovieLikeKey = (movie) => String(movie?.movieKey ?? movie?.title ?? movie?.id ?? "");
 
-  })
-  return flag 
-}
+const matchesGenre = (movie, genre) => {
+  if (genre === "all") return true;
+  if (movie?.genre === genre) return true;
+  return Array.isArray(movie?.genre_ids) && movie.genre_ids.some((id) => genresMap[id] === genre);
+};
+
 const MovieSelection = (props) => {
      const { movies, loading } = props; 
      const { liked, notice, toggleLike } = useLikedMovies();
@@ -66,25 +62,33 @@ const MovieSelection = (props) => {
        const toggleShowLiked = () => setShowLikedOnly((prev) => !prev);
     
        // Search and sort state
-       const [search, setSearch] = useState('');
-       const [sort, setSort] = useState('date-desc');
-       const [genre, setGenre] = useState('all');
-    
-       // Filtered and sorted movies
-       const filteredMovies = useMemo(() => {
-        return movies
-          .filter(movie => movie?.title?.toLowerCase().includes(search.toLowerCase()))
-          .filter(movie => GenreFilter(movie, genre))
-          .sort((a, b) => {
-            if (sort === 'rating-desc') return b?.rating - a?.rating;
-            if (sort === 'rating-asc') return a?.rating - b?.rating;
-            if (sort === 'date-desc') return new Date(b?.date) - new Date(a?.date);
-            if (sort === 'date-asc') return new Date(a?.date) - new Date(b?.date);
-            if (sort === 'title-az') return a?.title.localeCompare(b?.title);
-            if (sort === 'title-za') return b?.title.localeCompare(a?.title);
-            return 0;
-          });
-      }, [movies, search, sort, genre]);
+        const [search, setSearch] = useState('');
+        const [sort, setSort] = useState('date-desc');
+        const [genre, setGenre] = useState('all');
+        const deferredSearch = useDeferredValue(search);
+         const likedMovieKeys = useMemo(() => new Set(liked), [liked]);
+
+        // Filtered and sorted movies
+        const visibleMovies = useMemo(() => {
+         const normalizedSearch = deferredSearch.trim().toLowerCase();
+         const filteredMovies = movies
+           .filter(movie => movie?.title?.toLowerCase().includes(normalizedSearch))
+           .filter(movie => matchesGenre(movie, genre));
+
+          const sortedMovies = filteredMovies.sort((a, b) => {
+              if (sort === 'rating-desc') return b?.rating - a?.rating;
+              if (sort === 'rating-asc') return a?.rating - b?.rating;
+              if (sort === 'date-desc') return new Date(b?.date) - new Date(a?.date);
+              if (sort === 'date-asc') return new Date(a?.date) - new Date(b?.date);
+              if (sort === 'title-az') return a?.title.localeCompare(b?.title);
+              if (sort === 'title-za') return b?.title.localeCompare(a?.title);
+              return 0;
+            });
+
+          return showLikedOnly
+            ? sortedMovies.filter((movie) => likedMovieKeys.has(getMovieLikeKey(movie)))
+            : sortedMovies;
+        }, [movies, deferredSearch, sort, genre, showLikedOnly, likedMovieKeys]);
 
     return (  <> 
     {notice && (
@@ -135,19 +139,19 @@ const MovieSelection = (props) => {
         {loading ? (
           Array.from({ length: 12 }).map((_, idx) => <SkeletonCard key={idx} />)
         ) : (
-          ((showLikedOnly ? filteredMovies.filter(m => liked.includes(m?.title)) : filteredMovies).length === 0) ? (
+          visibleMovies.length === 0 ? (
             <div className="no-movies-msg">
               <span className="no-movies-icon">🎬</span>
               There is nothing here.
               <div className="no-movies-hint">Try changing your search, filters, or like some movies to see them here!</div>
             </div>
           ) : (
-            (showLikedOnly ? filteredMovies.filter(m => liked.includes(m?.title)) : filteredMovies).map((movie, idx) => (
-              <div className="movie-grid-card" key={idx}>
+            visibleMovies.map((movie) => (
+              <div className="movie-grid-card" key={movie?.id ?? movie?.movieId ?? getMovieLikeKey(movie)}>
                 <span
-                  className={`heart-icon${liked.includes(movie?.title) ? ' liked' : ''}`}
-                  onClick={() => toggleLike(movie?.title)}
-                  title={liked.includes(movie?.title) ? 'Unlike' : 'Like'}
+                  className={`heart-icon${likedMovieKeys.has(getMovieLikeKey(movie)) ? ' liked' : ''}`}
+                  onClick={() => toggleLike(movie)}
+                  title={likedMovieKeys.has(getMovieLikeKey(movie)) ? 'Unlike' : 'Like'}
                 >
                   {liked.includes(movie?.title) ? '❤️' : '🤍'}
                 </span>
@@ -157,6 +161,8 @@ const MovieSelection = (props) => {
                   className="movie-card-img" 
                   width="500" 
                   height="750" 
+                  loading="lazy"
+                  decoding="async"
                 />
                 <h3 className="movie-card-h2" style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>{movie?.title}</h3>
                 <div style={{ color: '#aaa', fontSize: '0.95rem', margin: '0.5rem 0' }}>Rating: {movie?.rating} | {movie?.date}</div>

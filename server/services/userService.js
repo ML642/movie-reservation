@@ -5,6 +5,10 @@ const { isMongoReady } = require('../config/mongo');
 
 let users = [];
 let currentId = 2;
+let memoryUsersVersion = 0;
+let syncedMemoryUsersVersion = -1;
+let syncMemoryUsersPromise = null;
+let mongoSyncListenersAttached = false;
 
 const buildDemoUser = () => ({
   id: '1',
@@ -46,7 +50,11 @@ const findMemoryUserById = (id) => {
   return users.find((u) => u.id === userId) || null;
 };
 
-const upsertMemoryUser = (user) => {
+const markMemoryUsersChanged = () => {
+  memoryUsersVersion += 1;
+};
+
+const upsertMemoryUser = (user, { markDirty = false } = {}) => {
   const normalizedUser = normalizeMongoUser(user);
   if (!normalizedUser) return null;
 
@@ -57,48 +65,85 @@ const upsertMemoryUser = (user) => {
     users.push(normalizedUser);
   }
 
+  if (markDirty) markMemoryUsersChanged();
   return normalizedUser;
 };
 
 const syncMemoryUsersToMongo = async () => {
-  if (!isMongoReady()) return;
+  if (!isMongoReady() || syncedMemoryUsersVersion === memoryUsersVersion) return;
+  if (syncMemoryUsersPromise) return syncMemoryUsersPromise;
 
-  for (const user of users) {
-    try {
-      await User.updateOne(
-        { id: user.id },
-        {
-          $setOnInsert: {
-            id: user.id,
-            username: user.username,
-            email: normalizeEmail(user.email),
-            password: user.password,
-            createdAt: user.createdAt,
+  syncMemoryUsersPromise = (async () => {
+    while (isMongoReady() && syncedMemoryUsersVersion !== memoryUsersVersion) {
+      const versionToSync = memoryUsersVersion;
+      const operations = users.map((user) => ({
+        updateOne: {
+          filter: { id: user.id },
+          update: {
+            $setOnInsert: {
+              id: user.id,
+              username: user.username,
+              email: normalizeEmail(user.email),
+              password: user.password,
+              createdAt: user.createdAt,
+            },
           },
+          upsert: true,
         },
-        { upsert: true }
-      );
-    } catch (error) {
-      console.warn('Skipping memory user sync to Mongo.', {
-        userId: user.id,
-        message: error.message,
-      });
+      }));
+
+      try {
+        if (operations.length > 0) {
+          // A single unordered bulk write replaces one update request per user.
+          // It runs only after a memory mutation or reconnect, never before a lookup.
+          await User.bulkWrite(operations, { ordered: false });
+        }
+      } catch (error) {
+        console.warn('Memory user sync to Mongo was incomplete.', {
+          message: error.message,
+        });
+      }
+
+      // Do not make every read retry a failed sync. A later mutation or Mongo
+      // reconnect will schedule another best-effort pass.
+      syncedMemoryUsersVersion = versionToSync;
     }
-  }
+  })().finally(() => {
+    syncMemoryUsersPromise = null;
+  });
+
+  return syncMemoryUsersPromise;
 };
 
 const initDemoUser = () => {
   const demoUser = buildDemoUser();
-  users = [demoUser];
+  users.splice(0, users.length, demoUser);
   currentId = 2;
+  markMemoryUsersChanged();
   return syncMemoryUsersToMongo();
 };
+
+const attachMongoSyncListeners = () => {
+  if (mongoSyncListenersAttached) return;
+  mongoSyncListenersAttached = true;
+
+  mongoose.connection.on('connected', () => {
+    void syncMemoryUsersToMongo();
+  });
+
+  mongoose.connection.on('disconnected', () => {
+    // A reconnect is a safe point to retry a best-effort migration if a write
+    // failed while the connection was unstable.
+    syncedMemoryUsersVersion = -1;
+  });
+};
+
+attachMongoSyncListeners();
 
 const findUserByEmail = async (email) => {
   const normalizedEmail = normalizeEmail(email);
 
   if (isMongoReady()) {
-    await syncMemoryUsersToMongo();
     try {
       const user = normalizeMongoUser(await User.findOne({ email: normalizedEmail }).lean());
       if (user) {
@@ -117,7 +162,6 @@ const findUserByUsername = async (username) => {
   const normalizedUsername = normalizeUsername(username);
 
   if (isMongoReady()) {
-    await syncMemoryUsersToMongo();
     try {
       const user = normalizeMongoUser(await User.findOne({ username: normalizedUsername }).lean());
       if (user) {
@@ -136,7 +180,6 @@ const findUserById = async (id) => {
   const userId = String(id || '');
 
   if (isMongoReady()) {
-    await syncMemoryUsersToMongo();
     try {
       const user = normalizeMongoUser(await User.findOne({ id: userId }).lean());
       if (user) {
@@ -167,7 +210,6 @@ const createUser = async ({ username, email, password }) => {
   };
 
   if (isMongoReady()) {
-    await syncMemoryUsersToMongo();
     try {
       const created = normalizeMongoUser(await User.create(user));
       upsertMemoryUser(created);
@@ -183,7 +225,8 @@ const createUser = async ({ username, email, password }) => {
     }
   }
 
-  users.push(user);
+  upsertMemoryUser(user, { markDirty: true });
+  void syncMemoryUsersToMongo();
   return user;
 };
 
@@ -196,6 +239,8 @@ const updateUser = async (id, { newEmail, newName }) => {
   if (newEmail) updates.email = normalizeEmail(newEmail);
 
   if (isMongoReady()) {
+    // Writes may need to persist a user that was created while MongoDB was
+    // unavailable. Reads deliberately do not wait for this migration.
     await syncMemoryUsersToMongo();
     try {
       const updated = normalizeMongoUser(
@@ -218,7 +263,8 @@ const updateUser = async (id, { newEmail, newName }) => {
 
   if (newName) user.username = normalizeUsername(newName);
   if (newEmail) user.email = normalizeEmail(newEmail);
-  upsertMemoryUser(user);
+  upsertMemoryUser(user, { markDirty: true });
+  void syncMemoryUsersToMongo();
   return user;
 };
 

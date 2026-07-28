@@ -1,50 +1,114 @@
 import React, { useState, useEffect, useRef } from "react";
-import * as THREE from 'three';
-import WAVES from 'vanta/dist/vanta.waves.min';
 import './Login.css';
 import  { Link, useNavigate , useLocation  } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
 import { API_BASE_URL } from "../../config/api";
 import AuthNotice from "../../components/notification/AuthNotice";
 
+const canRunVanta = () => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  const lowPowerDevice =
+    connection?.saveData ||
+    (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4) ||
+    (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4);
+
+  return (
+    !reducedMotion &&
+    !lowPowerDevice &&
+    window.innerWidth > 1024 &&
+    (typeof document === 'undefined' || document.visibilityState === 'visible')
+  );
+};
+
+const useVantaEnabled = () => {
+  const [enabled, setEnabled] = useState(canRunVanta);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    const updateEnabledState = () => setEnabled(canRunVanta());
+
+    window.addEventListener('resize', updateEnabledState, { passive: true });
+    document.addEventListener('visibilitychange', updateEnabledState);
+    motionQuery?.addEventListener?.('change', updateEnabledState);
+
+    return () => {
+      window.removeEventListener('resize', updateEnabledState);
+      document.removeEventListener('visibilitychange', updateEnabledState);
+      motionQuery?.removeEventListener?.('change', updateEnabledState);
+    };
+  }, []);
+
+  return enabled;
+};
+
 const Login = () => {
   const vantaRef = useRef(null);
   const vantaEffectRef = useRef(null);
   const navigate = useNavigate();
   const [isLoading , setIsLoading] =  useState(false)
+  const vantaEnabled = useVantaEnabled();
   
 
    const Location =  useLocation() ;
     useEffect(() => {
-        window.scrollTo({top:0, left:0, behavior: "smooth"});
+        window.scrollTo({top:0, left:0, behavior: "auto"});
     }, [Location.key] );
 
   useEffect(() => {
-    if (!vantaRef.current || vantaEffectRef.current) return;
+    if (!vantaEnabled || !vantaRef.current) return undefined;
 
-    vantaEffectRef.current = WAVES({
-      el: vantaRef.current,
-      THREE,
-      mouseControls: true,
-      touchControls: true,
-      minHeight: 200.0,
-      minWidth: 200.0,
-      scale: 1.0,
-      scaleMobile: 1.0,
-      color: 0x1a1a2e,
-      shininess: 10,
-      waveHeight: 20,
-      waveSpeed: 0.5,
-      zoom: 1,
-    });
+    let disposed = false;
+    let effect;
+
+    const createVantaEffect = async () => {
+      try {
+        const [wavesModule, threeModule] = await Promise.all([
+          import('vanta/dist/vanta.waves.min'),
+          import('three'),
+        ]);
+
+        if (disposed || !vantaRef.current) return;
+
+        const WAVES = wavesModule.default ?? wavesModule;
+        effect = WAVES({
+          el: vantaRef.current,
+          THREE: threeModule,
+          mouseControls: false,
+          touchControls: false,
+          gyroControls: false,
+          minHeight: 200.0,
+          minWidth: 200.0,
+          scale: 0.85,
+          scaleMobile: 0.85,
+          color: 0x1a1a2e,
+          shininess: 6,
+          waveHeight: 10,
+          waveSpeed: 0.25,
+          zoom: 1,
+        });
+        vantaEffectRef.current = effect;
+      } catch {
+        // Keep the lightweight CSS fallback if WebGL or the chunk is unavailable.
+      }
+    };
+
+    createVantaEffect();
 
     return () => {
-      if (vantaEffectRef.current) {
-        vantaEffectRef.current.destroy();
+      disposed = true;
+      if (effect) {
+        effect.destroy();
+      }
+      if (vantaEffectRef.current === effect) {
         vantaEffectRef.current = null;
       }
     };
-  }, []);
+  }, [vantaEnabled]);
 
     const [form, setForm] = useState({ email: "user@gmail.com", password: "user" });
     const [notice, setNotice] = useState(null);

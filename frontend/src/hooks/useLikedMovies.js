@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { API_BASE_URL } from "../config/api";
 
 const LIKED_MOVIES_STORAGE_KEY = "likedMovies";
 
 const getLikeKey = (movieOrTitle) => {
   if (typeof movieOrTitle === "string") return movieOrTitle;
-  const key = movieOrTitle?.title ?? movieOrTitle?.id;
+
+  const key = movieOrTitle?.title ?? movieOrTitle?.movieKey ?? movieOrTitle?.id;
   return key ? String(key) : "";
 };
 
@@ -27,11 +28,13 @@ const readStoredLikes = () => {
   }
 };
 
+const uniqueLikes = (likes) => Array.from(new Set(likes.filter(Boolean).map(String)));
+
 const saveStoredLikes = (likes) => {
   if (typeof window === "undefined") return;
 
   try {
-    window.localStorage.setItem(LIKED_MOVIES_STORAGE_KEY, JSON.stringify(likes));
+    window.localStorage.setItem(LIKED_MOVIES_STORAGE_KEY, JSON.stringify(uniqueLikes(likes)));
   } catch (error) {
     console.warn("Could not save liked movies to local storage.", error);
   }
@@ -48,36 +51,64 @@ const getAuthHeaders = (token) => ({
 });
 
 const getServerLikeKeys = (likedMovies = []) =>
-  likedMovies
-    .map((movie) => movie?.movieKey || movie?.title || movie?.id)
-    .filter(Boolean)
-    .map(String);
+  likedMovies.map(getLikeKey).filter(Boolean);
 
-const saveServerLike = async (movieOrTitle) => {
-  const token = getToken();
-  if (!token || !API_BASE_URL) return;
+const toServerLikeRecord = (movieOrTitle) => {
+  const movieKey = getLikeKey(movieOrTitle);
 
-  const body =
-    typeof movieOrTitle === "string"
-      ? { movie: { title: movieOrTitle, movieKey: movieOrTitle } }
-      : { movie: { ...movieOrTitle, movieKey: getLikeKey(movieOrTitle) } };
+  if (typeof movieOrTitle === "string") {
+    return { title: movieKey, movieKey };
+  }
 
-  await fetch(`${API_BASE_URL}/api/likes`, {
-    method: "POST",
-    headers: getAuthHeaders(token),
-    body: JSON.stringify(body),
-  });
+  return {
+    ...movieOrTitle,
+    title: movieOrTitle?.title || movieKey,
+    movieKey: movieOrTitle?.movieKey || movieKey,
+  };
 };
 
-const removeServerLike = async (movieKey) => {
-  const token = getToken();
+const fetchServerLikes = async (token) => {
+  const response = await fetch(`${API_BASE_URL}/api/likes`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Could not load liked movies (${response.status}).`);
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload?.data) ? payload.data : [];
+};
+
+const saveServerLike = async (movieOrTitle, token) => {
+  if (!token || !API_BASE_URL) return null;
+
+  const response = await fetch(`${API_BASE_URL}/api/likes`, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify({ movie: toServerLikeRecord(movieOrTitle) }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Could not save liked movie (${response.status}).`);
+  }
+
+  const payload = await response.json().catch(() => null);
+  return payload?.data || null;
+};
+
+const removeServerLike = async (movieKey, token) => {
   if (!token || !API_BASE_URL) return;
 
-  await fetch(`${API_BASE_URL}/api/likes`, {
+  const response = await fetch(`${API_BASE_URL}/api/likes`, {
     method: "DELETE",
     headers: getAuthHeaders(token),
     body: JSON.stringify({ movieKey }),
   });
+
+  if (!response.ok) {
+    throw new Error(`Could not remove liked movie (${response.status}).`);
+  }
 };
 
 const sendBrowserNotification = async (movieTitle, isLiked) => {
@@ -101,75 +132,231 @@ const sendBrowserNotification = async (movieTitle, isLiked) => {
   }
 };
 
-export const useLikedMovies = () => {
-  const [liked, setLiked] = useState(readStoredLikes);
-  const [notice, setNotice] = useState(null);
-  const noticeTimerRef = useRef(null);
+const initialLikesState = {
+  liked: readStoredLikes(),
+  serverLikes: [],
+  notice: null,
+  isSyncing: false,
+  hasLoadedServerLikes: false,
+};
 
-  useEffect(() => {
-    saveStoredLikes(liked);
-  }, [liked]);
+let likesState = initialLikesState;
+let noticeTimerId = null;
+let syncPromise = null;
+let syncingToken = null;
+let lastSyncedToken = null;
+const listeners = new Set();
+const pendingOperationsByKey = new Map();
 
-  useEffect(() => {
-    const token = getToken();
-    if (!token || !API_BASE_URL) return undefined;
+const getLikesSnapshot = () => likesState;
 
-    let isMounted = true;
+const subscribeToLikes = (listener) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
 
-    const syncLikes = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/likes`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+const updateLikesState = (nextState) => {
+  likesState = { ...likesState, ...nextState };
+  listeners.forEach((listener) => listener());
+};
 
-        if (!response.ok) return;
+const setLikedMovies = (likes) => {
+  const liked = uniqueLikes(likes);
+  saveStoredLikes(liked);
+  updateLikesState({ liked });
+};
 
-        const payload = await response.json();
-        const serverKeys = getServerLikeKeys(payload.data);
-        const localKeys = readStoredLikes();
-        const mergedKeys = Array.from(new Set([...localKeys, ...serverKeys]));
+const upsertServerLike = (like) => {
+  const likeKey = getLikeKey(like);
+  if (!likeKey) return;
 
-        if (isMounted) {
-          setLiked(mergedKeys);
-        }
+  updateLikesState({
+    serverLikes: [
+      ...likesState.serverLikes.filter((currentLike) => getLikeKey(currentLike) !== likeKey),
+      { ...toServerLikeRecord(like), ...like },
+    ],
+  });
+};
 
-        const localOnlyKeys = localKeys.filter((key) => !serverKeys.includes(key));
-        await Promise.all(localOnlyKeys.map((key) => saveServerLike(key)));
-      } catch (error) {
-        console.warn("Could not sync liked movies with server.", error);
-      }
-    };
+const removeCachedServerLike = (likeKey) => {
+  updateLikesState({
+    serverLikes: likesState.serverLikes.filter(
+      (currentLike) => getLikeKey(currentLike) !== likeKey
+    ),
+  });
+};
 
-    syncLikes();
+const showNotice = (movieTitle, isLiked) => {
+  if (noticeTimerId) {
+    window.clearTimeout(noticeTimerId);
+  }
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (noticeTimerRef.current) {
-        window.clearTimeout(noticeTimerRef.current);
-      }
-    };
-  }, []);
-
-  const showNotice = useCallback((movieTitle, isLiked) => {
-    if (noticeTimerRef.current) {
-      window.clearTimeout(noticeTimerRef.current);
-    }
-
-    setNotice({
+  updateLikesState({
+    notice: {
       title: movieTitle,
       message: isLiked ? "Saved to liked movies" : "Removed from liked movies",
-    });
+    },
+  });
 
-    noticeTimerRef.current = window.setTimeout(() => {
-      setNotice(null);
-    }, 2600);
+  noticeTimerId = window.setTimeout(() => {
+    updateLikesState({ notice: null });
+    noticeTimerId = null;
+  }, 2600);
+};
+
+const enqueueServerOperation = (likeKey, operation) => {
+  const previousOperation = pendingOperationsByKey.get(likeKey) || Promise.resolve();
+  const nextOperation = previousOperation.catch(() => undefined).then(operation);
+
+  pendingOperationsByKey.set(likeKey, nextOperation);
+  nextOperation
+    .finally(() => {
+      if (pendingOperationsByKey.get(likeKey) === nextOperation) {
+        pendingOperationsByKey.delete(likeKey);
+      }
+    })
+    .catch(() => {});
+
+  return nextOperation;
+};
+
+const syncLikedMovies = () => {
+  const token = getToken();
+
+  if (!token || !API_BASE_URL) {
+    lastSyncedToken = null;
+    updateLikesState({
+      serverLikes: [],
+      isSyncing: false,
+      hasLoadedServerLikes: true,
+    });
+    return Promise.resolve();
+  }
+
+  if (syncPromise && syncingToken === token) {
+    return syncPromise;
+  }
+
+  if (lastSyncedToken === token) {
+    return Promise.resolve();
+  }
+
+  updateLikesState({
+    serverLikes: [],
+    isSyncing: true,
+    hasLoadedServerLikes: false,
+  });
+
+  const currentSync = (async () => {
+    try {
+      const serverLikes = await fetchServerLikes(token);
+      if (getToken() !== token) return;
+
+      const localLikes = readStoredLikes();
+      const serverLikeKeys = getServerLikeKeys(serverLikes);
+      const mergedLikes = uniqueLikes([...localLikes, ...serverLikeKeys]);
+      const localOnlyKeys = localLikes.filter((key) => !serverLikeKeys.includes(key));
+
+      saveStoredLikes(mergedLikes);
+      updateLikesState({ serverLikes, liked: mergedLikes });
+      lastSyncedToken = token;
+
+      const uploads = await Promise.allSettled(
+        localOnlyKeys.map((key) => saveServerLike(key, token))
+      );
+
+      if (getToken() !== token) return;
+
+      uploads.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          upsertServerLike(result.value || toServerLikeRecord(localOnlyKeys[index]));
+        } else {
+          console.warn("Could not sync liked movie with server.", result.reason);
+        }
+      });
+    } catch (error) {
+      if (getToken() === token) {
+        console.warn("Could not sync liked movies with server.", error);
+      }
+    } finally {
+      if (getToken() === token) {
+        updateLikesState({ isSyncing: false, hasLoadedServerLikes: true });
+      }
+    }
+  })();
+
+  syncPromise = currentSync;
+  syncingToken = token;
+  currentSync
+    .finally(() => {
+      if (syncPromise === currentSync) {
+        syncPromise = null;
+        syncingToken = null;
+      }
+    })
+    .catch(() => {});
+
+  return currentSync;
+};
+
+const toggleMovieLike = (movieOrTitle) => {
+  const likeKey = getLikeKey(movieOrTitle);
+  if (!likeKey) return;
+
+  const wasLiked = likesState.liked.includes(likeKey);
+  const nextLikes = wasLiked
+    ? likesState.liked.filter((key) => key !== likeKey)
+    : [...likesState.liked, likeKey];
+  const movieTitle = getMovieTitle(movieOrTitle);
+
+  setLikedMovies(nextLikes);
+  showNotice(movieTitle, !wasLiked);
+  void sendBrowserNotification(movieTitle, !wasLiked);
+
+  const token = getToken();
+  if (!token || !API_BASE_URL) return;
+
+  if (wasLiked) {
+    removeCachedServerLike(likeKey);
+  } else {
+    upsertServerLike(toServerLikeRecord(movieOrTitle));
+  }
+
+  const syncAction = wasLiked
+    ? () => removeServerLike(likeKey, token)
+    : () => saveServerLike(movieOrTitle, token);
+
+  enqueueServerOperation(likeKey, syncAction)
+    .then((savedLike) => {
+      if (!wasLiked && savedLike) {
+        upsertServerLike(savedLike);
+      }
+    })
+    .catch((error) => {
+      console.warn("Could not sync liked movie with server.", error);
+    });
+};
+
+export const useLikedMovies = () => {
+  const { liked, serverLikes, notice, isSyncing, hasLoadedServerLikes } = useSyncExternalStore(
+    subscribeToLikes,
+    getLikesSnapshot,
+    getLikesSnapshot
+  );
+
+  useEffect(() => {
+    void syncLikedMovies();
+  }, []);
+
+  useEffect(() => {
+    const syncFromAnotherTab = (event) => {
+      if (event.key === LIKED_MOVIES_STORAGE_KEY) {
+        updateLikesState({ liked: readStoredLikes() });
+      }
+    };
+
+    window.addEventListener("storage", syncFromAnotherTab);
+    return () => window.removeEventListener("storage", syncFromAnotherTab);
   }, []);
 
   const isLiked = useCallback(
@@ -177,37 +364,17 @@ export const useLikedMovies = () => {
     [liked]
   );
 
-  const toggleLike = useCallback(
-    (movieOrTitle) => {
-      const likeKey = getLikeKey(movieOrTitle);
-      if (!likeKey) return;
-
-      const movieTitle = getMovieTitle(movieOrTitle);
-      const nextIsLiked = !liked.includes(likeKey);
-
-      setLiked((currentLikes) => {
-        if (currentLikes.includes(likeKey)) {
-          return currentLikes.filter((key) => key !== likeKey);
-        }
-
-        return [...currentLikes, likeKey];
-      });
-
-      showNotice(movieTitle, nextIsLiked);
-      sendBrowserNotification(movieTitle, nextIsLiked);
-
-      const syncAction = nextIsLiked ? saveServerLike(movieOrTitle) : removeServerLike(likeKey);
-      syncAction.catch((error) => {
-        console.warn("Could not sync liked movie with server.", error);
-      });
-    },
-    [liked, showNotice]
-  );
+  const toggleLike = useCallback((movieOrTitle) => {
+    toggleMovieLike(movieOrTitle);
+  }, []);
 
   return {
     liked,
-    isLiked,
+    serverLikes,
     notice,
+    isSyncing,
+    hasLoadedServerLikes,
+    isLiked,
     toggleLike,
   };
 };

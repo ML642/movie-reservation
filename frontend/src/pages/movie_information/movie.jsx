@@ -19,7 +19,10 @@ import { API_BASE_URL } from '../../config/api';
 import CommentsSection from '../../components/comments/CommentsSection';
 import { useLikedMovies } from '../../hooks/useLikedMovies';
 
-const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
+const TMDB_API_KEY = (process.env.REACT_APP_TMDB_API_KEY || '').trim();
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
+const getTmdbImageUrl = (size, path) =>
+  path ? `${TMDB_IMAGE_BASE_URL}/${size}${path}` : null;
 
 const THEATERS = [
   { id: 1, name: 'Cineplex Downtown', location: '123 Movie St, City' },
@@ -63,28 +66,57 @@ const Movie = () => {
   }, [location.key]);
 
   useEffect(() => {
+    const requestController = new AbortController();
+    let isActive = true;
+
     const fetchMovieDetails = async () => {
+      if (!TMDB_API_KEY) {
+        setMovie(null);
+        setError('Movie details are temporarily unavailable. Please try again later.');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
+        setError(null);
         const { data } = await axios.get(
           `https://api.themoviedb.org/3/movie/${id}`,
           {
             params: {
-              api_key: API_KEY,
-              append_to_response: 'credits,videos,images',
+              api_key: TMDB_API_KEY,
+              // Videos and image metadata are not rendered on this page. Keeping
+              // only credits removes a large, unused part of the response.
+              append_to_response: 'credits',
             },
+            signal: requestController.signal,
+            timeout: 10000,
           }
         );
-        setMovie(data);
+        if (isActive) {
+          setMovie(data);
+        }
       } catch (err) {
+        if (axios.isCancel(err) || err.code === 'ERR_CANCELED') {
+          return;
+        }
         console.error('Error fetching movie details:', err);
-        setError('Failed to load movie details. Please try again later.');
+        if (isActive) {
+          setError('Failed to load movie details. Please try again later.');
+        }
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchMovieDetails();
+
+    return () => {
+      isActive = false;
+      requestController.abort();
+    };
   }, [id]);
 
   const fetchBookedSeats = useCallback(async () => {
@@ -169,9 +201,8 @@ const Movie = () => {
         jwt: token,
         movieId: id,
         movieName: movie.title,
-        moviePoster: movie.poster_path
-          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-          : 'https://via.placeholder.com/500x750?text=No+Poster',
+        moviePoster: getTmdbImageUrl('w500', movie.poster_path)
+          || 'https://via.placeholder.com/500x750?text=No+Poster',
         theaterId: selectedTheater,
         theaterName: THEATERS.find((t) => t.id === selectedTheater)?.name,
         movieDuration: movie.runtime,
@@ -269,9 +300,7 @@ const Movie = () => {
         movieId: String(movie.id),
         movieKey: movie.title,
         title: movie.title,
-        poster: movie.poster_path
-          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-          : undefined,
+        poster: getTmdbImageUrl('w500', movie.poster_path) || undefined,
         rating: movie.vote_average,
         date: movie.release_date,
         genre: movie.genres?.[0]?.name,
@@ -311,7 +340,7 @@ const Movie = () => {
         className={styles.movieHero}
         style={{
           backgroundImage: movie.backdrop_path
-            ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url(https://image.tmdb.org/t/p/original${movie.backdrop_path})`
+            ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url(${getTmdbImageUrl('w1280', movie.backdrop_path)})`
             : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         }}
       >
@@ -332,8 +361,11 @@ const Movie = () => {
             <div className={styles.moviePoster}>
               {movie.poster_path ? (
                 <img
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                  src={getTmdbImageUrl('w500', movie.poster_path)}
                   alt={movie.title}
+                  width="320"
+                  height="480"
+                  decoding="async"
                 />
               ) : (
                 <div className={styles.posterPlaceholder}>

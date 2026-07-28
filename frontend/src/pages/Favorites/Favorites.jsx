@@ -1,13 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaHeart, FaRegHeart, FaStar } from 'react-icons/fa';
-import { API_BASE_URL } from '../../config/api';
 import { useLikedMovies } from '../../hooks/useLikedMovies';
 import { isAuthenticated } from '../../utils/jwtDecoder';
 import './Favorites.css';
 
-const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
+const TMDB_API_KEY = (process.env.REACT_APP_TMDB_API_KEY || '').trim();
 
 const genresMap = {
   28: 'Action',
@@ -65,9 +64,23 @@ const normalizeTmdbMovie = (movie) => ({
 
 const getMovieKey = (movie) => String(movie?.movieKey || movie?.title || movie?.id || movie?.movieId || '').trim();
 
+const getMovieLookupKeys = (movie) => [
+  movie?.movieKey,
+  movie?.title,
+  movie?.id,
+  movie?.movieId,
+]
+  .filter(Boolean)
+  .map((key) => String(key).toLowerCase());
+
+const getCatalogMovie = (movie, catalogByKey) =>
+  getMovieLookupKeys(movie)
+    .map((key) => catalogByKey.get(key))
+    .find(Boolean);
+
 const mergeMovieDetails = (like, catalogByKey) => {
   const key = getMovieKey(like);
-  const catalogMovie = catalogByKey.get(key.toLowerCase());
+  const catalogMovie = getCatalogMovie(like, catalogByKey);
 
   return {
     ...catalogMovie,
@@ -83,87 +96,140 @@ const mergeMovieDetails = (like, catalogByKey) => {
 };
 
 export default function Favorites() {
-  const [serverLikes, setServerLikes] = useState([]);
   const [catalog, setCatalog] = useState(localMovies);
-  const [loading, setLoading] = useState(true);
+  const [catalogLoading, setCatalogLoading] = useState(false);
   const [error, setError] = useState('');
-  const { liked, isLiked, notice, toggleLike } = useLikedMovies();
+  const {
+    liked,
+    serverLikes,
+    isLiked,
+    notice,
+    toggleLike,
+    isSyncing,
+    hasLoadedServerLikes,
+  } = useLikedMovies();
   const location = useLocation();
   const navigate = useNavigate();
+  const requestedCatalogKeys = useRef(new Set());
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [location.key]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!isAuthenticated() || !token) {
+    if (!isAuthenticated() || !localStorage.getItem('token')) {
       navigate('/login');
-      return;
     }
-
-    let isMounted = true;
-
-    const loadFavorites = async () => {
-      setLoading(true);
-      setError('');
-
-      try {
-        const likesRequest = axios.get(`${API_BASE_URL}/api/likes`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const catalogRequest = API_KEY
-          ? axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&include_adult=false`)
-          : Promise.resolve({ data: { results: [] } });
-
-        const [likesResponse, catalogResponse] = await Promise.all([likesRequest, catalogRequest]);
-
-        if (!isMounted) return;
-
-        setServerLikes(Array.isArray(likesResponse.data?.data) ? likesResponse.data.data : []);
-
-        const remoteCatalog = (catalogResponse.data?.results || [])
-          .filter((movie) => !movie.adult)
-          .map(normalizeTmdbMovie);
-
-        setCatalog([...localMovies, ...remoteCatalog]);
-      } catch (loadError) {
-        console.error('Could not load favorite movies:', loadError);
-        if (isMounted) {
-          setError('Could not refresh favorites from the server. Showing saved local favorites.');
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadFavorites();
-
-    return () => {
-      isMounted = false;
-    };
   }, [navigate]);
 
-  const favoriteMovies = useMemo(() => {
-    const catalogByKey = new Map();
+  const favoriteSources = useMemo(() => {
+    const likesByKey = new Map();
 
-    catalog.forEach((movie) => {
-      const keys = [movie.title, movie.movieKey, movie.id, movie.movieId].filter(Boolean);
-      keys.forEach((key) => catalogByKey.set(String(key).toLowerCase(), movie));
+    // Local likes make the UI instant. Server records replace those placeholders
+    // when available because they carry poster, rating, and TMDB id metadata.
+    liked.forEach((key) => {
+      likesByKey.set(key.toLowerCase(), { movieKey: key, title: key });
     });
 
-    const likesByKey = new Map();
-    [...serverLikes, ...liked.map((key) => ({ movieKey: key, title: key }))].forEach((like) => {
+    serverLikes.forEach((like) => {
       const key = getMovieKey(like);
       if (!key) return;
-      likesByKey.set(key.toLowerCase(), mergeMovieDetails(like, catalogByKey));
+
+      const existingLike = likesByKey.get(key.toLowerCase());
+      likesByKey.set(key.toLowerCase(), {
+        ...existingLike,
+        ...like,
+        title: like?.title || existingLike?.title || key,
+        movieKey: like?.movieKey || existingLike?.movieKey || key,
+      });
     });
 
-    return Array.from(likesByKey.values()).filter((movie) => isLiked(movie));
-  }, [catalog, liked, serverLikes, isLiked]);
+    return Array.from(likesByKey.values());
+  }, [liked, serverLikes]);
+
+  const catalogByKey = useMemo(() => {
+    const moviesByKey = new Map();
+
+    catalog.forEach((movie) => {
+      getMovieLookupKeys(movie).forEach((key) => moviesByKey.set(key, movie));
+    });
+
+    return moviesByKey;
+  }, [catalog]);
+
+  const missingCatalogKeys = useMemo(() => {
+    const missingKeys = new Set();
+
+    favoriteSources.forEach((like) => {
+      const catalogMovie = getCatalogMovie(like, catalogByKey);
+      if (!like?.poster && !catalogMovie?.poster) {
+        const key = getMovieKey(like);
+        if (key) missingKeys.add(key.toLowerCase());
+      }
+    });
+
+    return Array.from(missingKeys).sort().join('|');
+  }, [catalogByKey, favoriteSources]);
+
+  useEffect(() => {
+    if (!TMDB_API_KEY || !hasLoadedServerLikes || !missingCatalogKeys) {
+      setCatalogLoading(false);
+      return undefined;
+    }
+
+    if (requestedCatalogKeys.current.has(missingCatalogKeys)) {
+      return undefined;
+    }
+
+    const requestController = new AbortController();
+    let isActive = true;
+    setCatalogLoading(true);
+    setError('');
+
+    axios.get('https://api.themoviedb.org/3/movie/popular', {
+      params: {
+        api_key: TMDB_API_KEY,
+        include_adult: false,
+      },
+      signal: requestController.signal,
+      timeout: 10000,
+    })
+      .then(({ data }) => {
+        if (!isActive) return;
+
+        const remoteCatalog = (data?.results || [])
+          .filter((movie) => !movie.adult)
+          .map(normalizeTmdbMovie);
+        setCatalog([...localMovies, ...remoteCatalog]);
+      })
+      .catch((loadError) => {
+        if (!isActive || axios.isCancel(loadError) || loadError.code === 'ERR_CANCELED') {
+          return;
+        }
+
+        console.error('Could not enrich favorite movies:', loadError);
+        setError('Could not load additional movie details. Showing saved favorites.');
+      })
+      .finally(() => {
+        if (isActive) {
+          requestedCatalogKeys.current.add(missingCatalogKeys);
+          setCatalogLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+      requestController.abort();
+    };
+  }, [hasLoadedServerLikes, missingCatalogKeys]);
+
+  const favoriteMovies = useMemo(() => {
+    return favoriteSources
+      .map((like) => mergeMovieDetails(like, catalogByKey))
+      .filter((movie) => isLiked(movie));
+  }, [catalogByKey, favoriteSources, isLiked]);
+
+  const loading = !hasLoadedServerLikes || isSyncing || catalogLoading;
 
   return (
     <main className="favorites-page">

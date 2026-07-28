@@ -27,5 +27,7 @@ const likedMovieSchema = new mongoose.Schema(
 );
 
 likedMovieSchema.index({ userId: 1, movieKey: 1 }, { unique: true });
+// Serves GET /api/likes in the same order returned to the client.
+likedMovieSchema.index({ userId: 1, createdAt: -1 });
 
 module.exports = mongoose.models.LikedMovie || mongoose.model('LikedMovie', likedMovieSchema);

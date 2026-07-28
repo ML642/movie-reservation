@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { isMongoReady, getMongoReadyStateLabel } = require('./config/mongo');
 
 const authRoutes = require('./routes/auth');
 const reservationRoutes = require('./routes/reservations'); // keep your split reservations router
@@ -36,6 +37,9 @@ const corsOptions = {
   },
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  // Browsers can reuse the successful auth/content-type preflight instead of
+  // adding an OPTIONS round trip before every API interaction.
+  maxAge: 7200,
   optionsSuccessStatus: 204,
 };
 
@@ -48,6 +52,16 @@ app.use('/api/reservation', reservationRoutes);
 app.use('/api/likes', likedMovieRoutes);
 app.use('/api/comments', commentRoutes);
 
+
+app.get('/health', (req, res) =>
+  res.status(200).json({
+    status: 'ok',
+    mongo: {
+      ready: isMongoReady(),
+      state: getMongoReadyStateLabel(),
+    },
+  })
+);
 
 app.get('/', (req, res) => res.json({ message: 'Movie Reservation API is running!' }));
 

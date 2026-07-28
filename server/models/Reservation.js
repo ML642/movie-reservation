@@ -59,4 +59,7 @@ const reservationSchema = new mongoose.Schema(
   }
 );
 
+// Serves the profile/reservation-history query without an in-memory sort.
+reservationSchema.index({ userId: 1, createdAt: -1 });
+
 module.exports = mongoose.models.Reservation || mongoose.model('Reservation', reservationSchema);

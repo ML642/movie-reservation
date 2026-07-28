@@ -1,6 +1,9 @@
 const trimTrailingSlash = (value) => value.replace(/\/+$/, '');
 const RENDER_API_BY_FRONTEND_HOST = {
   'movie-reservation-1.onrender.com': 'https://movie-reservation-z2nv.onrender.com',
+  // The second Render frontend is served independently of the API. Without this
+  // mapping it falls back to its own SPA origin, turning `/api/*` into a 404.
+  'movie-reservation-1-4uao.onrender.com': 'https://movie-reservation-z2nv.onrender.com',
 };
 
 const resolveApiBaseUrl = () => {

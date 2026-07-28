@@ -2,16 +2,36 @@
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import './appStyles';
 
 import reportWebVitals from './reportWebVitals';
 import {  createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Header from './components/header/header';
 import Footer from './components/footer/Footer';
 import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
-const queryClient = new QueryClient();
+import Home from './pages/Home/home';
 
-const Home = lazy(() => import('./pages/Home/home'));
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: (failureCount, error) => {
+        const status = error?.response?.status;
+
+        // Bad requests (including a missing/invalid API key) cannot succeed on
+        // retry. Transient failures receive one retry instead of React Query's
+        // default three retries.
+        if (status && status < 500 && status !== 429) {
+          return false;
+        }
+
+        return failureCount < 1;
+      },
+    },
+  },
+});
+
 const Login = lazy(() => import('./pages/Login/login'));
 const Signin = lazy(() => import('./pages/Registration/registration'));
 const MovieList = lazy(() => import('./pages/movie_list/movies_list'));
@@ -64,6 +84,43 @@ const router = createBrowserRouter([
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
+const WEB_VITALS_ENDPOINT = (process.env.REACT_APP_WEB_VITALS_ENDPOINT || '').trim();
+
+const sendWebVital = (metric) => {
+  if (typeof window === 'undefined') return;
+
+  const payload = {
+    name: metric.name,
+    value: metric.value,
+    delta: metric.delta,
+    id: metric.id,
+    rating: metric.rating,
+    navigationType: metric.navigationType,
+    path: window.location.pathname,
+  };
+
+  // This makes metrics available to an analytics integration without exposing
+  // the PerformanceEntry target or other user-specific data.
+  window.dispatchEvent(new CustomEvent('web-vital', { detail: payload }));
+
+  if (!WEB_VITALS_ENDPOINT) return;
+
+  const body = JSON.stringify(payload);
+  if (navigator.sendBeacon && navigator.sendBeacon(
+      WEB_VITALS_ENDPOINT,
+      new Blob([body], { type: 'application/json' })
+    )) {
+    return;
+  }
+
+  fetch(WEB_VITALS_ENDPOINT, {
+    method: 'POST',
+    body,
+    headers: { 'Content-Type': 'application/json' },
+    keepalive: true,
+  }).catch(() => {});
+};
+
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -73,4 +130,4 @@ root.render(
     </QueryClientProvider>
   </React.StrictMode>
 );
-reportWebVitals();
+reportWebVitals(sendWebVital);

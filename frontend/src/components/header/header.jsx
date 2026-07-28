@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { FaSearch, FaBars, FaTimes, FaTicketAlt } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
@@ -15,12 +15,15 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const prefersReducedMotion = useReducedMotion();
   
   const [isLoggedIn , SetIsLoggedIn] = useState( false );
-  const Location  = useLocation() ;
+  const location  = useLocation() ;
 
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
   const isScrolledRef = useRef(false);
 
   useEffect(() => {
@@ -50,7 +53,15 @@ const Header = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     SetIsLoggedIn(Boolean(token));
-  }, [Location]);
+    setIsMenuOpen(false);
+  }, [location.key]);
+  useEffect(() => {
+    const closeMenuOnEscape = (event) => {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    };
+    window.addEventListener("keydown", closeMenuOnEscape);
+    return () => window.removeEventListener("keydown", closeMenuOnEscape);
+  }, []);
   useEffect(() => {
     const handleScroll = () => {
       const nextScrolled = window.scrollY > 10;
@@ -76,38 +87,35 @@ const Header = () => {
     visible: { 
       opacity: 1, 
       y: 0,
-      transition: { duration: 1.5 }
+      transition: { duration: prefersReducedMotion ? 0 : 0.25 }
     },
     scrolled: {
       opacity: 1,
       y: 0,
       backgroundColor: "rgba(17, 24, 39, 0.95)",
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      transition: { duration: prefersReducedMotion ? 0 : 0.18 },
     }
   };
 
   const mobileMenuVariants = {
-    hidden: { opacity: 0, height: 0 },
+    hidden: { opacity: 0, y: -8 },
     visible: { 
       opacity: 1, 
-      height: "auto",
-      transition: { 
-        duration: 0.3,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
+      y: 0,
+      transition: { duration: prefersReducedMotion ? 0 : 0.18 }
     },
-    exit: { opacity: 0, height: 0 }
+    exit: { opacity: 0, y: -8, transition: { duration: prefersReducedMotion ? 0 : 0.12 } }
   };
 
   const navItemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    hidden: { opacity: 0, x: -8 },
+    visible: { opacity: 1, x: 0, transition: { duration: prefersReducedMotion ? 0 : 0.16 } }
   };
 
   return (
     <motion.header
-      initial="hidden"
+      initial={prefersReducedMotion ? false : "hidden"}
       animate={isScrolled ? "scrolled" : "visible"}
       variants={headerVariants}
       style={{
@@ -126,8 +134,8 @@ const Header = () => {
     >
       {/* Logo */}
       <motion.div 
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={prefersReducedMotion ? undefined : { scale: 1.03 }}
+        whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
         style={{
           display: "flex",
           alignItems: "center",
@@ -143,11 +151,11 @@ const Header = () => {
           <MotionLink
             key={link.name}
             to={link.href}
-            whileHover={{ 
+            whileHover={prefersReducedMotion ? undefined : {
               color: HEADER_ACCENT_COLOR,
               y: -2
             }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
             style={{
               display: "flex",
               alignItems: "center",
@@ -164,8 +172,7 @@ const Header = () => {
       </nav>
 
       {/* Search Bar - Desktop */}
-      <motion.div
-        whileFocus={{ scale: 1.02 }}
+      <div
         style={{
           display: "none",
           alignItems: "center",
@@ -189,15 +196,15 @@ const Header = () => {
             width: "100%",
           }}
         />
-      </motion.div>
+      </div>
 
      
       <div style={{ display: "flex", alignItems: "center" , gap: "0.75rem" }}>
         {isLoggedIn  ? (<LoggedIn onLogout={handleLogout}/>) : 
         <MotionLink
           to="/login"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={prefersReducedMotion ? undefined : { scale: 1.03 }}
+          whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
           style={{
             background: "#ef4444",
             color: HEADER_TEXT_COLOR,
@@ -221,8 +228,11 @@ const Header = () => {
         {/* Mobile Menu Toggle */}
         <motion.button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation"
+          whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
+          whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
           style={{
             background: "none",
             border: "none",
@@ -245,6 +255,7 @@ const Header = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            id="mobile-navigation"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -268,7 +279,7 @@ const Header = () => {
                   key={link.name}
                   to={link.href}
                   variants={navItemVariants}
-                  whileHover={{ color: HEADER_ACCENT_COLOR }}
+                  whileHover={prefersReducedMotion ? undefined : { color: HEADER_ACCENT_COLOR }}
                   style={{
                     display: "flex",
                     alignItems: "center",

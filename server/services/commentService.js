@@ -6,18 +6,6 @@ const MAX_COMMENT_LENGTH = 1000;
 const memoryComments = [];
 
 const createCommentError = (message, code, extra = {}) => Object.assign(new Error(message), { code, ...extra });
-/*  */
-const waitForMongoReady = async (timeoutMs = 3000) => {
-  if (isMongoReady()) return true;
-
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    if (isMongoReady()) return true;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  return isMongoReady();
-};
 
 const normalizeText = (text) => String(text || '').replace(/\s+/g, ' ').trim();
 const normalizeMovieId = (movieId) => String(movieId || '').trim();
@@ -72,7 +60,7 @@ const listComments = async (movieId) => {
     throw createCommentError('Movie id is required', 'INVALID_COMMENT');
   }
 
-  if (await waitForMongoReady()) {
+  if (isMongoReady()) {
     try {
       const comments = await Comment.find({ movieId: normalizedMovieId }).sort({ createdAt: -1 }).limit(100).lean();
       return comments.map(normalizeComment);
@@ -93,7 +81,7 @@ const addComment = async ({ movieId, userId, username, text }) => {
     username: authorName,
   };
 
-  if (await waitForMongoReady()) {
+  if (isMongoReady()) {
     try {
       return normalizeComment(await Comment.create(comment));
     } catch (error) {
@@ -131,17 +119,22 @@ const updateComment = async ({ commentId, userId, text }) => {
     throw createCommentError('Comment id is required', 'INVALID_COMMENT');
   }
 
-  if (await waitForMongoReady()) {
+  if (isMongoReady()) {
     try {
-      const existing = await Comment.findById(id).lean();
-      if (!existing) return null;
-      if (existing.userId !== userId) {
-        throw createCommentError('Forbidden: not your comment', 'FORBIDDEN');
+      const updated = await Comment.findOneAndUpdate(
+        { _id: id, userId },
+        { $set: { text: normalizedText } },
+        { new: true }
+      ).lean();
+
+      if (updated) {
+        return normalizeComment(updated);
       }
 
-      return normalizeComment(
-        await Comment.findByIdAndUpdate(id, { $set: { text: normalizedText } }, { new: true }).lean()
-      );
+      if (await Comment.exists({ _id: id })) {
+        throw createCommentError('Forbidden: not your comment', 'FORBIDDEN');
+      }
+      return null;
     } catch (error) {
       if (error.code === 'FORBIDDEN') throw error;
       if (error.name !== 'CastError') {
@@ -171,16 +164,17 @@ const removeComment = async ({ commentId, userId }) => {
     throw createCommentError('Comment id is required', 'INVALID_COMMENT');
   }
 
-  if (await waitForMongoReady()) {
+  if (isMongoReady()) {
     try {
-      const existing = await Comment.findById(id).lean();
-      if (!existing) return null;
-      if (existing.userId !== userId) {
-        throw createCommentError('Forbidden: not your comment', 'FORBIDDEN');
+      const deleted = await Comment.findOneAndDelete({ _id: id, userId }).lean();
+      if (deleted) {
+        return normalizeComment(deleted);
       }
 
-      await Comment.deleteOne({ _id: id });
-      return normalizeComment(existing);
+      if (await Comment.exists({ _id: id })) {
+        throw createCommentError('Forbidden: not your comment', 'FORBIDDEN');
+      }
+      return null;
     } catch (error) {
       if (error.code === 'FORBIDDEN') throw error;
       if (error.name !== 'CastError') {
