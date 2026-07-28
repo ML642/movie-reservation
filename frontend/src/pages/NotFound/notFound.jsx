@@ -1,48 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import NET from 'vanta/dist/vanta.net.min';
 import './NotFound.css';
   
-const VantaNotFoundPage = () => {
-  const vantaRef = useRef(null);
-  const vantaEffectRef = useRef(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  useEffect(() => {
-    if (!vantaRef.current || vantaEffectRef.current) return;
-
-    try {
-      vantaEffectRef.current = NET({
-        el: vantaRef.current,
-        THREE,
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.0,
-        minWidth: 200.0,
-        scale: 1.0,
-        scaleMobile: 1.0,
-        color: 0x9333ea,
-        backgroundColor: 0x0a0a0f,
-        points: 12.0,
-        maxDistance: 23.0,
-        spacing: 18.0,
-        showDots: true,
-      });
-      setIsLoaded(true);
-    } catch (error) {
-      console.error('Failed to initialize Vanta NET effect:', error);
-      setIsLoaded(false);
-    }
-
-    return () => {
-      if (vantaEffectRef.current) {
-        vantaEffectRef.current.destroy();
-        vantaEffectRef.current = null;
-      }
-    };
-  }, []);
-
+const NotFoundPage = () => {
   const goHome = () => {
 
     window.location.href = '/';
@@ -57,10 +15,7 @@ const VantaNotFoundPage = () => {
   };
 
   return (
-    <div 
-      ref={vantaRef}
-      className={`not-found-container ${!isLoaded ? 'fallback-bg' : ''}`}
-    >
+    <div className="not-found-container fallback-bg">
       {/* Overlay for better readability */}
       <div className="overlay"></div>
 
@@ -113,4 +68,4 @@ const VantaNotFoundPage = () => {
   );
 };
 
-export default VantaNotFoundPage;
+export default NotFoundPage;

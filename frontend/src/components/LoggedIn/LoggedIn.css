@@ -1,4 +1,4 @@
-.LoggedIn {
+.logged-in {
   position: relative; 
   z-index: 1100;
 }
@@ -10,6 +10,11 @@
   cursor: pointer;
   padding: 4px;
   padding-right: 1rem;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   border-radius: 30px;
   transition: background-color 0.2s ease-in-out;
 }
@@ -37,6 +42,9 @@
   color: white;
   font-weight: 600;
   font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dropdown-header {

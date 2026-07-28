@@ -42,6 +42,7 @@ const Pricing = lazy(() => import('./pages/pricing/pricing'));
 const Profile = lazy(() => import('./pages/Profile/profile'));
 const MyReservations = lazy(() => import('./pages/Reservation_info/myReservations'));
 const Favorites = lazy(() => import('./pages/Favorites/Favorites'));
+const Theaters = lazy(() => import('./pages/Theaters/theaters'));
 
 const PageFallback = () => (
   <div className="page-fallback">
@@ -79,6 +80,7 @@ const router = createBrowserRouter([
  {path: '/profile' , element : <Layout element={ <Profile/> } />},
  {path: '/my-reservations' , element : <Layout element={ <MyReservations/> } />},
  {path: '/favorites' , element : <Layout element={ <Favorites/> } />},
+ {path: '/theaters' , element : <Layout element={ <Theaters/> } />},
  {path: '*', element : <Layout element={ <NotFound/> } fullPage />}, 
 ])
 
