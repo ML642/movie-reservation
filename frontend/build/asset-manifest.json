@@ -1,11 +1,11 @@
 {
   "files": {
     "main.css": "/static/css/main.2a763fbc.css",
-    "main.js": "/static/js/main.77303ae4.js",
-    "static/css/904.265338fa.chunk.css": "/static/css/904.265338fa.chunk.css",
+    "main.js": "/static/js/main.69880c8a.js",
+    "static/css/904.bfe52182.chunk.css": "/static/css/904.bfe52182.chunk.css",
     "static/js/904.447ffe6e.chunk.js": "/static/js/904.447ffe6e.chunk.js",
-    "static/css/57.aaf7b657.chunk.css": "/static/css/57.aaf7b657.chunk.css",
-    "static/js/57.f5bf7a25.chunk.js": "/static/js/57.f5bf7a25.chunk.js",
+    "static/css/57.257744eb.chunk.css": "/static/css/57.257744eb.chunk.css",
+    "static/js/57.f6b94bd6.chunk.js": "/static/js/57.f6b94bd6.chunk.js",
     "static/css/283.ac861e17.chunk.css": "/static/css/283.ac861e17.chunk.css",
     "static/js/283.9909e440.chunk.js": "/static/js/283.9909e440.chunk.js",
     "static/css/432.8297b9d8.chunk.css": "/static/css/432.8297b9d8.chunk.css",
@@ -38,11 +38,11 @@
     "static/media/cinema-2.jpg": "/static/media/cinema-2.a76efd059641ec7b7cc2.jpg",
     "index.html": "/index.html",
     "main.2a763fbc.css.map": "/static/css/main.2a763fbc.css.map",
-    "main.77303ae4.js.map": "/static/js/main.77303ae4.js.map",
-    "904.265338fa.chunk.css.map": "/static/css/904.265338fa.chunk.css.map",
+    "main.69880c8a.js.map": "/static/js/main.69880c8a.js.map",
+    "904.bfe52182.chunk.css.map": "/static/css/904.bfe52182.chunk.css.map",
     "904.447ffe6e.chunk.js.map": "/static/js/904.447ffe6e.chunk.js.map",
-    "57.aaf7b657.chunk.css.map": "/static/css/57.aaf7b657.chunk.css.map",
-    "57.f5bf7a25.chunk.js.map": "/static/js/57.f5bf7a25.chunk.js.map",
+    "57.257744eb.chunk.css.map": "/static/css/57.257744eb.chunk.css.map",
+    "57.f6b94bd6.chunk.js.map": "/static/js/57.f6b94bd6.chunk.js.map",
     "283.ac861e17.chunk.css.map": "/static/css/283.ac861e17.chunk.css.map",
     "283.9909e440.chunk.js.map": "/static/js/283.9909e440.chunk.js.map",
     "432.8297b9d8.chunk.css.map": "/static/css/432.8297b9d8.chunk.css.map",
@@ -74,6 +74,6 @@
   },
   "entrypoints": [
     "static/css/main.2a763fbc.css",
-    "static/js/main.77303ae4.js"
+    "static/js/main.69880c8a.js"
   ]
 }

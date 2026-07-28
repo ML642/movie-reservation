@@ -8,9 +8,25 @@ import AuthNotice from "../../components/notification/AuthNotice";
 import { z } from "zod";
 
 const registrationSchema = z.object({
-  username: z.string().trim().min(3, "Username must contain at least 3 characters.").max(50, "Username is too long."),
-  email: z.string().trim().email("Enter a valid email address."),
-  password: z.string().min(8, "Password must contain at least 8 characters."),
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username must contain at least 3 characters.")
+    .max(30, "Username can contain at most 30 characters.")
+    .regex(/^[a-zA-Z0-9_]+$/, "Use only letters, numbers, and underscores."),
+  email: z
+    .string()
+    .trim()
+    .max(254, "Email address is too long.")
+    .email("Enter a valid email address."),
+  password: z
+    .string()
+    .min(10, "Password must contain at least 10 characters.")
+    .max(128, "Password is too long.")
+    .regex(/[a-z]/, "Password must include a lowercase letter.")
+    .regex(/[A-Z]/, "Password must include an uppercase letter.")
+    .regex(/[0-9]/, "Password must include a number.")
+    .regex(/[^A-Za-z0-9]/, "Password must include a special character."),
 });
 
 const canRunVanta = () => {
@@ -132,6 +148,14 @@ const Signin = () => {
         setNotice(null);
     };
 
+    const validateField = (fieldName) => {
+        const result = registrationSchema.shape[fieldName].safeParse(form[fieldName]);
+        setFieldErrors((errors) => ({
+            ...errors,
+            [fieldName]: result.success ? undefined : result.error.issues[0].message,
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setNotice(null);
@@ -201,6 +225,7 @@ const Signin = () => {
                     placeholder="Username"
                     value={form.username}
                     onChange={handleChange}
+                    onBlur={() => validateField("username")}
                     aria-invalid={Boolean(fieldErrors.username)}
                     aria-describedby={fieldErrors.username ? "username-error" : undefined}
                 />
@@ -219,6 +244,7 @@ const Signin = () => {
                     placeholder="Email"
                     value={form.email}
                     onChange={handleChange}
+                    onBlur={() => validateField("email")}
                     aria-invalid={Boolean(fieldErrors.email)}
                     aria-describedby={fieldErrors.email ? "email-error" : undefined}
                     
@@ -235,6 +261,7 @@ const Signin = () => {
                     placeholder="Password"
                     value={form.password}
                     onChange={handleChange}
+                    onBlur={() => validateField("password")}
                     aria-invalid={Boolean(fieldErrors.password)}
                     aria-describedby={fieldErrors.password ? "password-error" : undefined}
                 />
