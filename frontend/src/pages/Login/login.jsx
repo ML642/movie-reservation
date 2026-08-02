@@ -227,7 +227,7 @@ const Login = () => {
                 </label>
                 <button type="submit" disabled = {isLoading}  className="gradient-border login-submit" style={{width:"80%"}}>
                     {isLoading ? <span className="login-submit-text">Signing in...</span>  : "Sign in"} 
-                    {isLoading ? <MorphingSpinner /> : null }
+                    {isLoading ? <MorphingSpinner glow={false} className="login-spinner" /> : null }
                 </button>
                 <div className="login-switch">
                   Don't have an account yet?{' '}
