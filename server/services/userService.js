@@ -1,6 +1,13 @@
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const { isMongoReady } = require('../config/mongo');
+
+const ensureMongoReady = () => {
+  if (!isMongoReady()) {
+    throw Object.assign(new Error('User storage is temporarily unavailable.'), { code: 'STORAGE_UNAVAILABLE' });
+  }
+};
 
 const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 const normalizeUsername = (username) => String(username || '').trim();
@@ -19,17 +26,24 @@ const normalizeMongoUser = (user) => {
   };
 };
 
-const findUserByEmail = async (email) =>
-  normalizeMongoUser(await User.findOne({ email: normalizeEmail(email) }).lean());
+const findUserByEmail = async (email) => {
+  ensureMongoReady();
+  return normalizeMongoUser(await User.findOne({ email: normalizeEmail(email) }).lean());
+};
 
-const findUserByUsername = async (username) =>
-  normalizeMongoUser(await User.findOne({ username: normalizeUsername(username) }).lean());
+const findUserByUsername = async (username) => {
+  ensureMongoReady();
+  return normalizeMongoUser(await User.findOne({ username: normalizeUsername(username) }).lean());
+};
 
-const findUserById = async (id) =>
-  normalizeMongoUser(await User.findOne({ id: String(id || '') }).lean());
+const findUserById = async (id) => {
+  ensureMongoReady();
+  return normalizeMongoUser(await User.findOne({ id: String(id || '') }).lean());
+};
 
 const createUser = async ({ username, email, password }) => {
   try {
+    ensureMongoReady();
     return normalizeMongoUser(
       await User.create({
         id: new mongoose.Types.ObjectId().toString(),
@@ -54,6 +68,7 @@ const updateUser = async (id, { newEmail, newName }) => {
   if (newEmail) updates.email = normalizeEmail(newEmail);
 
   try {
+    ensureMongoReady();
     return normalizeMongoUser(
       await User.findOneAndUpdate({ id: String(id || '') }, { $set: updates }, { new: true }).lean()
     );

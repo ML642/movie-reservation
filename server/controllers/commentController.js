@@ -8,6 +8,9 @@ const listComments = async (req, res) => {
     const comments = await commentService.listComments(req.params.movieId);
     return res.json({ success: true, data: comments });
   } catch (error) {
+    if (error.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: error.message });
+    }
     if (error.code === 'INVALID_COMMENT') {
       return res.status(400).json({ success: false, message: error.message });
     }
@@ -32,6 +35,9 @@ const addComment = async (req, res) => {
     });
     return res.status(201).json({ success: true, data: comment });
   } catch (error) {
+    if (error.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: error.message });
+    }
     if (error.code === 'INVALID_COMMENT') {
       return res.status(400).json({ success: false, message: error.message });
     }
@@ -60,6 +66,9 @@ const updateComment = async (req, res) => {
 
     return res.json({ success: true, data: comment });
   } catch (error) {
+    if (error.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: error.message });
+    }
     if (error.code === 'INVALID_COMMENT') {
       return res.status(400).json({ success: false, message: error.message });
     }
@@ -90,6 +99,9 @@ const removeComment = async (req, res) => {
 
     return res.json({ success: true, commentId: req.params.commentId });
   } catch (error) {
+    if (error.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: error.message });
+    }
     if (error.code === 'INVALID_COMMENT') {
       return res.status(400).json({ success: false, message: error.message });
     }

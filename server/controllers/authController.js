@@ -29,6 +29,9 @@ const register = async (req, res) => {
     });
   } catch (err) {
     console.error('Registration error:', err);
+    if (err.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: err.message });
+    }
     if (err.code === 'USER_EXISTS') {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
@@ -64,6 +67,9 @@ const login = async (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err);
+    if (err.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: err.message });
+    }
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -137,6 +143,9 @@ const tokenUser = req.user;
       return res.status(404).json({ success: false, message: 'User not found' });
     }
   } catch (err) {
+    if (err.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: err.message });
+    }
     if (err.code === 'USER_EXISTS') {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }

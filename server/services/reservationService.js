@@ -4,9 +4,6 @@ const { isMongoReady } = require('../config/mongo');
 const Reservation = require('../models/Reservation');
 const BookedSeat = require('../models/BookedSeat');
 
-let LastId = 0;
-const Reservations = [];
-const ShowSeatAvailability = new Map();
 let indexesReadyPromise = null;
 let transactionsSupported = null;
 let transactionSupportPromise = null;
@@ -36,21 +33,6 @@ const normalizeSeats = (seats) => {
   );
 };
 
-const getOrCreateSeatSet = (showKey) => {
-  if (!ShowSeatAvailability.has(showKey)) {
-    ShowSeatAvailability.set(showKey, new Set());
-  }
-  return ShowSeatAvailability.get(showKey);
-};
-
-const releaseBookedSeats = (showKey, seats) => {
-  if (!showKey || !Array.isArray(seats)) return;
-  const set = ShowSeatAvailability.get(showKey);
-  if (!set) return;
-  seats.forEach((seatId) => set.delete(seatId));
-  if (set.size === 0) ShowSeatAvailability.delete(showKey);
-};
-
 const getReservationOwnerId = (reservation) => {
   if (reservation.userId) return reservation.userId;
   if (!reservation.jwt) return null;
@@ -58,7 +40,6 @@ const getReservationOwnerId = (reservation) => {
   return decoded?.userId || null;
 };
 
-const generateMemoryId = () => (++LastId).toString();
 const generateMongoId = () => new mongoose.Types.ObjectId().toString();
 
 const ensureMongoReady = async () => {
@@ -271,54 +252,21 @@ const createMongoReservation = async (payload, userId) => {
   }
 };
 
-const createMemoryReservation = (payload, userId) => {
-  const reservation = buildReservation(payload, userId, generateMemoryId());
-  const bookedSeats = getOrCreateSeatSet(reservation.showKey);
-  const conflictingSeats = reservation.seats.filter((seatId) => bookedSeats.has(seatId));
-
-  if (conflictingSeats.length > 0) {
-    throw createServiceError('Some seats are already taken', 'CONFLICT_SEATS', { conflictingSeats });
-  }
-
-  reservation.seats.forEach((seatId) => bookedSeats.add(seatId));
-  reservation.createdAt = reservation.createdAt.toISOString();
-  Reservations.push(reservation);
-  return reservation;
-};
-
 const getBookedSeats = async (showKey) => {
-  if (process.env.RESERVATION_MEMORY_FALLBACK === 'true') {
-    return Array.from(ShowSeatAvailability.get(showKey) || []).sort();
-  }
-
   await ensureMongoReady();
   const seatLocks = await BookedSeat.find({ showKey }).select('seatId').sort({ seatId: 1 }).lean();
   return seatLocks.map((seatLock) => seatLock.seatId);
 };
 
-const createReservation = async (payload, userId) => {
-  if (process.env.RESERVATION_MEMORY_FALLBACK === 'true') {
-    return createMemoryReservation(payload, userId);
-  }
-
-  return createMongoReservation(payload, userId);
-};
+const createReservation = async (payload, userId) => createMongoReservation(payload, userId);
 
 const findReservationsByUser = async (userId) => {
-  if (process.env.RESERVATION_MEMORY_FALLBACK === 'true') {
-    return Reservations.filter((r) => getReservationOwnerId(r) === userId);
-  }
-
   await ensureMongoReady();
   const reservations = await Reservation.find({ userId }).sort({ createdAt: -1 }).lean();
   return reservations.map(normalizeReservation);
 };
 
 const findReservationById = async (id) => {
-  if (process.env.RESERVATION_MEMORY_FALLBACK === 'true') {
-    return Reservations.find((r) => r.id === id) || null;
-  }
-
   await ensureMongoReady();
   return normalizeReservation(await Reservation.findOne({ id }).lean());
 };
@@ -373,50 +321,16 @@ const cancelMongoReservation = async (reservation, userId) => {
   }
 };
 
-const cancelMemoryReservation = (reservation, userId) => {
-  const reservationOwnerId = getReservationOwnerId(reservation);
-  if (!reservationOwnerId || reservationOwnerId !== userId) {
-    throw createServiceError('Forbidden: not your reservation', 'FORBIDDEN');
-  }
-
-  if (reservation.status !== 'cancelled') {
-    const showKey =
-      reservation.showKey ||
-      buildShowKey({
-        movieId: reservation.movieId,
-        theaterId: reservation.theaterId,
-        bookingDate: reservation.bookingDate || reservation.date,
-        showtime: reservation.showtime || reservation.time,
-      });
-    releaseBookedSeats(showKey, reservation.seats);
-  }
-
-  reservation.status = 'cancelled';
-  return reservation;
-};
-
-const cancelReservation = async (reservation, userId) => {
-  if (process.env.RESERVATION_MEMORY_FALLBACK === 'true') {
-    return cancelMemoryReservation(reservation, userId);
-  }
-
-  return cancelMongoReservation(reservation, userId);
-};
+const cancelReservation = async (reservation, userId) => cancelMongoReservation(reservation, userId);
 
 module.exports = {
   buildShowKey,
   normalizeShowDate,
   getBookedSeats,
-  getOrCreateSeatSet,
-  releaseBookedSeats,
   getReservationOwnerId,
   createReservation,
   findReservationsByUser,
   findReservationById,
   cancelReservation,
-  _internal: {
-    Reservations,
-    ShowSeatAvailability,
-    normalizeSeats,
-  },
+  _internal: { normalizeSeats },
 };

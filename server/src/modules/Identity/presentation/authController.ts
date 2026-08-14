@@ -9,7 +9,6 @@ const login = async (req:Request,res:Response,next:NextFunction) =>{
 
         const result = await loginController.login(email,password);
 
-        
         return res.status(200).json(result)
     }
     catch(error){
@@ -17,15 +16,6 @@ const login = async (req:Request,res:Response,next:NextFunction) =>{
     }
 }
 
-
-
-
-
-
-
-
-
 module.exports = {
     login,
-
 }

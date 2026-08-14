@@ -68,8 +68,7 @@ a {
 }
 
 .login-submit.gradient-border {
-  min-height: 3rem;
-  height: auto;
+  height: 3.75rem;
   font-size: 1rem;
   letter-spacing: 0;
   text-transform: none;
@@ -101,9 +100,11 @@ a {
   padding-right: 0.8rem;
 }
 
-.login-submit .login-spinner {
-  width: 1rem;
-  height: 1rem;
+.login-submit .morphing-spinner.login-spinner {
+  width: 1rem !important;
+  height: 1rem !important;
+  min-width: 1rem;
+  min-height: 1rem;
   border-radius: 0.35rem;
   flex: 0 0 1rem;
 }

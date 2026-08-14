@@ -24,6 +24,9 @@ const addLikedMovie = async (req, res) => {
     const likedMovie = await likedMovieService.addLikedMovie(userId, req.body.movie || req.body);
     return res.status(201).json({ success: true, data: likedMovie });
   } catch (error) {
+    if (error.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: error.message });
+    }
     if (error.code === 'INVALID_MOVIE') {
       return res.status(400).json({ success: false, message: error.message });
     }
@@ -45,6 +48,9 @@ const removeLikedMovie = async (req, res) => {
     await likedMovieService.removeLikedMovie(userId, movieKey);
     return res.json({ success: true, movieKey });
   } catch (error) {
+    if (error.code === 'STORAGE_UNAVAILABLE') {
+      return res.status(503).json({ success: false, message: error.message });
+    }
     if (error.code === 'INVALID_MOVIE') {
       return res.status(400).json({ success: false, message: error.message });
     }
