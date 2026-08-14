@@ -4,7 +4,7 @@ const cors = require('cors');
 const { isMongoReady, getMongoReadyStateLabel } = require('./config/mongo');
 
 const authRoutes = require('./routes/auth');
-const reservationRoutes = require('./routes/reservations'); // keep your split reservations router
+const reservationRoutes = require('./routes/reservations'); 
 const likedMovieRoutes = require('./routes/likedMovies');
 const commentRoutes = require('./routes/comments');
 
@@ -37,8 +37,6 @@ const corsOptions = {
   },
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  // Browsers can reuse the successful auth/content-type preflight instead of
-  // adding an OPTIONS round trip before every API interaction.
   maxAge: 7200,
   optionsSuccessStatus: 204,
 };
