@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { isMongoReady, getMongoReadyStateLabel } = require('./config/mongo');
 
-const authRoutes = require('./routes/auth');
+const { authRoutes } = require('./build/Identity/compositionRoot');
 const reservationRoutes = require('./routes/reservations'); 
 const likedMovieRoutes = require('./routes/likedMovies');
 const commentRoutes = require('./routes/comments');

@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
+    "build:identity": "tsc -p src/modules/Identity/tsconfig.json",
+    "pretest": "npm run build:identity",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
-    "start": "node server.js"
+    "start": "npm run build:identity && node server.js"
   },
   "keywords": [],
   "author": "",

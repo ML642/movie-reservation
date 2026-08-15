@@ -1,7 +1,7 @@
 const listEndpoints = require('express-list-routes');
 const app = require('./app');
 const { connectMongo, getMongoReadyStateLabel, isMongoReady } = require('./config/mongo');
-const { User } = require('./src/modules/Identity/compositionRoot');
+const User = require('./models/User');
 const Reservation = require('./models/Reservation');
 const BookedSeat = require('./models/BookedSeat');
 const LikedMovie = require('./models/LikedMovie');
