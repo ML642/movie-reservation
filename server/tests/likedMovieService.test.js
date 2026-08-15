@@ -1,15 +1,15 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const service = require('../services/likedMovieService');
+const { createLikeInput, normalizeMovieKey } = require('../build/Engagement/domain/like');
 
 test('normalizes a title into a movie key', () => {
-  const movie = service._internal.normalizeMovie({ title: 'Dune' });
+  const movie = createLikeInput('user-1', { title: 'Dune' });
   assert.equal(movie.movieKey, 'Dune');
   assert.equal(movie.title, 'Dune');
 });
 
 test('normalizes movie API field aliases', () => {
-  const movie = service._internal.normalizeMovie({
+  const movie = createLikeInput('user-1', {
     id: 12,
     movieName: 'Arrival',
     moviePoster: 'poster.jpg',
@@ -25,14 +25,14 @@ test('normalizes movie API field aliases', () => {
 });
 
 test('rejects normalization without an id or title', () => {
-  assert.equal(service._internal.normalizeMovie({ poster: 'poster.jpg' }), null);
+  assert.throws(() => createLikeInput('user-1', { poster: 'poster.jpg' }), { code: 'INVALID_MOVIE' });
 });
 
-test('rejects invalid movie data when adding a like', async () => {
-  await assert.rejects(service.addLikedMovie('user-1', {}), { code: 'INVALID_MOVIE' });
+test('rejects invalid movie data', () => {
+  assert.throws(() => createLikeInput('user-1', {}), { code: 'INVALID_MOVIE' });
 });
 
-test('rejects an empty movie key when removing a like', async () => {
-  await assert.rejects(service.removeLikedMovie('user-1', '  '), { code: 'INVALID_MOVIE' });
+test('rejects an empty movie key', () => {
+  assert.throws(() => normalizeMovieKey('  '), { code: 'INVALID_MOVIE' });
 });
 

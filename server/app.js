@@ -1,12 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { isMongoReady, getMongoReadyStateLabel } = require('./config/mongo');
+const { database } = require('./build/Shared/Infrastructure/database/MongooseDatabase');
 
-const { authRoutes } = require('./build/Identity/compositionRoot');
-const reservationRoutes = require('./routes/reservations'); 
-const likedMovieRoutes = require('./routes/likedMovies');
-const commentRoutes = require('./routes/comments');
+const { createIdentityModule } = require('./build/Identity/compositionRoot');
+const { createEngagementModule } = require('./build/Engagement/compositionRoot');
+const { createReservationModule } = require('./build/Reservation/compositionRoot');
+const { authRoutes, tokenProvider } = createIdentityModule(database);
+const { likedMoviesRoutes, commentsRoutes } = createEngagementModule(tokenProvider, database);
+const reservationRoutes = createReservationModule(tokenProvider, database);
 
 const app = express();
 
@@ -47,16 +49,16 @@ app.use(express.json({ limit: '100kb' }));
 
 app.use('/api', authRoutes); // register/login/userInfo/changeInfo -> /api/register, etc.
 app.use('/api/reservation', reservationRoutes);
-app.use('/api/likes', likedMovieRoutes);
-app.use('/api/comments', commentRoutes);
+app.use('/api/likes', likedMoviesRoutes);
+app.use('/api/comments', commentsRoutes);
 
 
 app.get('/health', (req, res) =>
   res.status(200).json({
     status: 'ok',
     mongo: {
-      ready: isMongoReady(),
-      state: getMongoReadyStateLabel(),
+      ready: database.isReady(),
+      state: database.getState(),
     },
   })
 );
