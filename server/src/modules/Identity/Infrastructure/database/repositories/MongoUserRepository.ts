@@ -1,6 +1,6 @@
 import mongoose, { type Model } from 'mongoose';
 import { IdentityError } from '../../../domain/IdentityError';
-import type { NewUserInput, ProfileChanges, User } from '../../../domain/user';
+import type { NewUserInput, ProfileChanges, User } from '../../../domain/users_interfaces';
 import type { UserRepository } from '../../../application/ports/UserRepository';
 import type { DatabaseConnection } from '../interfaces/DatabaseConnection';
 import type { UserRecord } from '../interfaces/UserRecord';

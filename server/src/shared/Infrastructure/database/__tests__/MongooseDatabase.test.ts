@@ -1,9 +1,4 @@
-import { MongooseDatabase } from './MongooseDatabase';
-import { describe, expect, it, jest ,test, beforeEach } from '@jest/globals';
-
-const mongoose = require('mongoose').default;
-
-
+import { expect, jest, test } from '@jest/globals';
 jest.mock('mongoose', () => ({
   __esModule: true,
   default: {
@@ -13,6 +8,10 @@ jest.mock('mongoose', () => ({
     },
   },
 }));
+
+const mongoose = require('mongoose').default;
+
+const { MongooseDatabase } = require('../MongooseDatabase');
 
 
 test('connects to MongoDB', async () => {
@@ -35,12 +34,10 @@ test('connects to MongoDB', async () => {
   expect(database.getState()).toBe('connected');
 });
 
-test("returns desconnected if MongoDB is not connected",()=>{
-        mongoose.connection.readyState = 0;
-        const database = new MongooseDatabase();
+test('returns disconnected if MongoDB is not connected', () => {
+  mongoose.connection.readyState = 0;
+  const database = new MongooseDatabase();
 
-        const state = database.getState()
-
-        expect(state).toBe('disconnected');
-        expect(database.isReady()).toBe(false);
-})
+  expect(database.getState()).toBe('disconnected');
+  expect(database.isReady()).toBe(false);
+});

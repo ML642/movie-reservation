@@ -11,5 +11,6 @@
     "outDir": "../../build/Shared",
     "noEmitOnError": true
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["**/*.test.ts", "**/*.fixtures.ts"]
 }

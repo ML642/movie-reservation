@@ -6,10 +6,8 @@ import {
   normalizeUsername,
   toPublicUser,
   toUserProfile,
-  type NewUserInput,
-  type PublicUser,
-  type UserProfile,
 } from '../domain/user';
+import type { NewUserInput, PublicUser, UserProfile } from '../domain/users_interfaces';
 import type { PasswordHasher } from './ports/PasswordHasher';
 import type { TokenProvider } from './ports/TokenProvider';
 import type { UserRepository } from './ports/UserRepository';

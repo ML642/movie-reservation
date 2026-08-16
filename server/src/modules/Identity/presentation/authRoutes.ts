@@ -2,7 +2,7 @@ import { Router, type RequestHandler } from 'express';
 import type { TokenProvider } from '../application/ports/TokenProvider';
 import type { AuthController } from './authController';
 
-const createAuthenticationMiddleware = (tokenProvider: TokenProvider): RequestHandler => (req, res, next) => {
+export const createAuthenticationMiddleware = (tokenProvider: TokenProvider): RequestHandler => (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Unauthorized' });

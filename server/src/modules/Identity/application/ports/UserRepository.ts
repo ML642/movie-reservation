@@ -1,4 +1,4 @@
-import type { NewUserInput, ProfileChanges, User } from '../../domain/user';
+import type { NewUserInput, ProfileChanges, User } from '../../domain/users_interfaces';
 
 export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
