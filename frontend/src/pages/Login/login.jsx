@@ -123,6 +123,34 @@ const Login = () => {
     }, [Location.pathname, Location.state, navigate]);
 
     useEffect(() => {
+      const oauthStatus = new URLSearchParams(Location.search).get('oauth');
+      if (!oauthStatus) return;
+
+      const finishOAuth = async () => {
+        if (oauthStatus !== 'success') {
+          const reason = new URLSearchParams(Location.search).get('reason');
+          setNotice({ type: 'error', title: 'OAuth sign in failed', message: reason || 'Please try again.' });
+          navigate('/login', { replace: true });
+          return;
+        }
+        setIsLoading(true);
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/refresh`, { method: 'POST', credentials: 'include' });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.message || 'Could not finish OAuth sign in.');
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('username', data.user.username);
+          localStorage.setItem('userEmail', data.user.email || '');
+          navigate('/', { replace: true });
+        } catch (error) {
+          setNotice({ type: 'error', title: 'OAuth sign in failed', message: error.message || 'Please try again.' });
+          navigate('/login', { replace: true });
+        } finally { setIsLoading(false); }
+      };
+      finishOAuth();
+    }, [Location.search, navigate]);
+
+    useEffect(() => {
         const remembered = localStorage.getItem("rememberedEmail");
         if (remembered) {
             setForm(f => ({ ...f, email: remembered }));

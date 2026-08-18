@@ -3,6 +3,8 @@ export interface User {
   username: string;
   email: string;
   password: string;
+  oauthProvider?: 'google' | 'github';
+  oauthSubject?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -11,6 +13,8 @@ export interface NewUserInput {
   username: string;
   email: string;
   password: string;
+  oauthProvider?: 'google' | 'github';
+  oauthSubject?: string;
 }
 
 export interface ProfileChanges {

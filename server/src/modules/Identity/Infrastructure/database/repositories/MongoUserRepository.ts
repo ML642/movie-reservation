@@ -29,6 +29,12 @@ export class MongoUserRepository implements UserRepository {
     return this.toDomain(record);
   }
 
+  async findByOAuthIdentity(provider: 'google' | 'github', subject: string): Promise<User | null> {
+    this.ensureReady();
+    const record = (await this.userModel.findOne({ oauthProvider: provider, oauthSubject: subject }).lean().exec()) as unknown as UserRecord | null;
+    return this.toDomain(record);
+  }
+
   async create(user: NewUserInput): Promise<User> {
     this.ensureReady();
 
@@ -83,6 +89,8 @@ export class MongoUserRepository implements UserRepository {
       username: record.username,
       email: record.email,
       password: record.password,
+      oauthProvider: record.oauthProvider,
+      oauthSubject: record.oauthSubject,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     };

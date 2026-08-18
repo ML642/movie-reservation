@@ -2,6 +2,8 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { IdentityError } from '../domain/IdentityError';
 import type { IdentityService } from '../application/IdentityService';
 import type { TokenPayload, TokenProvider } from '../application/ports/TokenProvider';
+import type { OAuthProviderRegistry } from '../application/ports/OAuthProvider';
+import { randomBytes, timingSafeEqual } from 'crypto';
 
 export interface AuthController {
   register: RequestHandler;
@@ -10,6 +12,8 @@ export interface AuthController {
   userInfo: RequestHandler;
   changeInfo: RequestHandler;
   testGet: RequestHandler;
+  startOAuth: RequestHandler;
+  completeOAuth: RequestHandler;
 }
 
 type AuthenticatedRequest = Request & { user?: TokenPayload };
@@ -34,7 +38,8 @@ const getErrorResponse = (error: unknown) => {
 
 export const createAuthController = (
   identityService: IdentityService,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  oauthProviders: OAuthProviderRegistry
 ): AuthController => ({
   register: async (req: Request, res: Response) => {
     try {
@@ -130,6 +135,39 @@ export const createAuthController = (
   },
 
   testGet: (_req: Request, res: Response) => res.json({ success: true, message: 'test' }),
+
+  startOAuth: (req: Request, res: Response) => {
+    const provider = oauthProviders.get(String(req.params.provider));
+    if (!provider) return res.status(404).json({ success: false, message: 'OAuth provider is not supported' });
+    try {
+      const state = randomBytes(32).toString('hex');
+      res.cookie('oauthState', state, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: `/api/oauth/${provider.name}/callback`, maxAge: 10 * 60 * 1000 });
+      return res.redirect(provider.getAuthorizationUrl(state));
+    } catch (error) {
+      const { status, message } = getErrorResponse(error);
+      return res.status(status).json({ success: false, message });
+    }
+  },
+
+  completeOAuth: async (req: Request, res: Response) => {
+    const redirectBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const providerName = String(req.params.provider);
+    const provider = oauthProviders.get(providerName);
+    const state = typeof req.query.state === 'string' ? req.query.state : '';
+    const savedState = getCookie(req.headers.cookie, 'oauthState');
+    res.clearCookie('oauthState', { path: `/api/oauth/${providerName}/callback` });
+    if (!provider || !savedState || !state || savedState.length !== state.length || !timingSafeEqual(Buffer.from(savedState), Buffer.from(state))) {
+      return res.redirect(`${redirectBase}/login?oauth=error&reason=invalid_state`);
+    }
+    try {
+      const result = await identityService.loginWithOAuth(await provider.authenticate(typeof req.query.code === 'string' ? req.query.code : ''));
+      setRefreshCookie(res, result.refreshToken);
+      return res.redirect(`${redirectBase}/login?oauth=success`);
+    } catch (error) {
+      const { message } = getErrorResponse(error);
+      return res.redirect(`${redirectBase}/login?oauth=error&reason=${encodeURIComponent(message)}`);
+    }
+  },
 });
 
 const getCookie = (header: string | undefined, name: string): string | undefined =>

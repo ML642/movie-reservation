@@ -5,7 +5,9 @@ export type IdentityErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'USER_EXISTS'
   | 'STORAGE_UNAVAILABLE'
-  | 'CONFIGURATION_ERROR';
+  | 'CONFIGURATION_ERROR'
+  | 'INVALID_OAUTH_RESPONSE'
+  | 'OAUTH_ACCOUNT_NOT_LINKED';
 
 export class IdentityError extends Error {
   readonly code: IdentityErrorCode;

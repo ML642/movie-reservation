@@ -7,10 +7,14 @@ const userSchema = new mongoose.Schema<UserRecord>(
     username: { type: String, required: true, unique: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
+    oauthProvider: { type: String, enum: ['google', 'github'] },
+    oauthSubject: { type: String },
     refreshTokenHash: { type: String, select: false },
   },
   { timestamps: true }
 );
+
+userSchema.index({ oauthProvider: 1, oauthSubject: 1 }, { unique: true, sparse: true });
 
 export const UserModel: Model<UserRecord> =
   (mongoose.models.User as Model<UserRecord>) || mongoose.model<UserRecord>('User', userSchema);

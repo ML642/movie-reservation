@@ -11,6 +11,7 @@ import type { NewUserInput, PublicUser, UserProfile } from '../domain/users_inte
 import type { PasswordHasher } from './ports/PasswordHasher';
 import type { TokenProvider } from './ports/TokenProvider';
 import type { UserRepository } from './ports/UserRepository';
+import type { OAuthProfile } from './ports/OAuthProvider';
 
 export interface AuthenticationResult {
   user: PublicUser;
@@ -76,6 +77,33 @@ export class IdentityService {
     return this.createAuthenticationResult(toPublicUser(user), storedHash);
   }
 
+  async loginWithOAuth(profile: OAuthProfile): Promise<AuthenticationResult> {
+    const linkedUser = await this.userRepository.findByOAuthIdentity(profile.provider, profile.subject);
+    if (linkedUser) {
+      const previousRefreshHash = await this.userRepository.getRefreshTokenHash(linkedUser.id);
+      return this.createAuthenticationResult(toPublicUser(linkedUser), previousRefreshHash);
+    }
+
+    const email = normalizeEmail(profile.email);
+    if (await this.userRepository.findByEmail(email)) {
+      throw new IdentityError(
+        'OAUTH_ACCOUNT_NOT_LINKED',
+        'This email already belongs to a password account. Sign in with your password first.'
+      );
+    }
+
+    const username = await this.createAvailableOAuthUsername(profile.username, profile.provider, profile.subject);
+    const password = await this.passwordHasher.hash(`${profile.provider}:${profile.subject}:${crypto.randomUUID()}`);
+    const user = await this.userRepository.create({
+      username,
+      email,
+      password,
+      oauthProvider: profile.provider,
+      oauthSubject: profile.subject,
+    });
+    return this.createAuthenticationResult(toPublicUser(user));
+  }
+
   async findProfileById(id: string): Promise<UserProfile | null> {
     const user = await this.userRepository.findById(id);
     return user ? toUserProfile(user) : null;
@@ -94,5 +122,19 @@ export class IdentityService {
     );
     if (!replaced) throw new IdentityError('INVALID_CREDENTIALS', 'Refresh token was already used');
     return { user: publicUser, token: this.tokenProvider.issue(payload), refreshToken };
+  }
+
+  private async createAvailableOAuthUsername(value: string, provider: string, subject: string): Promise<string> {
+    const normalized = normalizeUsername(value)
+      .replace(/[^a-zA-Z0-9_]/g, '_')
+      .replace(/^_+|_+$/g, '');
+    const base = normalized.slice(0, 22) || provider;
+    const suffix = `${provider}_${subject}`.replace(/[^a-zA-Z0-9_]/g, '').slice(-12);
+    let username = `${base}_${suffix}`.slice(0, 30);
+    let index = 2;
+    while (await this.userRepository.findByUsername(username)) {
+      username = `${base.slice(0, 25)}_${index++}`;
+    }
+    return username;
   }
 }
