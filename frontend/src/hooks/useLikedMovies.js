@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { API_BASE_URL } from "../config/api";
+import { API_BASE_URL, authFetch } from "../config/api";
 
 const LIKED_MOVIES_STORAGE_KEY = "likedMovies";
 
@@ -68,7 +68,7 @@ const toServerLikeRecord = (movieOrTitle) => {
 };
 
 const fetchServerLikes = async (token) => {
-  const response = await fetch(`${API_BASE_URL}/api/likes`, {
+  const response = await authFetch(`${API_BASE_URL}/api/likes`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -83,7 +83,7 @@ const fetchServerLikes = async (token) => {
 const saveServerLike = async (movieOrTitle, token) => {
   if (!token || !API_BASE_URL) return null;
 
-  const response = await fetch(`${API_BASE_URL}/api/likes`, {
+  const response = await authFetch(`${API_BASE_URL}/api/likes`, {
     method: "POST",
     headers: getAuthHeaders(token),
     body: JSON.stringify({ movie: toServerLikeRecord(movieOrTitle) }),
@@ -100,7 +100,7 @@ const saveServerLike = async (movieOrTitle, token) => {
 const removeServerLike = async (movieKey, token) => {
   if (!token || !API_BASE_URL) return;
 
-  const response = await fetch(`${API_BASE_URL}/api/likes`, {
+  const response = await authFetch(`${API_BASE_URL}/api/likes`, {
     method: "DELETE",
     headers: getAuthHeaders(token),
     body: JSON.stringify({ movieKey }),

@@ -16,6 +16,8 @@ const createSut = () => {
     findById: jest.fn<UserRepository['findById']>(),
     create: jest.fn<UserRepository['create']>().mockImplementation(async (input) => createUser(input)),
     updateById: jest.fn<UserRepository['updateById']>(),
+    getRefreshTokenHash: jest.fn<UserRepository['getRefreshTokenHash']>(),
+    replaceRefreshTokenHash: jest.fn<UserRepository['replaceRefreshTokenHash']>().mockResolvedValue(true),
   };
 
   const passwordHasher: jest.Mocked<PasswordHasher> = {
@@ -26,6 +28,8 @@ const createSut = () => {
   const tokenProvider: jest.Mocked<TokenProvider> = {
     issue: jest.fn<TokenProvider['issue']>().mockReturnValue('jwt-token'),
     verify: jest.fn<TokenProvider['verify']>(),
+    issueRefresh: jest.fn<TokenProvider['issueRefresh']>().mockReturnValue('refresh-token'),
+    verifyRefresh: jest.fn<TokenProvider['verifyRefresh']>(),
   };
 
   return {
@@ -59,6 +63,7 @@ describe('IdentityService registration', () => {
     });
     expect(result).toEqual({
       token: 'jwt-token',
+      refreshToken: 'refresh-token',
       user: {
         id: 'user-1',
         username: 'mike',

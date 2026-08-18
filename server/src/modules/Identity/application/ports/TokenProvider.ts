@@ -7,4 +7,6 @@ export interface TokenPayload {
 export interface TokenProvider {
   issue(payload: TokenPayload): string;
   verify(token: string): TokenPayload;
+  issueRefresh(payload: TokenPayload): string;
+  verifyRefresh(token: string): TokenPayload;
 }

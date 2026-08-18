@@ -23,6 +23,7 @@ export const createAuthRoutes = (controller: AuthController, tokenProvider: Toke
 
   router.post('/register', controller.register);
   router.post('/login', controller.login);
+  router.post('/refresh', controller.refresh);
   router.get('/test', controller.testGet);
   router.post('/userInfo', controller.userInfo);
   router.patch('/changeInfo', authenticate, controller.changeInfo);

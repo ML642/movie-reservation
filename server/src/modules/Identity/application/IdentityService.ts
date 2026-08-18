@@ -15,6 +15,7 @@ import type { UserRepository } from './ports/UserRepository';
 export interface AuthenticationResult {
   user: PublicUser;
   token: string;
+  refreshToken: string;
 }
 
 export class IdentityService {
@@ -39,14 +40,7 @@ export class IdentityService {
     const user = await this.userRepository.create({ ...newUser, password });
     const publicUser = toPublicUser(user);
 
-    return {
-      user: publicUser,
-      token: this.tokenProvider.issue({
-        userId: publicUser.id,
-        username: publicUser.username,
-        userEmail: publicUser.email,
-      }),
-    };
+    return this.createAuthenticationResult(publicUser);
   }
 
   async login(loginId: string, password: string): Promise<AuthenticationResult> {
@@ -66,14 +60,20 @@ export class IdentityService {
 
     const publicUser = toPublicUser(user);
 
-    return {
-      user: publicUser,
-      token: this.tokenProvider.issue({
-        userId: publicUser.id,
-        username: publicUser.username,
-        userEmail: publicUser.email,
-      }),
-    };
+    return this.createAuthenticationResult(publicUser, await this.userRepository.getRefreshTokenHash(publicUser.id));
+  }
+
+  async refresh(refreshToken: string): Promise<AuthenticationResult> {
+    let payload;
+    try { payload = this.tokenProvider.verifyRefresh(refreshToken); } catch {
+      throw new IdentityError('INVALID_CREDENTIALS', 'Invalid or expired refresh token');
+    }
+    const user = await this.userRepository.findById(payload.userId);
+    const storedHash = await this.userRepository.getRefreshTokenHash(payload.userId);
+    if (!user || !storedHash || !(await this.passwordHasher.compare(refreshToken, storedHash))) {
+      throw new IdentityError('INVALID_CREDENTIALS', 'Invalid or expired refresh token');
+    }
+    return this.createAuthenticationResult(toPublicUser(user), storedHash);
   }
 
   async findProfileById(id: string): Promise<UserProfile | null> {
@@ -84,5 +84,15 @@ export class IdentityService {
   async updateProfile(id: string, input: { newName?: string; newEmail?: string }): Promise<UserProfile | null> {
     const user = await this.userRepository.updateById(id, createProfileChanges(input));
     return user ? toUserProfile(user) : null;
+  }
+
+  private async createAuthenticationResult(publicUser: PublicUser, previousRefreshHash: string | null = null): Promise<AuthenticationResult> {
+    const payload = { userId: publicUser.id, username: publicUser.username, userEmail: publicUser.email };
+    const refreshToken = this.tokenProvider.issueRefresh(payload);
+    const replaced = await this.userRepository.replaceRefreshTokenHash(
+      publicUser.id, previousRefreshHash, await this.passwordHasher.hash(refreshToken)
+    );
+    if (!replaced) throw new IdentityError('INVALID_CREDENTIALS', 'Refresh token was already used');
+    return { user: publicUser, token: this.tokenProvider.issue(payload), refreshToken };
   }
 }

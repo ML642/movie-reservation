@@ -1,5 +1,6 @@
 .terms-container {
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   margin-top:2.5rem;
   padding: 48px 8vw 48px 8vw;
@@ -20,7 +21,7 @@
   .terms-container {
     padding: 20px 8px;
     min-height: 100vh;
-    width: 100vw;
+    width: 100%;
   }
   .terms-container h1 {
     font-size: 1.4rem;

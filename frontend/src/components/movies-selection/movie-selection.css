@@ -274,8 +274,16 @@
   transform: translateY(-50%);
   font-size: 1.05rem;
   opacity: 0.8;
+  visibility: visible;
+  z-index: 1;
   pointer-events: none;
   filter: drop-shadow(0 1px 6px rgba(112, 122, 255, 0.45));
+}
+
+.search-group:hover .search-icon,
+.search-group:focus-within .search-icon {
+  opacity: 0.8;
+  visibility: visible;
 }
 
 .search-input {

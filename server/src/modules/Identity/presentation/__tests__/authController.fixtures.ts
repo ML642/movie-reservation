@@ -6,6 +6,7 @@ import { createAuthController } from '../authController';
 
 export const authenticationResult = {
   token: 'jwt-token',
+  refreshToken: 'refresh-token',
   user: { id: 'user-1', username: 'mike', email: 'mike@example.com' },
 };
 
@@ -28,7 +29,7 @@ export const createAuthenticatedRequest = (body: unknown = {}, userId = 'user-1'
 };
 
 export const createResponse = () => {
-  const response = { status: jest.fn(), json: jest.fn() };
+  const response = { status: jest.fn(), json: jest.fn(), cookie: jest.fn() };
   response.status.mockReturnValue(response);
   response.json.mockReturnValue(response);
   return response;
@@ -39,11 +40,14 @@ export const createControllerSut = () => {
   const login = jest.fn<IdentityService['login']>();
   const findProfileById = jest.fn<IdentityService['findProfileById']>();
   const updateProfile = jest.fn<IdentityService['updateProfile']>();
+  const refresh = jest.fn<IdentityService['refresh']>();
   const verify = jest.fn<TokenProvider['verify']>();
-  const identityService = { register, login, findProfileById, updateProfile } as unknown as IdentityService;
+  const identityService = { register, login, refresh, findProfileById, updateProfile } as unknown as IdentityService;
   const tokenProvider: jest.Mocked<TokenProvider> = {
     issue: jest.fn<TokenProvider['issue']>(),
     verify,
+    issueRefresh: jest.fn<TokenProvider['issueRefresh']>(),
+    verifyRefresh: jest.fn<TokenProvider['verifyRefresh']>(),
   };
 
   return {
@@ -52,6 +56,7 @@ export const createControllerSut = () => {
     login,
     findProfileById,
     updateProfile,
+    refresh,
     verify,
   };
 };

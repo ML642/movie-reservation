@@ -57,6 +57,19 @@ export class MongoUserRepository implements UserRepository {
     }
   }
 
+  async getRefreshTokenHash(userId: string): Promise<string | null> {
+    this.ensureReady();
+    const record = await this.userModel.findOne({ id: String(userId || '') }).select('+refreshTokenHash').lean().exec();
+    return record?.refreshTokenHash || null;
+  }
+
+  async replaceRefreshTokenHash(userId: string, previousHash: string | null, nextHash: string): Promise<boolean> {
+    this.ensureReady();
+    const query = previousHash ? { id: String(userId || ''), refreshTokenHash: previousHash } : { id: String(userId || ''), refreshTokenHash: { $exists: false } };
+    const result = await this.userModel.updateOne(query, { $set: { refreshTokenHash: nextHash } }).exec();
+    return result.modifiedCount === 1;
+  }
+
   private ensureReady(): void {
     if (!this.connection.isReady()) {
       throw new IdentityError('STORAGE_UNAVAILABLE', 'User storage is temporarily unavailable.');

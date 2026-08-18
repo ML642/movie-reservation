@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import LoggedIn from "../LoggedIn/LoggedIn.jsx";
 import ResponsiveLogo from "./cineReserve.jsx";
 import "./header.css";
+import { refreshAccessToken } from '../../config/api';
 
 const isAuthenticatedAtStartup = () =>
   typeof window !== "undefined" && Boolean(window.localStorage.getItem("token"));
@@ -23,6 +24,13 @@ const Header = () => {
 
     syncAuthState();
   }, [location.key]);
+
+  useEffect(() => {
+    const syncAuthState = () => setIsLoggedIn(Boolean(window.localStorage.getItem('token')));
+    window.addEventListener('authchange', syncAuthState);
+    refreshAccessToken().then(syncAuthState);
+    return () => window.removeEventListener('authchange', syncAuthState);
+  }, []);
 
   useEffect(() => {
     const closeMenuOnEscape = (event) => {
@@ -49,6 +57,7 @@ const Header = () => {
 
   const handleLogout = () => {
     window.localStorage.removeItem("token");
+    window.dispatchEvent(new Event('authchange'));
     setIsLoggedIn(false);
     setIsMenuOpen(false);
   };
@@ -56,7 +65,7 @@ const Header = () => {
   const navLinks = [
     { name: "Home page", href: "/", icon: <FaTicketAlt /> },
     { name: "Now playing", href: "/movie_list", icon: <FaTicketAlt /> },
-    { name: "Theaters", href: "/theaters", icon: <FaTicketAlt /> },
+    { name: "Theaters", href: "/not-found", icon: <FaTicketAlt /> },
     { name: "Special Offers", href: "/pricing", icon: <FaTicketAlt /> },
   ];
 

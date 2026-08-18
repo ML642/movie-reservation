@@ -30,7 +30,6 @@ export const getUserFromToken = () => {
     // Check if token is expired
     if (decoded.exp && decoded.exp < Date.now() / 1000) {
       console.warn('JWT token has expired');
-      localStorage.removeItem('token');
       return null;
     }
     console.log("Decoded JWT:", decoded);

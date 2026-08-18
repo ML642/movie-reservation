@@ -13,7 +13,7 @@ export default function Footer() {
           <h4>Quick Links</h4>
           <ul className="footer-links">
             <li><Link to = "/movie_list">Movies</Link></li>
-            <li><Link to = "/theaters">Theaters</Link></li>
+            <li><Link to = "/not-found">Theaters</Link></li>
             <li><Link to = "/pricing">Pricing</Link></li>
           </ul>
         </div>

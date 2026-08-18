@@ -5,6 +5,7 @@ import MorphingSpinner from "../../components/spinner/spinner";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
 import AuthNotice from "../../components/notification/AuthNotice";
+import OAuthButtons from '../../components/auth/OAuthButtons';
 import { z } from "zod";
 
 const registrationSchema = z.object({
@@ -180,6 +181,7 @@ const Signin = () => {
             const response = await fetch(`${API_BASE_URL}/api/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: 'include',
                 body: JSON.stringify({
                     username: validation.data.username,
                     email: validation.data.email,
@@ -206,6 +208,10 @@ const Signin = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const startOAuth = (provider) => {
+      window.location.assign(`${API_BASE_URL}/api/oauth/${provider}`);
     };
 
     return (
@@ -283,6 +289,7 @@ const Signin = () => {
                    {isLoading ? <span className="register-submit-text">Creating...</span>  : "Create account"} 
                     {isLoading ? <MorphingSpinner /> : null }
                 </button>
+                <OAuthButtons onSelect={startOAuth} mode="register" />
                 <div className="register-switch">
                   Already have an account?{' '}
                   <Link to ="/login" className="register-switch-link" >

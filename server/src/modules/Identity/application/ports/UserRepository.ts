@@ -6,4 +6,6 @@ export interface UserRepository {
   findById(id: string): Promise<User | null>;
   create(user: NewUserInput): Promise<User>;
   updateById(id: string, changes: ProfileChanges): Promise<User | null>;
+  getRefreshTokenHash(userId: string): Promise<string | null>;
+  replaceRefreshTokenHash(userId: string, previousHash: string | null, nextHash: string): Promise<boolean>;
 }

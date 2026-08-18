@@ -18,7 +18,8 @@ describe('authController registration and login', () => {
     expect(response.json).toHaveBeenCalledWith({
       success: true,
       message: 'User registered successfully',
-      ...authenticationResult,
+      token: authenticationResult.token,
+      user: authenticationResult.user,
     });
   });
 
@@ -44,7 +45,12 @@ describe('authController registration and login', () => {
 
     await controller.login(createRequest({ email: 'mike@example.com', password: 'Pass12345!' }), asResponse(response), jest.fn());
 
-    expect(response.json).toHaveBeenCalledWith({ success: true, message: 'Login successful', ...authenticationResult });
+    expect(response.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'Login successful',
+      token: authenticationResult.token,
+      user: authenticationResult.user,
+    });
   });
 
   test.each([

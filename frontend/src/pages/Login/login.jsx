@@ -4,6 +4,7 @@ import  { Link, useNavigate , useLocation  } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
 import { API_BASE_URL } from "../../config/api";
 import AuthNotice from "../../components/notification/AuthNotice";
+import OAuthButtons from '../../components/auth/OAuthButtons';
 
 const canRunVanta = () => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
@@ -154,6 +155,7 @@ const Login = () => {
           const result  =  await fetch (`${API_BASE_URL}/api/login`,{
             method : "POST" , 
             headers : { "Content-type":"application/json"},
+            credentials: 'include',
             body: JSON.stringify({
               email: form.email,
               password: form.password
@@ -178,6 +180,10 @@ const Login = () => {
           setIsLoading(false);
         }
         
+    };
+
+    const startOAuth = (provider) => {
+      window.location.assign(`${API_BASE_URL}/api/oauth/${provider}`);
     };
 
     return (
@@ -229,16 +235,21 @@ const Login = () => {
                     {isLoading ? <span className="login-submit-text">Signing in...</span>  : "Sign in"} 
                     {isLoading ? <MorphingSpinner glow={false} className="login-spinner" /> : null }
                 </button>
+                <OAuthButtons onSelect={startOAuth} />
+                
                 <div className="login-switch">
                   Don't have an account yet?{' '}
                   <Link to ="/register" className="login-switch-link" >
                     Register
                   </Link>
                 </div>
+                
+
             </form>
+            
         </div>
-        
-        </div>
+      </div>
+
     );
 };
 

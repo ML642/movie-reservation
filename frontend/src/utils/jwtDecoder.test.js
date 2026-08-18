@@ -49,7 +49,7 @@ describe('jwtDecoder utils', () => {
     expect(isAuthenticated()).toBe(true);
   });
 
-  test('expired token is rejected and removed from storage', () => {
+  test('expired token is rejected but retained for refresh-token recovery', () => {
     const expired = makeToken({
       userId: 'u-2',
       username: 'old-user',
@@ -58,7 +58,7 @@ describe('jwtDecoder utils', () => {
     localStorage.setItem('token', expired);
 
     expect(getUserFromToken()).toBeNull();
-    expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('token')).toBe(expired);
     expect(isAuthenticated()).toBe(false);
   });
 

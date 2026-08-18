@@ -444,7 +444,34 @@
   display: flex;
   gap: 1rem;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
+  padding: 0.15rem 0 0.75rem;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(177, 184, 255, 0.65) rgba(18, 23, 34, 0.65);
+}
+
+.dateOptions::-webkit-scrollbar {
+  height: 8px;
+}
+
+.dateOptions::-webkit-scrollbar-track {
+  background: rgba(18, 23, 34, 0.65);
+  border-radius: 999px;
+}
+
+.dateOptions::-webkit-scrollbar-thumb {
+  background: rgba(177, 184, 255, 0.65);
+  border: 2px solid rgba(18, 23, 34, 0.65);
+  border-radius: 999px;
+}
+
+.dateOptions::-webkit-scrollbar-thumb:hover {
+  background: rgba(199, 203, 255, 0.9);
+}
+
+.dateOptions::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
 }
 
 .dateOption {
@@ -456,6 +483,7 @@
   transition: var(--transition);
   text-align: center;
   min-width: 80px;
+  flex: 0 0 80px;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;

@@ -6,6 +6,7 @@ import type { TokenPayload, TokenProvider } from '../application/ports/TokenProv
 export interface AuthController {
   register: RequestHandler;
   login: RequestHandler;
+  refresh: RequestHandler;
   userInfo: RequestHandler;
   changeInfo: RequestHandler;
   testGet: RequestHandler;
@@ -38,7 +39,9 @@ export const createAuthController = (
   register: async (req: Request, res: Response) => {
     try {
       const result = await identityService.register(req.body || {});
-      return res.status(201).json({ success: true, message: 'User registered successfully', ...result });
+      setRefreshCookie(res, result.refreshToken);
+      const { refreshToken: _refreshToken, ...body } = result;
+      return res.status(201).json({ success: true, message: 'User registered successfully', ...body });
     } catch (error) {
       const { status, message } = getErrorResponse(error);
       return res.status(status).json({ success: false, message });
@@ -48,10 +51,25 @@ export const createAuthController = (
   login: async (req: Request, res: Response) => {
     try {
       const result = await identityService.login(req.body?.email, req.body?.password);
-      return res.json({ success: true, message: 'Login successful', ...result });
+      setRefreshCookie(res, result.refreshToken);
+      const { refreshToken: _refreshToken, ...body } = result;
+      return res.json({ success: true, message: 'Login successful', ...body });
     } catch (error) {
       const { status, message } = getErrorResponse(error);
       return res.status(status).json({ success: false, message });
+    }
+  },
+
+  refresh: async (req: Request, res: Response) => {
+    try {
+      const refreshToken = getCookie(req.headers.cookie, 'refreshToken');
+      if (!refreshToken) return res.status(401).json({ success: false, message: 'Refresh token is required' });
+      const result = await identityService.refresh(refreshToken);
+      setRefreshCookie(res, result.refreshToken);
+      return res.json({ success: true, token: result.token, user: result.user });
+    } catch (error) {
+      const { status, message } = getErrorResponse(error);
+      return res.status(status === 500 ? 401 : status).json({ success: false, message });
     }
   },
 
@@ -113,3 +131,10 @@ export const createAuthController = (
 
   testGet: (_req: Request, res: Response) => res.json({ success: true, message: 'test' }),
 });
+
+const getCookie = (header: string | undefined, name: string): string | undefined =>
+  header?.split(';').map((value) => value.trim()).find((value) => value.startsWith(`${name}=`))?.slice(name.length + 1);
+
+const setRefreshCookie = (res: Response, refreshToken: string): void => {
+  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', path: '/api/refresh', maxAge: 30 * 24 * 60 * 60 * 1000 });
+};
