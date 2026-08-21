@@ -1,5 +1,6 @@
 require('dotenv').config();
 const http = require('http');
+const https = require('https');
 const { URL } = require('url');
 
 const allowedOrigins = (process.env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean);
@@ -29,7 +30,8 @@ const gateway = http.createServer((req, res) => {
   }
 
   const target = new URL(targets.find(([prefix]) => req.url.startsWith(prefix))[1]);
-  const proxy = http.request({ hostname: target.hostname, port: target.port, path: req.url, method: req.method, headers: { ...req.headers, host: target.host } }, (service) => {
+  const transport = target.protocol === 'https:' ? https : http;
+  const proxy = transport.request({ hostname: target.hostname, port: target.port || undefined, path: req.url, method: req.method, headers: { ...req.headers, host: target.host } }, (service) => {
     res.writeHead(service.statusCode || 502, { ...service.headers, ...corsHeaders });
     service.pipe(res);
   });
