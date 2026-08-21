@@ -1,0 +1,38 @@
+services:
+  gateway:
+    build: ./server
+    command: npm run start:gateway
+    ports: ["5000:5000"]
+    environment:
+      IDENTITY_SERVICE_URL: http://identity:5001
+      ENGAGEMENT_SERVICE_URL: http://engagement:5002
+      RESERVATION_SERVICE_URL: http://reservation:5003
+    depends_on: [identity, engagement, reservation]
+  identity:
+    build: ./server
+    command: npm run start:identity
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/identity
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: http://localhost:3000
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    depends_on: [mongo, rabbitmq]
+  engagement:
+    build: ./server
+    command: npm run start:engagement
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/engagement
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on: [mongo, rabbitmq]
+  reservation:
+    build: ./server
+    command: npm run start:reservation
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/reservation
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on: [mongo, rabbitmq]
+  mongo:
+    image: mongo:7
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports: ["15672:15672"]

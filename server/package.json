@@ -10,13 +10,18 @@
     "build": "npm run build:shared && npm run build:identity && npm run build:engagement && npm run build:reservation",
     "pretest": "npm run build",
     "test": "jest --runInBand",
-    "start": "npm run build && node server.js"
+    "start": "npm run build && npm run start:gateway",
+    "start:gateway": "node gateway.js",
+    "start:identity": "npm run build && node services/identity.js",
+    "start:engagement": "npm run build && node services/engagement.js",
+    "start:reservation": "npm run build && node services/reservation.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "amqplib": "^2.0.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
@@ -28,6 +33,7 @@
   "devDependencies": {
     "@swc/core": "^1.16.0",
     "@swc/jest": "^0.2.39",
+    "@types/amqplib": "^0.10.8",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.2.0",

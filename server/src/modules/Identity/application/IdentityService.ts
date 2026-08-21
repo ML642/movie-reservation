@@ -12,6 +12,7 @@ import type { PasswordHasher } from './ports/PasswordHasher';
 import type { TokenProvider } from './ports/TokenProvider';
 import type { UserRepository } from './ports/UserRepository';
 import type { OAuthProfile } from './ports/OAuthProvider';
+import { NoopEventPublisher, type EventPublisher } from './ports/EventPublisher';
 
 export interface AuthenticationResult {
   user: PublicUser;
@@ -23,7 +24,8 @@ export class IdentityService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
-    private readonly tokenProvider: TokenProvider
+    private readonly tokenProvider: TokenProvider,
+    private readonly eventPublisher: EventPublisher = new NoopEventPublisher()
   ) {}
 
   async register(input: NewUserInput): Promise<AuthenticationResult> {
@@ -40,6 +42,7 @@ export class IdentityService {
     const password = await this.passwordHasher.hash(newUser.password);
     const user = await this.userRepository.create({ ...newUser, password });
     const publicUser = toPublicUser(user);
+    await this.publishUserRegistered(publicUser.id);
 
     return this.createAuthenticationResult(publicUser);
   }
@@ -101,6 +104,7 @@ export class IdentityService {
       oauthProvider: profile.provider,
       oauthSubject: profile.subject,
     });
+    await this.publishUserRegistered(user.id);
     return this.createAuthenticationResult(toPublicUser(user));
   }
 
@@ -136,5 +140,13 @@ export class IdentityService {
       username = `${base.slice(0, 25)}_${index++}`;
     }
     return username;
+  }
+
+  private publishUserRegistered(userId: string): Promise<void> {
+    return this.eventPublisher.publish({
+      name: 'identity.user.registered',
+      occurredAt: new Date().toISOString(),
+      payload: { userId },
+    });
   }
 }
