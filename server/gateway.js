@@ -32,7 +32,13 @@ const gateway = http.createServer((req, res) => {
   const target = new URL(targets.find(([prefix]) => req.url.startsWith(prefix))[1]);
   const transport = target.protocol === 'https:' ? https : http;
   const proxy = transport.request({ hostname: target.hostname, port: target.port || undefined, path: req.url, method: req.method, headers: { ...req.headers, host: target.host } }, (service) => {
-    res.writeHead(service.statusCode || 502, { ...service.headers, ...corsHeaders });
+    const responseHeaders = { ...service.headers };
+    for (const headerName of Object.keys(responseHeaders)) {
+      if (headerName.toLowerCase().startsWith('access-control-') || headerName.toLowerCase() === 'vary') {
+        delete responseHeaders[headerName];
+      }
+    }
+    res.writeHead(service.statusCode || 502, { ...responseHeaders, ...corsHeaders });
     service.pipe(res);
   });
   proxy.on('error', () => {
