@@ -150,7 +150,11 @@ export const createAuthController = (
   },
 
   completeOAuth: async (req: Request, res: Response) => {
-    const redirectBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // Render environment variables are often entered with a trailing slash.
+    // Appending `/login` directly would then produce `//login`, which React
+    // Router treats as a different route and renders the not-found page.
+    const configuredFrontendUrl = (process.env.FRONTEND_URL || '').trim();
+    const redirectBase = configuredFrontendUrl.replace(/\/+$/, '') || 'http://localhost:3000';
     const providerName = String(req.params.provider);
     const provider = oauthProviders.get(providerName);
     const state = typeof req.query.state === 'string' ? req.query.state : '';
