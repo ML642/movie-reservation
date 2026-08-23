@@ -59,15 +59,21 @@ export class HttpOAuthProvider implements OAuthProvider {
     const endpoint = this.name === 'google'
       ? 'https://oauth2.googleapis.com/token'
       : 'https://github.com/login/oauth/access_token';
+    const requestBody = new URLSearchParams({
+      client_id: this.config.clientId!,
+      client_secret: this.config.clientSecret!,
+      redirect_uri: this.config.redirectUri!,
+      code,
+    });
+
+    // Google requires this field for an authorization-code token exchange.
+    // GitHub's endpoint does not use it.
+    if (this.name === 'google') requestBody.set('grant_type', 'authorization_code');
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: this.config.clientId!,
-        client_secret: this.config.clientSecret!,
-        redirect_uri: this.config.redirectUri!,
-        code,
-      }),
+      body: requestBody,
     });
     const body = await response.json() as TokenResponse;
 
