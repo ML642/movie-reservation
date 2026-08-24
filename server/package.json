@@ -9,7 +9,7 @@
     "build:shared": "tsc -p src/shared/tsconfig.json",
     "build": "npm run build:shared && npm run build:identity && npm run build:engagement && npm run build:reservation",
     "pretest": "npm run build",
-    "test": "jest --runInBand",
+    "test": "node --test gateway.test.js && jest --runInBand",
     "start": "npm run build && npm run start:gateway",
     "start:gateway": "node gateway.js",
     "start:identity": "npm run build && node services/identity.js",
