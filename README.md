@@ -47,22 +47,20 @@ Key engineering features include:
 * Dockerized multi-service local environment
 
 ---
-
 # Architecture
 
 ```mermaid
 flowchart TD
     Client["React Client"]
+    Gateway["API Gateway (5000)"]
 
-    Gateway["API Gateway :5000"]
+    Identity["Identity Service (5001)"]
+    Engagement["Engagement Service (5002)"]
+    Reservation["Reservation Service (5003)"]
 
-    Identity["Identity Service :5001"]
-    Engagement["Engagement Service :5002"]
-    Reservation["Reservation Service :5003"]
-
-    IdentityDB[("Identity DB")]
-    EngagementDB[("Engagement DB")]
-    ReservationDB[("Reservation DB")]
+    IdentityDB[(Identity DB)]
+    EngagementDB[(Engagement DB)]
+    ReservationDB[(Reservation DB)]
 
     Rabbit["RabbitMQ"]
     OAuth["Google / GitHub OAuth"]
@@ -83,35 +81,6 @@ flowchart TD
 
     Client --> TMDB
 ```
-
-The API Gateway is the public backend entry point.
-
-```text
-Client
-  |
-  v
-API Gateway :5000
-  |
-  +-- /api/register
-  +-- /api/login
-  +-- /api/refresh
-  +-- /api/oauth/*
-  |       |
-  |       +----> Identity Service :5001
-  |
-  +-- /api/likes/*
-  +-- /api/comments/*
-  |       |
-  |       +----> Engagement Service :5002
-  |
-  +-- /api/reservation/*
-          |
-          +----> Reservation Service :5003
-```
-
-The Gateway performs prefix-based routing and centralizes public CORS handling while the services remain independently runnable.
-
----
 
 # Backend Service Boundaries
 
