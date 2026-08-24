@@ -76,6 +76,15 @@ export class MongoUserRepository implements UserRepository {
     return result.modifiedCount === 1;
   }
 
+  async clearRefreshTokenHash(userId: string, expectedHash: string): Promise<boolean> {
+    this.ensureReady();
+    const result = await this.userModel.updateOne(
+      { id: String(userId || ''), refreshTokenHash: expectedHash },
+      { $unset: { refreshTokenHash: 1 } }
+    ).exec();
+    return result.modifiedCount === 1;
+  }
+
   private ensureReady(): void {
     if (!this.connection.isReady()) {
       throw new IdentityError('STORAGE_UNAVAILABLE', 'User storage is temporarily unavailable.');

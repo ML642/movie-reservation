@@ -29,9 +29,10 @@ export const createAuthenticatedRequest = (body: unknown = {}, userId = 'user-1'
 };
 
 export const createResponse = () => {
-  const response = { status: jest.fn(), json: jest.fn(), cookie: jest.fn() };
+  const response = { status: jest.fn(), json: jest.fn(), cookie: jest.fn(), clearCookie: jest.fn(), end: jest.fn() };
   response.status.mockReturnValue(response);
   response.json.mockReturnValue(response);
+  response.end.mockReturnValue(response);
   return response;
 };
 
@@ -41,8 +42,9 @@ export const createControllerSut = () => {
   const findProfileById = jest.fn<IdentityService['findProfileById']>();
   const updateProfile = jest.fn<IdentityService['updateProfile']>();
   const refresh = jest.fn<IdentityService['refresh']>();
+  const logout = jest.fn<IdentityService['logout']>();
   const verify = jest.fn<TokenProvider['verify']>();
-  const identityService = { register, login, refresh, findProfileById, updateProfile } as unknown as IdentityService;
+  const identityService = { register, login, refresh, logout, findProfileById, updateProfile } as unknown as IdentityService;
   const tokenProvider: jest.Mocked<TokenProvider> = {
     issue: jest.fn<TokenProvider['issue']>(),
     verify,
@@ -57,6 +59,7 @@ export const createControllerSut = () => {
     findProfileById,
     updateProfile,
     refresh,
+    logout,
     verify,
   };
 };

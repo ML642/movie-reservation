@@ -4,10 +4,11 @@ import { Link, useLocation } from "react-router-dom";
 import LoggedIn from "../LoggedIn/LoggedIn.jsx";
 import ResponsiveLogo from "./cineReserve.jsx";
 import "./header.css";
-import { refreshAccessToken } from '../../config/api';
+import { logout, refreshAccessToken } from '../../config/api';
+import { isAuthenticated } from '../../utils/jwtDecoder';
 
 const isAuthenticatedAtStartup = () =>
-  typeof window !== "undefined" && Boolean(window.localStorage.getItem("token"));
+  typeof window !== "undefined" && isAuthenticated();
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,7 +19,7 @@ const Header = () => {
 
   useEffect(() => {
     const syncAuthState = () => {
-      setIsLoggedIn(Boolean(window.localStorage.getItem("token")));
+      setIsLoggedIn(isAuthenticated());
       setIsMenuOpen(false);
     };
 
@@ -26,7 +27,7 @@ const Header = () => {
   }, [location.key]);
 
   useEffect(() => {
-    const syncAuthState = () => setIsLoggedIn(Boolean(window.localStorage.getItem('token')));
+    const syncAuthState = () => setIsLoggedIn(isAuthenticated());
     window.addEventListener('authchange', syncAuthState);
     refreshAccessToken().then(syncAuthState);
     return () => window.removeEventListener('authchange', syncAuthState);
@@ -55,9 +56,8 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    window.localStorage.removeItem("token");
-    window.dispatchEvent(new Event('authchange'));
+  const handleLogout = async () => {
+    await logout();
     setIsLoggedIn(false);
     setIsMenuOpen(false);
   };

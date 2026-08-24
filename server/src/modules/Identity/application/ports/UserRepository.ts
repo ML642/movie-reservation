@@ -9,4 +9,5 @@ export interface UserRepository {
   updateById(id: string, changes: ProfileChanges): Promise<User | null>;
   getRefreshTokenHash(userId: string): Promise<string | null>;
   replaceRefreshTokenHash(userId: string, previousHash: string | null, nextHash: string): Promise<boolean>;
+  clearRefreshTokenHash(userId: string, expectedHash: string): Promise<boolean>;
 }

@@ -3,7 +3,12 @@ const http = require('http');
 const https = require('https');
 const { URL } = require('url');
 
-const allowedOrigins = (process.env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean);
+// Keep the local CRA frontend working out of the box while production origins
+// remain explicitly configurable through CORS_ORIGINS.
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 const corsHeadersFor = (origin) => {
   if (!origin || !allowedOrigins.includes(origin)) return {};
   return {

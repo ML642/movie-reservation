@@ -18,6 +18,7 @@ const createSut = () => {
     updateById: jest.fn<UserRepository['updateById']>(),
     getRefreshTokenHash: jest.fn<UserRepository['getRefreshTokenHash']>(),
     replaceRefreshTokenHash: jest.fn<UserRepository['replaceRefreshTokenHash']>().mockResolvedValue(true),
+    clearRefreshTokenHash: jest.fn<UserRepository['clearRefreshTokenHash']>().mockResolvedValue(true),
   };
 
   const passwordHasher: jest.Mocked<PasswordHasher> = {
@@ -100,5 +101,18 @@ describe('IdentityService registration', () => {
     ).rejects.toMatchObject({ code: 'USER_EXISTS' });
 
     expect(repository.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('IdentityService logout', () => {
+  test('revokes the refresh session only after validating its token', async () => {
+    const { service, repository, passwordHasher, tokenProvider } = createSut();
+    tokenProvider.verifyRefresh.mockReturnValue({ userId: 'user-1', username: 'mike', userEmail: 'mike@example.com' });
+    repository.getRefreshTokenHash.mockResolvedValue('stored-hash');
+    passwordHasher.compare.mockResolvedValue(true);
+
+    await service.logout('refresh-token');
+
+    expect(repository.clearRefreshTokenHash).toHaveBeenCalledWith('user-1', 'stored-hash');
   });
 });

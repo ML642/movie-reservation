@@ -9,6 +9,7 @@ export interface AuthController {
   register: RequestHandler;
   login: RequestHandler;
   refresh: RequestHandler;
+  logout: RequestHandler;
   userInfo: RequestHandler;
   changeInfo: RequestHandler;
   testGet: RequestHandler;
@@ -75,6 +76,19 @@ export const createAuthController = (
     } catch (error) {
       const { status, message } = getErrorResponse(error);
       return res.status(status === 500 ? 401 : status).json({ success: false, message });
+    }
+  },
+
+  logout: async (req: Request, res: Response) => {
+    try {
+      const refreshToken = getCookie(req.headers.cookie, 'refreshToken');
+      if (refreshToken) await identityService.logout(refreshToken);
+      clearRefreshCookie(res);
+      return res.status(204).end();
+    } catch (error) {
+      const { status, message } = getErrorResponse(error);
+      clearRefreshCookie(res);
+      return res.status(status).json({ success: false, message });
     }
   },
 
@@ -177,6 +191,25 @@ export const createAuthController = (
 const getCookie = (header: string | undefined, name: string): string | undefined =>
   header?.split(';').map((value) => value.trim()).find((value) => value.startsWith(`${name}=`))?.slice(name.length + 1);
 
+const refreshCookieOptions = () => {
+  // The frontend and API are separate Render hosts. Treat an HTTPS frontend as
+  // a production deployment even if NODE_ENV was not explicitly configured,
+  // so browsers can send this cross-site cookie back to /api/refresh.
+  const usesSecureCookies = process.env.NODE_ENV === 'production'
+    || /^https:\/\//i.test((process.env.FRONTEND_URL || '').trim());
+  return {
+    httpOnly: true,
+    secure: usesSecureCookies,
+    sameSite: usesSecureCookies ? 'none' : 'lax',
+    path: '/api/refresh',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  } as const;
+};
+
 const setRefreshCookie = (res: Response, refreshToken: string): void => {
-  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', path: '/api/refresh', maxAge: 30 * 24 * 60 * 60 * 1000 });
+  res.cookie('refreshToken', refreshToken, refreshCookieOptions());
+};
+
+const clearRefreshCookie = (res: Response): void => {
+  res.clearCookie('refreshToken', refreshCookieOptions());
 };

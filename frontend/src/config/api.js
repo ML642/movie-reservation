@@ -29,6 +29,12 @@ export const API_BASE_URL = resolveApiBaseUrl();
 
 let refreshPromise = null;
 
+export const clearClientAuthentication = () => {
+  window.localStorage.removeItem('token');
+  window.localStorage.removeItem('username');
+  window.localStorage.removeItem('userEmail');
+};
+
 export const refreshAccessToken = async () => {
   if (!API_BASE_URL) return null;
   if (!refreshPromise) {
@@ -37,7 +43,13 @@ export const refreshAccessToken = async () => {
       credentials: 'include',
     })
       .then(async (response) => {
-        if (!response.ok) return null;
+        if (!response.ok) {
+          if (response.status === 401) {
+            clearClientAuthentication();
+            window.dispatchEvent(new Event('authchange'));
+          }
+          return null;
+        }
         const data = await response.json();
         if (!data.token) return null;
         window.localStorage.setItem('token', data.token);
@@ -50,6 +62,15 @@ export const refreshAccessToken = async () => {
       .finally(() => { refreshPromise = null; });
   }
   return refreshPromise;
+};
+
+export const logout = async () => {
+  try {
+    await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+  } finally {
+    clearClientAuthentication();
+    window.dispatchEvent(new Event('authchange'));
+  }
 };
 
 export const authFetch = async (url, options = {}) => {

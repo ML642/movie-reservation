@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaCrown, FaFilm, FaStar, FaTicketAlt, FaUser, FaVideo } from "react-icons/fa";
 import { getStoredUserIcon, USER_ICON_CHANGE_EVENT } from "../../utils/userIcon";
+import { formatAccountDisplayName } from "../../utils/displayName";
 import "./LoggedIn.css";
 
 const useOutsideClick = (ref, callback) => {
@@ -22,6 +23,7 @@ const LoggedIn = ({ onLogout }) => {
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const dropdownRef = useRef(null);
   const profileRef = useRef(null);
+  const displayName = formatAccountDisplayName(username) || "Account";
 
   useOutsideClick(dropdownRef, () => setIsMenuOpen(false));
 
@@ -45,7 +47,7 @@ const LoggedIn = ({ onLogout }) => {
     if (selectedIcon === "star") return <FaStar />;
     if (selectedIcon === "video") return <FaVideo />;
     if (selectedIcon === "crown") return <FaCrown />;
-    return username ? username.charAt(0).toUpperCase() : <FaUser />;
+    return username ? displayName.charAt(0).toUpperCase() : <FaUser />;
   };
 
   const toggleMenu = () => {
@@ -67,14 +69,14 @@ const LoggedIn = ({ onLogout }) => {
         aria-haspopup="menu"
       >
         <span className="user-icon">{renderIcon()}</span>
-        <span className="header-username">{username || "Account"}</span>
+        <span className="header-username">{displayName}</span>
       </button>
 
       {isMenuOpen && (
         <div className="dropdown-menu" style={{ top: dropdownPosition.top, right: dropdownPosition.right }} role="menu">
           <div className="dropdown-header">
             <span className="dropdown-user-icon">{renderIcon()}</span>
-            <span className="dropdown-username">{username || "Account"}</span>
+            <span className="dropdown-username">{displayName}</span>
           </div>
           <div className="dropdown-separator" />
           <Link to="/profile" className="dropdown-item" role="menuitem" onClick={() => setIsMenuOpen(false)}>Profile</Link>

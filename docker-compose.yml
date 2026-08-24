@@ -12,6 +12,12 @@ services:
     build: ./server
     command: npm run start:identity
     environment:
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      GOOGLE_OAUTH_REDIRECT_URI: ${GOOGLE_OAUTH_REDIRECT_URI}
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET}
+      GITHUB_OAUTH_REDIRECT_URI: https://movie-reservation-gateaway.onrender.com/api/oauth/github/callback
       MONGODB_URI: mongodb://mongo:27017/identity
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_URL: http://localhost:3000

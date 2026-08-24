@@ -6,14 +6,18 @@ import type { TokenProvider } from '../../application/ports/TokenProvider';
 import { createAuthController } from '../authController';
 
 const originalFrontendUrl = process.env.FRONTEND_URL;
+const originalNodeEnv = process.env.NODE_ENV;
 
 afterEach(() => {
   if (originalFrontendUrl === undefined) delete process.env.FRONTEND_URL;
   else process.env.FRONTEND_URL = originalFrontendUrl;
+  if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+  else process.env.NODE_ENV = originalNodeEnv;
 });
 
 test('OAuth callback removes a trailing slash from FRONTEND_URL', async () => {
   process.env.FRONTEND_URL = 'https://movie-reservation-1-4uao.onrender.com/';
+  delete process.env.NODE_ENV;
   const loginWithOAuth = jest.fn<IdentityService['loginWithOAuth']>().mockResolvedValue({
     token: 'access-token',
     refreshToken: 'refresh-token',
@@ -45,5 +49,10 @@ test('OAuth callback removes a trailing slash from FRONTEND_URL', async () => {
 
   expect(response.redirect).toHaveBeenCalledWith(
     'https://movie-reservation-1-4uao.onrender.com/login?oauth=success'
+  );
+  expect(response.cookie).toHaveBeenCalledWith(
+    'refreshToken',
+    'refresh-token',
+    expect.objectContaining({ secure: true, sameSite: 'none', path: '/api/refresh' })
   );
 });

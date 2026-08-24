@@ -80,6 +80,17 @@ export class IdentityService {
     return this.createAuthenticationResult(toPublicUser(user), storedHash);
   }
 
+  async logout(refreshToken: string): Promise<void> {
+    let payload;
+    try { payload = this.tokenProvider.verifyRefresh(refreshToken); } catch {
+      return;
+    }
+
+    const storedHash = await this.userRepository.getRefreshTokenHash(payload.userId);
+    if (!storedHash || !(await this.passwordHasher.compare(refreshToken, storedHash))) return;
+    await this.userRepository.clearRefreshTokenHash(payload.userId, storedHash);
+  }
+
   async loginWithOAuth(profile: OAuthProfile): Promise<AuthenticationResult> {
     const linkedUser = await this.userRepository.findByOAuthIdentity(profile.provider, profile.subject);
     if (linkedUser) {

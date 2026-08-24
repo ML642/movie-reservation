@@ -24,6 +24,7 @@ export const createAuthRoutes = (controller: AuthController, tokenProvider: Toke
   router.post('/register', controller.register);
   router.post('/login', controller.login);
   router.post('/refresh', controller.refresh);
+  router.post('/logout', controller.logout);
   router.get('/oauth/:provider', controller.startOAuth);
   router.get('/oauth/:provider/callback', controller.completeOAuth);
   router.get('/test', controller.testGet);
