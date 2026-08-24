@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import './Login.css';
 import  { Link, useNavigate , useLocation  } from "react-router-dom";
 import MorphingSpinner from "../../components/spinner/spinner";
-import { API_BASE_URL } from "../../config/api";
+import { API_BASE_URL, refreshAccessToken } from "../../config/api";
 import AuthNotice from "../../components/notification/AuthNotice";
 import OAuthButtons from '../../components/auth/OAuthButtons';
 
@@ -47,15 +47,22 @@ const useVantaEnabled = () => {
   return enabled;
 };
 
+const POST_LOGIN_RETURN_TO_KEY = 'postLoginReturnTo';
+
+const isInternalPath = (value) => typeof value === 'string'
+  && value.startsWith('/')
+  && !value.startsWith('//');
+
 const Login = () => {
   const vantaRef = useRef(null);
   const vantaEffectRef = useRef(null);
-  const navigate = useNavigate();
+   const navigate = useNavigate();
   const [isLoading , setIsLoading] =  useState(false)
   const vantaEnabled = useVantaEnabled();
   
 
-   const Location =  useLocation() ;
+    const Location =  useLocation() ;
+    const returnTo = Location.state?.returnTo;
     useEffect(() => {
         window.scrollTo({top:0, left:0, behavior: "auto"});
     }, [Location.key] );
@@ -115,6 +122,16 @@ const Login = () => {
     const [notice, setNotice] = useState(null);
     const [rememberMe, setRememberMe] = useState(false);
 
+    const getPostLoginDestination = useCallback(() => {
+      const locationDestination = returnTo;
+      const storedDestination = window.sessionStorage.getItem(POST_LOGIN_RETURN_TO_KEY);
+      const destination = isInternalPath(locationDestination)
+        ? locationDestination
+        : (isInternalPath(storedDestination) ? storedDestination : '/');
+      window.sessionStorage.removeItem(POST_LOGIN_RETURN_TO_KEY);
+      return destination;
+    }, [returnTo]);
+
     useEffect(() => {
       if (Location.state?.notice) {
         setNotice(Location.state.notice);
@@ -135,20 +152,19 @@ const Login = () => {
         }
         setIsLoading(true);
         try {
-          const response = await fetch(`${API_BASE_URL}/api/refresh`, { method: 'POST', credentials: 'include' });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.message || 'Could not finish OAuth sign in.');
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('username', data.user.username);
-          localStorage.setItem('userEmail', data.user.email || '');
-          navigate('/', { replace: true });
+          // Header also restores authentication on mount. Reuse the shared
+          // promise so the one-time refresh token is never rotated twice.
+          if (!(await refreshAccessToken())) {
+            throw new Error('Could not finish OAuth sign in.');
+          }
+          navigate(getPostLoginDestination(), { replace: true });
         } catch (error) {
           setNotice({ type: 'error', title: 'OAuth sign in failed', message: error.message || 'Please try again.' });
           navigate('/login', { replace: true });
         } finally { setIsLoading(false); }
       };
       finishOAuth();
-    }, [Location.search, navigate]);
+    }, [Location.search, navigate, getPostLoginDestination]);
 
     useEffect(() => {
         const remembered = localStorage.getItem("rememberedEmail");
@@ -194,7 +210,7 @@ const Login = () => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('username', data.user.username);
             localStorage.setItem('userEmail', data.user.email || form.email);
-            navigate('/');
+            navigate(getPostLoginDestination());
           } else {
             const message = result.status === 401
               ? "Wrong email, username, or password."
@@ -211,6 +227,10 @@ const Login = () => {
     };
 
     const startOAuth = (provider) => {
+      const returnTo = Location.state?.returnTo;
+      if (isInternalPath(returnTo)) {
+        window.sessionStorage.setItem(POST_LOGIN_RETURN_TO_KEY, returnTo);
+      }
       window.location.assign(`${API_BASE_URL}/api/oauth/${provider}`);
     };
 

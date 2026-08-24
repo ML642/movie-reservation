@@ -11,6 +11,7 @@
   padding: 4px;
   padding-right: 1rem;
   max-width: 100%;
+  min-width: 0;
   border: 0;
   background: transparent;
   color: inherit;
@@ -45,6 +46,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 10rem;
+  min-width: 0;
 }
 
 .dropdown-header {
@@ -72,6 +75,10 @@
   color: white;
   font-weight: 600;
   font-size: 0.9rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dropdown-menu {
@@ -83,6 +90,24 @@
   z-index: 1100;
   width: 180px; 
   border: 1px solid #374151;
+}
+
+@media (max-width: 480px) {
+  .user-profile-container {
+    gap: 0.45rem;
+    padding-right: 0.35rem;
+  }
+
+  .user-icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .header-username {
+    max-width: 4.75rem;
+    font-size: 0.9rem;
+  }
 }
 
 .dropdown-item {

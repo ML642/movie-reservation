@@ -210,6 +210,7 @@
 
 .userInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .userName {
@@ -221,12 +222,14 @@
   color: transparent;
   margin-bottom: 0.5rem;
   text-shadow: 0 0 30px rgba(139, 69, 19, 0.3);
+  overflow-wrap: anywhere;
 }
 
 .userEmail {
   font-size: 1.125rem;
   color: #999999;
   margin-bottom: 0.5rem;
+  overflow-wrap: anywhere;
 }
 
 .memberSince {
@@ -693,6 +696,18 @@
     flex-direction: column;
     text-align: center;
     gap: 2rem;
+  }
+
+  .userInfo {
+    width: 100%;
+  }
+
+  .userName {
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+
+  .userEmail {
+    font-size: 1rem;
   }
   
   .userStats {

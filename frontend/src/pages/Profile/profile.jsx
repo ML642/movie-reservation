@@ -8,6 +8,7 @@ import {Link} from 'react-router-dom';
 import { API_BASE_URL } from '../../config/api';
 import { FaCrown, FaFilm, FaStar, FaTicketAlt, FaUser, FaVideo } from 'react-icons/fa';
 import { getStoredUserIcon, setStoredUserIcon, USER_ICON_OPTIONS } from '../../utils/userIcon';
+import { formatAccountDisplayName } from '../../utils/displayName';
 
 
 export default  function Profile() {
@@ -233,7 +234,7 @@ export default  function Profile() {
           </div>
           
           <div className={styles.userInfo}>
-            <h1 className={styles.userName}>{user.name}</h1>
+            <h1 className={styles.userName} title={user.name}>{formatAccountDisplayName(user.name) || 'User'}</h1>
             <p className={styles.userEmail}>✉️ {user.email}</p>
             <p className={styles.memberSince}>🎭 Member since {user.memberSince}</p>
             

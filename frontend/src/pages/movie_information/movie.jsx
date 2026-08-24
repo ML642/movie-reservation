@@ -191,7 +191,7 @@ const Movie = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Please log in to make a reservation');
-      navigate('/login');
+      navigate('/login', { state: { returnTo: `${location.pathname}${location.search}` } });
       setIsLoading(false);
       return;
     }
@@ -244,7 +244,7 @@ const Movie = () => {
       const status = requestError.response?.status;
       if (status === 401) {
         alert('Please log in to make a reservation');
-        navigate('/login');
+        navigate('/login', { state: { returnTo: `${location.pathname}${location.search}` } });
       } else if (status === 409) {
         const conflictSeats = requestError.response?.data?.conflictingSeats || [];
         alert(
