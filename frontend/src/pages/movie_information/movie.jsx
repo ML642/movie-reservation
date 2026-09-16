@@ -85,8 +85,6 @@ const Movie = () => {
           {
             params: {
               api_key: TMDB_API_KEY,
-              // Videos and image metadata are not rendered on this page. Keeping
-              // only credits removes a large, unused part of the response.
               append_to_response: 'credits',
             },
             signal: requestController.signal,
@@ -420,7 +418,6 @@ const Movie = () => {
       <div className={styles.movieContainer}>
         <div className={styles.bookingSection}>
           <h2>Book Your Tickets</h2>
-
           <div className={styles.bookingOption}>
             <div className={styles.sectionHeader}>
               <FaMapMarkerAlt className={styles.sectionIcon} />

@@ -60,15 +60,12 @@ const MovieSelection = (props) => {
      const { liked, notice, toggleLike } = useLikedMovies();
        const [showLikedOnly, setShowLikedOnly] = useState(false); // toggle for showing only liked
        const toggleShowLiked = () => setShowLikedOnly((prev) => !prev);
-    
-       // Search and sort state
-        const [search, setSearch] = useState('');
+          const [search, setSearch] = useState('');
         const [sort, setSort] = useState('date-desc');
         const [genre, setGenre] = useState('all');
         const deferredSearch = useDeferredValue(search);
          const likedMovieKeys = useMemo(() => new Set(liked), [liked]);
 
-        // Filtered and sorted movies
         const visibleMovies = useMemo(() => {
          const normalizedSearch = deferredSearch.trim().toLowerCase();
          const filteredMovies = movies

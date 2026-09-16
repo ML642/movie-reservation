@@ -100,8 +100,7 @@ const sendWebVital = (metric) => {
     path: window.location.pathname,
   };
 
-  // This makes metrics available to an analytics integration without exposing
-  // the PerformanceEntry target or other user-specific data.
+
   window.dispatchEvent(new CustomEvent('web-vital', { detail: payload }));
 
   if (!WEB_VITALS_ENDPOINT) return;

@@ -284,17 +284,13 @@ const Login = () => {
                     {isLoading ? <MorphingSpinner glow={false} className="login-spinner" /> : null }
                 </button>
                 <OAuthButtons onSelect={startOAuth} />
-                
                 <div className="login-switch">
                   Don't have an account yet?{' '}
                   <Link to ="/register" className="login-switch-link" >
                     Register
                   </Link>
                 </div>
-                
-
             </form>
-            
         </div>
       </div>
 
