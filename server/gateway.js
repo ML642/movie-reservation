@@ -67,6 +67,13 @@ const createGateway = ({
       return res.end();
     }
 
+    // Keep this endpoint inside the gateway. The frontend uses it to wake a
+    // sleeping Render instance before mounting components that would otherwise
+    // send several API requests at the same time.
+    if (req.method === 'GET' && (path === '/health' || path === '/api/health')) {
+      return sendJson(res, 200, { status: 'ok', service: 'gateway' }, corsHeaders);
+    }
+
     const route = targets.find(([prefix]) => path.startsWith(prefix));
     if (!route) {
       log(logger, 'route_not_found', { method: req.method, path });

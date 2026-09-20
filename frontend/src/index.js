@@ -9,6 +9,7 @@ import Header from './components/header/header';
 import Footer from './components/footer/Footer';
 import {QueryClient , QueryClientProvider} from '@tanstack/react-query';
 import Home from './pages/Home/home';
+import ServerWarmup from './components/server-warmup/ServerWarmup';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -125,7 +126,9 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       
-       <RouterProvider router={router}/>
+       <ServerWarmup>
+         <RouterProvider router={router}/>
+       </ServerWarmup>
        
     </QueryClientProvider>
   </React.StrictMode>

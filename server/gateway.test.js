@@ -16,6 +16,22 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => new Promise((resolve) => server.close(resolve))));
 });
 
+test('answers gateway health checks without contacting an upstream service', async () => {
+  const gateway = createGateway({
+    targets: [['/', 'http://127.0.0.1:1']],
+    allowedOrigins: ['https://frontend.example'],
+  });
+  const gatewayUrl = await listen(gateway);
+
+  const response = await fetch(`${gatewayUrl}/api/health`, {
+    headers: { Origin: 'https://frontend.example' },
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('access-control-allow-origin'), 'https://frontend.example');
+  assert.deepEqual(await response.json(), { status: 'ok', service: 'gateway' });
+});
+
 test('forwards reservation requests and approved CORS headers', async () => {
   const reservation = http.createServer((req, res) => {
     assert.equal(req.url, '/api/reservation?movieId=42');

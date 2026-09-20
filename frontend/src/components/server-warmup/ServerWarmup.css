@@ -1,0 +1,82 @@
+.server-warmup {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(239, 68, 68, 0.2), transparent 35%),
+    #111827;
+}
+
+.server-warmup-card {
+  width: min(100%, 32rem);
+  padding: 2.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25rem;
+  background: rgba(17, 24, 39, 0.92);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+}
+
+.server-warmup-spinner {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1.5rem;
+  border: 0.25rem solid rgba(255, 255, 255, 0.16);
+  border-top-color: #ef4444;
+  border-radius: 50%;
+  animation: server-warmup-spin 0.9s linear infinite;
+}
+
+.server-warmup-kicker {
+  margin: 0 0 0.5rem;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.server-warmup-card h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+}
+
+.server-warmup-card > p:not(.server-warmup-kicker) {
+  margin: 1rem auto 0;
+  color: #cbd5e1;
+  line-height: 1.65;
+}
+
+.server-warmup-status {
+  display: block;
+  margin-top: 1.5rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.server-warmup-card button {
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.25rem;
+  border: 0;
+  border-radius: 0.65rem;
+  color: #fff;
+  background: #dc2626;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.server-warmup-card button:hover {
+  background: #ef4444;
+}
+
+.server-warmup-card button:focus-visible {
+  outline: 0.2rem solid #fca5a5;
+  outline-offset: 0.2rem;
+}
+
+@keyframes server-warmup-spin {
+  to { transform: rotate(360deg); }
+}
