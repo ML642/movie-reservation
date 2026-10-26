@@ -9,9 +9,9 @@ Full-stack movie-booking application designed around secure authentication and s
 flowchart LR
     Client[React Client] --> Gateway[API Gateway :5000]
 
-    Gateway --> Identity[Identity Service :5001]
-    Gateway --> Engagement[Engagement Service :5002]
-    Gateway --> Reservation[Reservation Service :5003]
+    Gateway --> Identity[Identity Service ]
+    Gateway --> Engagement[Engagement Service ]
+    Gateway --> Reservation[Reservation Service ]
 
     Identity --> IdentityDB[(Identity DB)]
     Identity --> OAuth[Google / GitHub OAuth]
