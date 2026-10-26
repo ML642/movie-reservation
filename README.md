@@ -5,22 +5,6 @@ Full-stack movie-booking application designed around secure authentication and s
 [Live demo](https://movie-reservation-1-4uao.onrender.com)
 
 ## Architecture
-```mermaid
-flowchart LR
-    Client[React Client] --> Gateway[API Gateway :5000]
-
-    Gateway --> Identity[Identity Service ]
-    Gateway --> Engagement[Engagement Service ]
-    Gateway --> Reservation[Reservation Service ]
-
-    Identity --> IdentityDB[(Identity DB)]
-    Identity --> OAuth[Google / GitHub OAuth]
-    Identity --> Rabbit[RabbitMQ]
-
-    Engagement --> EngagementDB[(Engagement DB)]
-
-    Reservation --> ReservationDB[(Reservation DB)]
-```
 
 The gateway is the public entry point. It forwards identity traffic by default, `/api/likes` and `/api/comments` to Engagement, and `/api/reservation` to Reservation.
 
