@@ -8,19 +8,6 @@ Browse the movie catalog, save favorites, leave comments, select seats, and mana
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  Client[React client] --> Gateway[API Gateway :5000]
-  Gateway --> Identity[Identity :5001]
-  Gateway --> Engagement[Engagement :5002]
-  Gateway --> Reservation[Reservation :5003]
-  Identity --> IdentityDB[(Identity DB)]
-  Engagement --> EngagementDB[(Engagement DB)]
-  Reservation --> ReservationDB[(Reservation DB)]
-  Identity --> OAuth[Google / GitHub]
-  Identity --> Rabbit[RabbitMQ]
-```
-
 The gateway is the public entry point. It forwards identity traffic by default, `/api/likes` and `/api/comments` to Engagement, and `/api/reservation` to Reservation.
 
 Each backend module follows Ports and Adapters:
