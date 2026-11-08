@@ -32,7 +32,7 @@ Composition roots assemble Express controllers, application services, ports, and
 
 - Access tokens expire after 15 minutes. Refresh tokens expire after 30 days, are stored as HttpOnly cookies, hashed with bcrypt in MongoDB, and atomically rotated to prevent replay.
 - Google and GitHub OAuth use authorization-code exchange and an HttpOnly state cookie validated with a timing-safe comparison.
-- The Identity service publishes `identity.user.registered` through an `EventPublisher` port; RabbitMQ is used when `RABBITMQ_URL` is configured.
+- The Identity service publishes `identity.user.registered` through an `EventPublisher` port when `RABBITMQ_URL` is configured. A separate registration worker consumes the event from a durable RabbitMQ queue and logs the user ID and event timestamp.
 - A MongoDB unique index on `{ showKey: 1, seatId: 1 }` is the final authority for seat ownership. Concurrent requests for the same seat yield one success and one `409 Conflict`.
 - On replica sets, seat locks and reservations are written in a transaction. On standalone MongoDB, failed reservation creation removes the locks it created; the unique index still prevents double booking.
 
@@ -78,6 +78,18 @@ Before `npm start`, set `REACT_APP_TMDB_API_KEY` in `frontend/.env` to your TMDB
 The frontend runs at `http://localhost:3000`; the gateway is at `http://localhost:5000`. Frontend environment variables are included in the browser bundle; never put backend credentials there.
 
 OAuth is optional for local development. When enabling it, register the gateway callback URLs with Google and GitHub. Set the callback environment variables to the public gateway URL when deploying.
+
+## Registration events
+
+Docker Compose starts `registration-worker` alongside the API services. Register an account, then inspect the handler output:
+
+```bash
+docker compose logs -f registration-worker
+```
+
+The publisher declares and binds the durable `registration-audit` queue before publishing, so events can wait while the worker is stopped. It publishes persistent messages and waits for broker confirmation. The worker acknowledges each event after logging; malformed events and logging failures are rejected without requeue and discarded (no dead-letter queue is configured). This is a minimal logging consumer: it does not send emails or maintain a persistent audit database, and redelivery may produce duplicate log entries.
+
+To run the worker without Docker, set `RABBITMQ_URL` in `server/.env`, then run `npm run start:registration-worker` from `server/`.
 
 ## Tests
 

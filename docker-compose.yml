@@ -22,7 +22,20 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_URL: http://localhost:3000
       RABBITMQ_URL: amqp://rabbitmq:5672
-    depends_on: [mongo, rabbitmq]
+    depends_on:
+      mongo:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+  registration-worker:
+    build: ./server
+    command: node services/registration-worker.js
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
   engagement:
     build: ./server
     command: npm run start:engagement
@@ -41,4 +54,9 @@ services:
     image: mongo:7
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     ports: ["15672:15672"]

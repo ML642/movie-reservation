@@ -14,7 +14,8 @@
     "start:gateway": "node gateway.js",
     "start:identity": "npm run build && node services/identity.js",
     "start:engagement": "npm run build && node services/engagement.js",
-    "start:reservation": "npm run build && node services/reservation.js"
+    "start:reservation": "npm run build && node services/reservation.js",
+    "start:registration-worker": "npm run build:identity && node services/registration-worker.js"
   },
   "keywords": [],
   "author": "",
