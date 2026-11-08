@@ -91,6 +91,15 @@ The publisher declares and binds the durable `registration-audit` queue before p
 
 To run the worker without Docker, set `RABBITMQ_URL` in `server/.env`, then run `npm run start:registration-worker` from `server/`.
 
+## Continuous integration
+
+GitHub Actions runs on pushes, pull requests, and manual dispatch. The workflow uses Node.js 24 and runs two independent jobs:
+
+- Backend: `npm ci`, TypeScript compilation, gateway and Jest tests, including MongoDB integration tests against a temporary MongoDB 7 service.
+- Frontend: `npm ci`, non-interactive tests, and a production build with `CI=true` (ESLint warnings fail the build).
+
+RabbitMQ publisher/consumer tests use mocks; the workflow does not start a live RabbitMQ broker. No deployment credentials or TMDB API key are required. See `.github/workflows/ci.yml` and the repository's Actions tab for results.
+
 ## Tests
 
 ```bash
