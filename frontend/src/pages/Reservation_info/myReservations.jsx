@@ -6,86 +6,6 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import TicketQR from './generate_QR';
 import { API_BASE_URL } from '../../config/api';
-// Dummy reservations data 
-const dummyReservations = [
-  {
-    id: 1,
-    movie: 'Inception',
-    poster: '🎬',
-    date: '2025-08-01',
-    time: '19:30',
-    seat: 'C12',
-    status: 'upcoming',
-    theater: 'Screen 1',
-    price: '$12.50',
-    bookingDate: '2025-07-25',
-    genre: 'Science Fiction',
-    duration: '148 min',
-    rating: 'PG-13'
-  },
-  {
-    id: 2,
-    movie: 'Oppenheimer',
-    poster: '🎭',
-    date: '2025-07-20',
-    time: '21:00',
-    seat: 'A5',
-    status: 'completed',
-    theater: 'Screen 2',
-    price: '$15.00',
-    bookingDate: '2025-07-15',
-    genre: 'Biography',
-    duration: '180 min',
-    rating: 'R',
-    userRating: 5
-  },
-  {
-    id: 3,
-    movie: 'Dune: Part Two',
-    poster: '🚀',
-    date: '2025-08-15',
-    time: '18:00',
-    seat: 'B8',
-    status: 'upcoming',
-    theater: 'IMAX',
-    price: '$18.00',
-    bookingDate: '2025-08-01',
-    genre: 'Science Fiction',
-    duration: '166 min',
-    rating: 'PG-13'
-  },
-  {
-    id: 4,
-    movie: 'The Batman',
-    poster: '🦇',
-    date: '2025-07-10',
-    time: '20:00',
-    seat: 'D15',
-    status: 'cancelled',
-    theater: 'Screen 3',
-    price: '$13.50',
-    bookingDate: '2025-07-05',
-    genre: 'Action',
-    duration: '176 min',
-    rating: 'PG-13'
-  },
-  {
-    id: 5,
-    movie: 'Avatar: The Way of Water',
-    poster: '🌊',
-    date: '2025-08-20',
-    time: '19:00',
-    seat: 'E10',
-    status: 'upcoming',
-    theater: 'IMAX',
-    price: '$20.00',
-    bookingDate: '2025-08-05',
-    genre: 'Adventure',
-    duration: '192 min',
-    rating: 'PG-13'
-  }
-];
-
 export default function MyReservations() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [user, setUser] = useState(null);
@@ -127,7 +47,6 @@ export default function MyReservations() {
 
         if (response.data.success) {
           setReservations(response.data.data);
-          console.log("Reservations fetched successfully:", response.data.data);
         }
       } catch (error) {
         console.log("Error fetching reservations:", error);
@@ -141,7 +60,6 @@ export default function MyReservations() {
 
     fetchReservations();
   }, [navigate]);
-    console.log(  "Reservations:", reservations);
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [location.key]);

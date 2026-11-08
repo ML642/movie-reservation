@@ -2,6 +2,8 @@
 
 Full-stack movie-booking application designed around secure authentication and safe seat allocation.
 
+Browse the movie catalog, save favorites, leave comments, select seats, and manage reservations with QR tickets. Built with React, TypeScript, Express, MongoDB, and RabbitMQ.
+
 [Live demo](https://movie-reservation-1-4uao.onrender.com)
 
 ## Architecture
@@ -51,7 +53,13 @@ Composition roots assemble Express controllers, application services, ports, and
 
 Prerequisites: Docker Compose, Node.js 20+, and npm.
 
-Create `.env` in the repository root:
+Run the commands below from the repository root (the directory containing this README). Copy `.env.example` to `.env` and set a random `JWT_SECRET`:
+
+```bash
+cp .env.example .env
+```
+
+On PowerShell, use `Copy-Item .env.example .env`. The file contains these settings:
 
 ```env
 JWT_SECRET=replace-with-a-long-random-secret
@@ -73,23 +81,39 @@ Start the frontend in another terminal:
 
 ```bash
 cd frontend
-npm install
+cp .env_example .env
+npm ci
 npm start
 ```
 
-The frontend runs at `http://localhost:3000`; the gateway is at `http://localhost:5000`.
+Before `npm start`, set `REACT_APP_TMDB_API_KEY` in `frontend/.env` to your TMDB API key. Keep `REACT_APP_API_URL=http://localhost:5000`. On PowerShell, copy the file with `Copy-Item .env_example .env`.
 
-OAuth is optional for local development. When enabling it, register the gateway callback URLs with Google and GitHub. The current Compose file pins GitHub's redirect URL for the deployed environment, so change that value to the local callback above before testing GitHub OAuth locally.
+The frontend runs at `http://localhost:3000`; the gateway is at `http://localhost:5000`. Frontend environment variables are included in the browser bundle; never put backend credentials there.
+
+OAuth is optional for local development. When enabling it, register the gateway callback URLs with Google and GitHub. Set the callback environment variables to the public gateway URL when deploying.
 
 ## Tests
 
 ```bash
 cd server
-npm install
+npm ci
 npm test
 ```
 
-The test command builds the TypeScript modules, then runs gateway, unit, presentation, persistence, and integration tests.
+The test command builds the TypeScript modules, then runs gateway, unit, and presentation tests. MongoDB integration tests are skipped unless `TEST_MONGODB_URI` is set. Use a dedicated test database: these tests delete records from their collections.
+
+To check the frontend:
+
+```bash
+cd frontend
+npm ci
+npm test -- --watchAll=false
+npm run build
+```
+
+## Demo scope
+
+This is a portfolio project. Reservations and QR tickets demonstrate the booking flow; there is no payment processing or connection to a real cinema ticketing system. The demo backend may need time to wake up on the hosting free tier.
 
 ## Repository layout
 

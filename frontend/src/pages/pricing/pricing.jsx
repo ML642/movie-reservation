@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './pricing.module.css';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 export default function MovieTheaterPricing() {
-  const [hoveredItem, setHoveredItem] = useState(null);
   const Location =  useLocation() ;
     useEffect(() => {
         window.scrollTo({top:0, left:0, behavior: "smooth"});
@@ -96,8 +95,6 @@ export default function MovieTheaterPricing() {
             className={`${styles.priceItem} ${getItemClass(title)} ${
               item.popular ? styles.popularItem : ''
             }`}
-            onMouseEnter={() => setHoveredItem(`${title}-${index}`)}
-            onMouseLeave={() => setHoveredItem(null)}
           >
             {item.popular && (
               <div className={styles.popularBadge}>POPULAR</div>

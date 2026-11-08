@@ -32,7 +32,6 @@ export const getUserFromToken = () => {
       console.warn('JWT token has expired');
       return null;
     }
-    console.log("Decoded JWT:", decoded);
     return {
       id: decoded.id || decoded.userId || decoded.sub,
       name: decoded.name || decoded.username || decoded.displayName,
