@@ -18,6 +18,9 @@ jest.mock('../../utils/jwtDecoder', () => ({
   isAuthenticated: jest.fn(),
 }));
 jest.mock('./generate_QR', () => () => null);
+jest.mock('../../config/api', () => ({
+  API_BASE_URL: 'http://localhost:5000',
+}));
 jest.mock(
   'react-router-dom',
   () => ({
@@ -40,7 +43,6 @@ describe('MyReservations page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-    process.env.REACT_APP_API_URL = 'http://localhost:5000';
   });
 
   test('redirects to login when user is not authenticated', async () => {
