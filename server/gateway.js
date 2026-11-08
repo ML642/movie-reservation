@@ -104,6 +104,14 @@ const createGateway = ({
       method: req.method,
       headers: { ...req.headers, host: target.host },
     }, (service) => {
+      if (service.statusCode === 429) {
+        log(logger, 'upstream_rate_limited', {
+          method: req.method,
+          path,
+          upstream,
+          retryAfter: service.headers['retry-after'] || null,
+        });
+      }
       const responseHeaders = { ...service.headers };
       for (const headerName of Object.keys(responseHeaders)) {
         if (headerName.toLowerCase().startsWith('access-control-') || headerName.toLowerCase() === 'vary') {

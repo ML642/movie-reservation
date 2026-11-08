@@ -81,3 +81,26 @@ test('logs upstream connection errors and returns a safe 502 response', async ()
   assert.equal(logs[0].path, '/api/reservation');
   assert.equal(logs[0].code, 'ECONNREFUSED');
 });
+
+
+test('logs the upstream origin for a rate limit and preserves Retry-After', async () => {
+  const upstream = http.createServer((_req, res) => {
+    res.writeHead(429, { 'Content-Type': 'text/plain', 'Retry-After': '60' });
+    res.end('Too Many Requests');
+  });
+  const upstreamUrl = await listen(upstream);
+  const logs = [];
+  const gateway = createGateway({
+    targets: [['/', upstreamUrl]],
+    logger: { log: (entry) => logs.push(JSON.parse(entry)) },
+  });
+  const gatewayUrl = await listen(gateway);
+  const response = await fetch(`${gatewayUrl}/api/test`);
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get('retry-after'), '60');
+  assert.equal(await response.text(), 'Too Many Requests');
+  assert.equal(logs.length, 1);
+  assert.equal(logs[0].event, 'upstream_rate_limited');
+  assert.equal(logs[0].upstream, upstreamUrl);
+  assert.equal(logs[0].retryAfter, '60');
+});

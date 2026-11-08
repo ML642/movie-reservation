@@ -20,10 +20,9 @@ const queryClient = new QueryClient({
       retry: (failureCount, error) => {
         const status = error?.response?.status;
 
-        // Bad requests (including a missing/invalid API key) cannot succeed on
-        // retry. Transient failures receive one retry instead of React Query's
-        // default three retries.
-        if (status && status < 500 && status !== 429) {
+        // Do not automatically retry client errors or rate limits.
+        // Transient server/network failures receive one retry.
+        if (status && status < 500) {
           return false;
         }
 

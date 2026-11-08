@@ -1,3 +1,4 @@
+import { readApiResponse } from '../../utils/readApiResponse';
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import './Login.css';
 import  { Link, useNavigate , useLocation  } from "react-router-dom";
@@ -205,7 +206,7 @@ const Login = () => {
               password: form.password
             })
           })
-          const data = await result.json();
+          const data = await readApiResponse(result);
           if (result.ok) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('username', data.user.username);
@@ -219,7 +220,7 @@ const Login = () => {
           }
         } catch (err) {
           const message = err.message || "Could not reach the server. Please try again.";
-          setNotice({ type: "error", title: "Network error", message });
+          setNotice({ type: "error", title: err.status === 429 ? "Too many requests" : "Network error", message });
         } finally {
           setIsLoading(false);
         }
