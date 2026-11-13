@@ -7,6 +7,14 @@ describe('ServerWarmup', () => {
     jest.restoreAllMocks();
   });
 
+  test('renders the interface without a backend when warmup is disabled', () => {
+    const fetchSpy = jest.spyOn(global, 'fetch').mockRejectedValue(new Error('Backend is offline'));
+    render(<ServerWarmup enabled={false}><div>Application ready</div></ServerWarmup>);
+    expect(screen.getByText('Application ready')).toBeInTheDocument();
+    expect(screen.queryByText('Starting the server')).not.toBeInTheDocument();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   test('waits for the gateway health check before rendering the application', async () => {
     jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,

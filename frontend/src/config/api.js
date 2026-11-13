@@ -14,6 +14,10 @@ const resolveApiBaseUrl = () => {
     return normalizedEnv;
   }
 
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:5000';
+  }
+
   if (typeof window !== 'undefined' && window.location?.origin) {
     const mappedRenderApi = RENDER_API_BY_FRONTEND_HOST[window.location.host];
     if (mappedRenderApi) {

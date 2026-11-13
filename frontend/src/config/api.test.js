@@ -15,6 +15,19 @@ describe('API_BASE_URL', () => {
     });
   });
 
+  test('defaults to the local backend during development without an API URL', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.REACT_APP_API_URL = '';
+    process.env.NODE_ENV = 'development';
+    try {
+      jest.isolateModules(() => {
+        expect(require('./api').API_BASE_URL).toBe('http://localhost:5000');
+      });
+    } finally {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
+
   test('falls back to the current browser origin when env is not set', () => {
     process.env.REACT_APP_API_URL = '';
 

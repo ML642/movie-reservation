@@ -44,7 +44,7 @@ const probeGateway = async (signal) => {
   }
 };
 
-const ServerWarmup = ({ children }) => {
+const ServerWarmup = ({ children, enabled = process.env.NODE_ENV !== 'development' }) => {
   const [status, setStatus] = useState('warming');
 
   const startWarmup = useCallback(() => {
@@ -52,7 +52,7 @@ const ServerWarmup = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (status !== 'warming') return undefined;
+    if (!enabled || status !== 'warming') return undefined;
 
     const controller = new AbortController();
     const deadline = Date.now() + WARMUP_TIMEOUT_MS;
@@ -71,14 +71,14 @@ const ServerWarmup = ({ children }) => {
 
     void warmUp();
     return () => controller.abort();
-  }, [status]);
+  }, [enabled, status]);
 
-  if (status === 'ready') return children;
+  if (!enabled || status === 'ready') return children;
 
   return (
     <main className="server-warmup" aria-live="polite">
       <div className="server-warmup-card">
-        <div className="server-warmup-spinner" aria-hidden="true" />
+        {status === 'warming' && <div className="server-warmup-spinner" aria-hidden="true" />}
         <p className="server-warmup-kicker">CineReserve</p>
         <h1>{status === 'timeout' ? 'The server is taking longer than usual' : 'Starting the server'}</h1>
         <p>

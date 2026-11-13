@@ -32,6 +32,21 @@ test('answers gateway health checks without contacting an upstream service', asy
   assert.deepEqual(await response.json(), { status: 'ok', service: 'gateway' });
 });
 
+test('allows login preflight from the deployed frontend by default', async () => {
+  const gatewayUrl = await listen(createGateway());
+  const response = await fetch(`${gatewayUrl}/api/login`, {
+    method: 'OPTIONS',
+    headers: {
+      Origin: 'https://movie-reservation-1-4uao.onrender.com',
+      'Access-Control-Request-Method': 'POST',
+      'Access-Control-Request-Headers': 'content-type',
+    },
+  });
+  assert.equal(response.status, 204);
+  assert.equal(response.headers.get('access-control-allow-origin'), 'https://movie-reservation-1-4uao.onrender.com');
+  assert.match(response.headers.get('access-control-allow-methods'), /POST/);
+});
+
 test('forwards reservation requests and approved CORS headers', async () => {
   const reservation = http.createServer((req, res) => {
     assert.equal(req.url, '/api/reservation?movieId=42');

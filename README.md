@@ -1,134 +1,111 @@
-# Movie Reservation System
+# CineReserve ? Movie Reservation System
 
-Full-stack movie-booking application designed around secure authentication and safe seat allocation.
+[![CI](https://github.com/ML642/movie-reservation/actions/workflows/ci.yml/badge.svg)](https://github.com/ML642/movie-reservation/actions/workflows/ci.yml)
 
-Browse the movie catalog, save favorites, leave comments, select seats, and manage reservations with QR tickets. Built with React, TypeScript, Express, MongoDB, and RabbitMQ.
+A full-stack cinema booking demo with a React interface and a multi-service Node.js backend. Browse movies, choose seats, and manage reservations with MongoDB enforcing seat uniqueness for each screening.
 
-[Live demo](https://movie-reservation-1-4uao.onrender.com)
+[Live demo](https://movie-reservation-1-4uao.onrender.com) ? [Architecture](docs/architecture.md) ? [Development guide](docs/development.md)
 
-## Architecture
+> The hosted demo uses free hosting and may be unavailable during service startup or rate limiting. Follow the local setup below for development.
 
-The gateway is the public entry point. It forwards identity traffic by default, `/api/likes` and `/api/comments` to Engagement, and `/api/reservation` to Reservation.
+## Features
 
-Each backend module follows Ports and Adapters:
+- Movie catalog with search, genre filters, and TMDB movie details.
+- Email/username sign-in and Google/GitHub OAuth 2.0.
+- Seat selection, booking, cancellation, and QR reservation tickets.
+- Favorites, movie comments, and user profiles.
+- Database-level seat conflict protection using a compound unique index.
+- RabbitMQ registration events handled by a separate logging worker.
 
-```text
-Presentation -> Application -> Domain
-                    ^
-                    |
-             Infrastructure
-```
+## Stack
 
-Composition roots assemble Express controllers, application services, ports, and MongoDB adapters. Domain and application code do not import Express or Mongoose directly.
+| Layer | Technologies |
+| --- | --- |
+| Frontend | React, JavaScript/JSX, React Router, TanStack Query |
+| Backend | Node.js, Express, TypeScript domain modules |
+| Data | MongoDB, Mongoose |
+| Messaging | RabbitMQ |
+| Tooling | Docker Compose, GitHub Actions, Jest, React Testing Library |
 
-| Service | Responsibility | Port |
-| --- | --- | ---: |
-| Gateway | Routing, CORS, upstream failures | 5000 |
-| Identity | Accounts, JWTs, refresh tokens, OAuth | 5001 |
-| Engagement | Likes and comments | 5002 |
-| Reservation | Availability, booking, cancellation | 5003 |
+## Quick start
 
-## Key guarantees
+Use Node.js 24 (the version used in CI), npm, and Docker with Compose. Run commands from the directory containing this README. Install dependencies in `frontend/` and `server/`; the root package is not an npm workspace.
 
-- Access tokens expire after 15 minutes. Refresh tokens expire after 30 days, are stored as HttpOnly cookies, hashed with bcrypt in MongoDB, and atomically rotated to prevent replay.
-- Google and GitHub OAuth use authorization-code exchange and an HttpOnly state cookie validated with a timing-safe comparison.
-- The Identity service publishes `identity.user.registered` through an `EventPublisher` port when `RABBITMQ_URL` is configured. A separate registration worker consumes the event from a durable RabbitMQ queue and logs the user ID and event timestamp.
-- A MongoDB unique index on `{ showKey: 1, seatId: 1 }` is the final authority for seat ownership. Concurrent requests for the same seat yield one success and one `409 Conflict`.
-- On replica sets, seat locks and reservations are written in a transaction. On standalone MongoDB, failed reservation creation removes the locks it created; the unique index still prevents double booking.
-
-## Local run
-
-Prerequisites: Docker Compose, Node.js 20+, and npm.
-
-Run the commands below from the repository root (the directory containing this README). Copy `.env.example` to `.env` and set a random `JWT_SECRET`:
+### 1. Configure the backend
 
 ```bash
 cp .env.example .env
 ```
 
-On PowerShell, use `Copy-Item .env.example .env`. The file contains these settings:
+On PowerShell, use `Copy-Item .env.example .env`.
 
-```env
-JWT_SECRET=replace-with-a-long-random-secret
-GOOGLE_OAUTH_CLIENT_ID=
-GOOGLE_OAUTH_CLIENT_SECRET=
-GOOGLE_OAUTH_REDIRECT_URI=http://localhost:5000/api/oauth/google/callback
-GITHUB_OAUTH_CLIENT_ID=
-GITHUB_OAUTH_CLIENT_SECRET=
-GITHUB_OAUTH_REDIRECT_URI=http://localhost:5000/api/oauth/github/callback
+Edit `.env` and replace `JWT_SECRET` with a random secret. You can generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Start the backend:
+OAuth credentials are optional for password-based local sign-in. Callback URLs and provider configuration are covered in the [development guide](docs/development.md#oauth).
+
+### 2. Start backend services
 
 ```bash
 docker compose up --build
 ```
 
-Start the frontend in another terminal:
+The gateway is available at `http://localhost:5000`. MongoDB, RabbitMQ, and the registration worker run alongside the API services.
+
+### 3. Start the frontend
+
+In another terminal:
 
 ```bash
 cd frontend
 cp .env_example .env
+```
+
+On PowerShell, use `Copy-Item .env_example .env`. Set `REACT_APP_TMDB_API_KEY` in this file to your TMDB API key for live movie data. Keep `REACT_APP_API_URL=http://localhost:5000`.
+
+```bash
 npm ci
 npm start
 ```
 
-Before `npm start`, set `REACT_APP_TMDB_API_KEY` in `frontend/.env` to your TMDB API key. Keep `REACT_APP_API_URL=http://localhost:5000`. On PowerShell, copy the file with `Copy-Item .env_example .env`.
+Open **http://localhost:3000**. During `npm start`, the interface opens without waiting for backend readiness. Authentication and booking still require running backend services. Browser environment variables are public; never place backend credentials in them.
 
-The frontend runs at `http://localhost:3000`; the gateway is at `http://localhost:5000`. Frontend environment variables are included in the browser bundle; never put backend credentials there.
+## Checks
 
-OAuth is optional for local development. When enabling it, register the gateway callback URLs with Google and GitHub. Set the callback environment variables to the public gateway URL when deploying.
-
-## Registration events
-
-Docker Compose starts `registration-worker` alongside the API services. Register an account, then inspect the handler output:
+Run these commands from the repository root:
 
 ```bash
-docker compose logs -f registration-worker
+npm ci --prefix server
+npm test --prefix server
+npm ci --prefix frontend
+npm test --prefix frontend -- --watchAll=false --runInBand
+npm run build --prefix frontend
 ```
 
-The publisher declares and binds the durable `registration-audit` queue before publishing, so events can wait while the worker is stopped. It publishes persistent messages and waits for broker confirmation. The worker acknowledges each event after logging; malformed events and logging failures are rejected without requeue and discarded (no dead-letter queue is configured). This is a minimal logging consumer: it does not send emails or maintain a persistent audit database, and redelivery may produce duplicate log entries.
+Backend tests compile the TypeScript modules first. MongoDB integration tests require `TEST_MONGODB_URI` pointing to a dedicated test database; otherwise they are skipped. They delete records from their collections.
 
-To run the worker without Docker, set `RABBITMQ_URL` in `server/.env`, then run `npm run start:registration-worker` from `server/`.
+[GitHub Actions](.github/workflows/ci.yml) runs backend builds and tests with MongoDB 7, plus frontend tests and a strict production build. RabbitMQ tests use mocks. No production credentials are required.
 
-## Continuous integration
-
-GitHub Actions runs on pushes, pull requests, and manual dispatch. The workflow uses Node.js 24 and runs two independent jobs:
-
-- Backend: `npm ci`, TypeScript compilation, gateway and Jest tests, including MongoDB integration tests against a temporary MongoDB 7 service.
-- Frontend: `npm ci`, non-interactive tests, and a production build with `CI=true` (ESLint warnings fail the build).
-
-RabbitMQ publisher/consumer tests use mocks; the workflow does not start a live RabbitMQ broker. No deployment credentials or TMDB API key are required. See `.github/workflows/ci.yml` and the repository's Actions tab for results.
-
-## Tests
-
-```bash
-cd server
-npm ci
-npm test
-```
-
-The test command builds the TypeScript modules, then runs gateway, unit, and presentation tests. MongoDB integration tests are skipped unless `TEST_MONGODB_URI` is set. Use a dedicated test database: these tests delete records from their collections.
-
-To check the frontend:
-
-```bash
-cd frontend
-npm ci
-npm test -- --watchAll=false
-npm run build
-```
-
-## Demo scope
-
-This is a portfolio project. Reservations and QR tickets demonstrate the booking flow; there is no payment processing or connection to a real cinema ticketing system. The demo backend may need time to wake up on the hosting free tier.
-
-## Repository layout
+## Project layout
 
 ```text
-frontend/              React client
-server/gateway.js      HTTP gateway
-server/services/       Independently runnable service entry points
-server/src/modules/    Identity, Engagement, and Reservation modules
-docker-compose.yml     Local service topology
+frontend/               React client and UI tests
+server/gateway.js       Public API gateway
+server/services/        API service and registration worker entry points
+server/src/modules/     Identity, Engagement, and Reservation
+server/src/shared/      Shared infrastructure
+.github/workflows/      Continuous integration
+docs/                   Architecture and development notes
+docker-compose.yml      Local backend topology
 ```
+
+## Scope and limitations
+
+This is a portfolio/demo project, not a real cinema ticketing integration. It does not process payments; QR tickets demonstrate the reservation flow.
+
+Refresh-token sessions are implemented, but replay protection requires hardening before production use. The RabbitMQ worker logs registrations; it does not send email or maintain a persistent audit database. See the [architecture notes](docs/architecture.md#implementation-limits) for delivery and persistence limitations.
+
+No repository-wide LICENSE file is included. The server package currently declares ISC; movie artwork and third-party assets have separate rights and attribution requirements.

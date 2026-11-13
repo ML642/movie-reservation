@@ -6,7 +6,7 @@ const { URL } = require('url');
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.UPSTREAM_TIMEOUT_MS || '30000', 10);
 const SHUTDOWN_TIMEOUT_MS = 25_000;
 
-const getAllowedOrigins = () => (process.env.CORS_ORIGINS || 'http://localhost:3000')
+const getAllowedOrigins = () => ('http://localhost:3000,https://movie-reservation-1.onrender.com,https://movie-reservation-1-4uao.onrender.com,https://movie-reservation-z2nv.onrender.com,' + (process.env.CORS_ORIGINS || ''))
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
