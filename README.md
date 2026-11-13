@@ -1,4 +1,4 @@
-# CineReserve ? Movie Reservation System
+#  Movie Reservation System
 
 [![CI](https://github.com/ML642/movie-reservation/actions/workflows/ci.yml/badge.svg)](https://github.com/ML642/movie-reservation/actions/workflows/ci.yml)
 
